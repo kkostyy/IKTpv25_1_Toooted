@@ -43,6 +43,7 @@ namespace IKTpv25_1_Toooted
             btnMaksta.Click += btnMaksta_Click;
             btnSaadaArve.Click += btnSaadaArve_Click;
             btnPood.Click += btnPood_Click;
+            LooVormideMenuu();
             UuendaKokku();
         }
 
@@ -220,6 +221,29 @@ namespace IKTpv25_1_Toooted
         private void btnPood_Click(object sender, EventArgs e)
         {
             using (var vorm = new PoodVorm())
+            {
+                vorm.ShowDialog(this);
+            }
+        }
+
+        // Menüü "Vormid": avab ainult kujundusega vormid (need ei tööta veel)
+        private void LooVormideMenuu()
+        {
+            var menuu = new MenuStrip();
+            var vormid = new ToolStripMenuItem("Vormid");
+            vormid.DropDownItems.Add("Sisselogimine", null, (s, e) => AvaVorm(new LoginVorm()));
+            vormid.DropDownItems.Add("Registreerimine", null, (s, e) => AvaVorm(new RegistreerimineVorm()));
+            vormid.DropDownItems.Add("Kliendid", null, (s, e) => AvaVorm(new KliendidVorm()));
+            vormid.DropDownItems.Add("Statistika", null, (s, e) => AvaVorm(new StatistikaVorm()));
+            menuu.Items.Add(vormid);
+            Controls.Add(menuu);
+            MainMenuStrip = menuu;
+            menuu.SendToBack();
+        }
+
+        private void AvaVorm(Form vorm)
+        {
+            using (vorm)
             {
                 vorm.ShowDialog(this);
             }

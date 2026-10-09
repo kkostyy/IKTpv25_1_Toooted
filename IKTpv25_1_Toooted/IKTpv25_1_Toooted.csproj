@@ -53,7 +53,9 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="AndmeBaas.cs" />
-    <Compile Include="Kassa.cs" />
+    <Compile Include="Kassa.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="PoodVorm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -62,6 +64,9 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="UiStiil.cs" />
+    <Compile Include="Vormid.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Ymardus.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
