@@ -92,6 +92,11 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Pildid\*.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
