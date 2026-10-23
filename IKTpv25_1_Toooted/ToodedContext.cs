@@ -11,6 +11,9 @@ public class ToodedContext : DbContext
     public DbSet<Ost> Ostud => Set<Ost>();
     public DbSet<OstuRida> OstuRead => Set<OstuRida>();
     public DbSet<OstunimekirjaRida> Ostunimekiri => Set<OstunimekirjaRida>();
+    public DbSet<Kampaania> Kampaaniad => Set<Kampaania>();
+    public DbSet<Saavutus> Saavutused => Set<Saavutus>();
+    public DbSet<Partii> Partiid => Set<Partii>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -71,6 +74,28 @@ public class ToodedContext : DbContext
             .WithMany()
             .HasForeignKey(r => r.ToodeId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        // Kampaania ja partii kustuvad koos tootega
+        modelBuilder.Entity<Kampaania>()
+            .HasOne(k => k.Toode)
+            .WithMany()
+            .HasForeignKey(k => k.ToodeId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<Partii>()
+            .HasOne(p => p.Toode)
+            .WithMany()
+            .HasForeignKey(p => p.ToodeId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Saavutus kustub koos kliendiga; sama koodi saab klient ainult ühe korra
+        modelBuilder.Entity<Saavutus>()
+            .HasOne(s => s.Klient)
+            .WithMany()
+            .HasForeignKey(s => s.KlientId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<Saavutus>()
+            .HasIndex(s => new { s.KlientId, s.Kood })
+            .IsUnique();
 
         // Algandmed: kategooriad (Id 1-3 jäävad samaks, et vanad tooted ei kaoks)
         modelBuilder.Entity<Kategooria>().HasData(
@@ -193,13 +218,13 @@ public class ToodedContext : DbContext
             new Toode { Id = 44, Toodenimetus = "Verivorst E-vaba Pöialpoiss Oskar 500g", Kogus = 6, Hind = 3.29m, Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_270147_PCE_EE", KategooriaId = 4, Kaubamark = "Oskar", Paritolumaa = "Eesti", Pakend = "0.5 kg", Uhik = "kg", UhikuKogus = 0.5m },
             new Toode { Id = 45, Toodenimetus = "Grillribi röst. küüslaugu eelküpsetatud Rannarootsi 900g", Kogus = 12, Hind = 10.99m, Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_4012753_PCE_EE", KategooriaId = 4, Kaubamark = "Rannarootsi", Paritolumaa = "Eesti", Pakend = "0.9 kg", Uhik = "kg", UhikuKogus = 0.9m },
             new Toode { Id = 46, Toodenimetus = "Alkoholivaba glögi õuna-mustsõstra Aura 1l", Kogus = 40, Hind = 1.95m, Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_173914_PCE_EE", KategooriaId = 5, Kaubamark = "Aura", Paritolumaa = "Eesti", Pakend = "1 l", Uhik = "l", UhikuKogus = 1m },
-            new Toode { Id = 47, Toodenimetus = "Vitamiinivesi Vitamineral Pro Hydration 0,5l", Kogus = 48, Hind = 1.19m, Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1376489_PCE_EE", KategooriaId = 5, Kaubamark = "Vitamineral", Pakend = "0.5 l", Uhik = "l", UhikuKogus = 0.5m },
+            new Toode { Id = 47, Toodenimetus = "Vitamiinivesi Vitamineral Pro Hydration 0,5l", Kogus = 48, Hind = 1.19m, Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1376489_PCE_EE", KategooriaId = 5, Pant = 0.10m, Kaubamark = "Vitamineral", Pakend = "0.5 l", Uhik = "l", UhikuKogus = 0.5m },
             new Toode { Id = 48, Toodenimetus = "Tee assortii Magic Winter Teekanne 72,5g", Kogus = 14, Hind = 5.49m, Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1025270_PCE_EE", KategooriaId = 5, Kaubamark = "Teekanne", Pakend = "0.0725 kg", Uhik = "kg", UhikuKogus = 0.0725m },
-            new Toode { Id = 49, Toodenimetus = "Karastusjook Cherry & Lime Living Things 0,33l", Kogus = 24, Hind = 2.19m, Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1377211_PCE_EE", KategooriaId = 5, Kaubamark = "Living Things", Pakend = "0.33 l", Uhik = "l", UhikuKogus = 0.33m },
-            new Toode { Id = 50, Toodenimetus = "Karastusjook Rasp & Pomegr. Living Things 0,33l", Kogus = 24, Hind = 2.19m, Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1377207_PCE_EE", KategooriaId = 5, Kaubamark = "Living Things", Pakend = "0.33 l", Uhik = "l", UhikuKogus = 0.33m },
+            new Toode { Id = 49, Toodenimetus = "Karastusjook Cherry & Lime Living Things 0,33l", Kogus = 24, Hind = 2.19m, Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1377211_PCE_EE", KategooriaId = 5, Pant = 0.10m, Kaubamark = "Living Things", Pakend = "0.33 l", Uhik = "l", UhikuKogus = 0.33m },
+            new Toode { Id = 50, Toodenimetus = "Karastusjook Rasp & Pomegr. Living Things 0,33l", Kogus = 24, Hind = 2.19m, Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1377207_PCE_EE", KategooriaId = 5, Pant = 0.10m, Kaubamark = "Living Things", Pakend = "0.33 l", Uhik = "l", UhikuKogus = 0.33m },
             new Toode { Id = 51, Toodenimetus = "Glögi Pumpkin Spice 0,5% Blossa 0,75l", Kogus = 10, Hind = 7.49m, Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1377222_PCE_EE", KategooriaId = 5, Kaubamark = "Blossa", Pakend = "0.75 l", Uhik = "l", UhikuKogus = 0.75m },
-            new Toode { Id = 52, Toodenimetus = "Vesi sidrunimaitseline, gas. Saaremaa 0,5l", Kogus = 96, Hind = 0.59m, Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1353600_PCE_EE", KategooriaId = 5, Kaubamark = "Saaremaa", Paritolumaa = "Eesti", Pakend = "0.5 l", Uhik = "l", UhikuKogus = 0.5m },
-            new Toode { Id = 53, Toodenimetus = "Vesi sidrunimaitseline, gas. Saaremaa 1,5l", Kogus = 60, Hind = 0.89m, Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1353601_PCE_EE", KategooriaId = 5, Kaubamark = "Saaremaa", Paritolumaa = "Eesti", Pakend = "1.5 l", Uhik = "l", UhikuKogus = 1.5m },
+            new Toode { Id = 52, Toodenimetus = "Vesi sidrunimaitseline, gas. Saaremaa 0,5l", Kogus = 96, Hind = 0.59m, Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1353600_PCE_EE", KategooriaId = 5, Pant = 0.10m, Kaubamark = "Saaremaa", Paritolumaa = "Eesti", Pakend = "0.5 l", Uhik = "l", UhikuKogus = 0.5m },
+            new Toode { Id = 53, Toodenimetus = "Vesi sidrunimaitseline, gas. Saaremaa 1,5l", Kogus = 60, Hind = 0.89m, Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1353601_PCE_EE", KategooriaId = 5, Pant = 0.10m, Kaubamark = "Saaremaa", Paritolumaa = "Eesti", Pakend = "1.5 l", Uhik = "l", UhikuKogus = 1.5m },
             new Toode { Id = 54, Toodenimetus = "Kohvi advendikalender L'Or 24x5,2g", Kogus = 8, Hind = 14.99m, Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1025236_PCE_EE", KategooriaId = 5, Kaubamark = "L'Or", Pakend = "0.125 kg", Uhik = "kg", UhikuKogus = 0.1248m },
             new Toode { Id = 55, Toodenimetus = "Küpsised Digestive suhkruvabad Gullon 400g", Kogus = 30, Hind = 3.29m, Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_168879_PCE_EE", KategooriaId = 6, Kaubamark = "Gullon", Pakend = "0.4 kg", Uhik = "kg", UhikuKogus = 0.4m },
             new Toode { Id = 56, Toodenimetus = "Küpsised šokolaadi tükkidega Gullon 125g", Kogus = 25, Hind = 2.99m, Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_168225_PCE_EE", KategooriaId = 6, Kaubamark = "Gullon", Pakend = "0.125 kg", Uhik = "kg", UhikuKogus = 0.125m },

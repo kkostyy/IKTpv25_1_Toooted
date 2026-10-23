@@ -45,6 +45,9 @@ internal static class Program
             _ = db.OstuRead.AsNoTracking().FirstOrDefault();
             _ = db.Kasutajad.AsNoTracking().FirstOrDefault();
             _ = db.Ostunimekiri.AsNoTracking().FirstOrDefault();
+            _ = db.Kampaaniad.AsNoTracking().FirstOrDefault();
+            _ = db.Saavutused.AsNoTracking().FirstOrDefault();
+            _ = db.Partiid.AsNoTracking().FirstOrDefault();
 
             LooAlgkasutajad(db);
         }

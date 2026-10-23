@@ -13,5 +13,7 @@ public class Klient
     [Precision(10, 2)]
     public decimal Boonus { get; set; }             // eurodes; kasutatakse allahindluseks
 
+    public bool Demo { get; set; }
+
     public ICollection<Ost> Ostud { get; set; } = new List<Ost>();
 }

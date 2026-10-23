@@ -12,4 +12,5 @@ public class OstunimekirjaRida
     public bool Ostetud { get; set; }
     public DateTime Lisatud { get; set; } = DateTime.Now;
     public DateTime? OstetudAeg { get; set; }
+    public int? OstisKasutajaId { get; set; }   // kes märkis ostetuks (pere nimekiri)
 }
