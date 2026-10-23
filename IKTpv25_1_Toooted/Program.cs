@@ -51,6 +51,7 @@ internal static class Program
             _ = db.Partiid.AsNoTracking().FirstOrDefault();
 
             LooAlgkasutajad(db);
+            Kampaaniad.Uuenda(db, DateTime.Now);   // alanud/lõppenud kampaaniate hinnad
         }
         catch (Exception ex)
         {

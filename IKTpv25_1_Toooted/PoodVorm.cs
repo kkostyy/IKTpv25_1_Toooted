@@ -436,6 +436,7 @@ namespace IKTpv25_1_Toooted
         // ---------------------------------------------------------------
         private void LaadiTooted()
         {
+            Kampaaniad.Uuenda();
             using var db = new ToodedContext();
             koikTooted = db.Toodetabel.Include(t => t.Kategooria).AsNoTracking().ToList();
             kategooriad = db.Kategooriatabel.AsNoTracking().ToList().OrderBy(k => k.Id).ToList();
