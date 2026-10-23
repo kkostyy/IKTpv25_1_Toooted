@@ -350,6 +350,7 @@ namespace IKTpv25_1_Toooted
 
         public EmailSeadedVorm() : base("E-posti seaded", 420, 470)
         {
+            KysiSulgemisel = true;
             Pealkiri("E-posti seaded");
 
             var juhis = Silt(Keel.TolgiTekst("Gmail ei luba saata tavalise parooliga. Vaja on RAKENDUSE parooli:\n" +
@@ -403,6 +404,7 @@ namespace IKTpv25_1_Toooted
             seaded.Saatja = saatja;
             if (txtParool.Text.Length > 0) seaded.SeaParool(txtParool.Text.Trim());
             seaded.Salvesta();
+            Muudetud = false;
 
             txtParool.Clear();
             txtParool.PlaceholderText = "(salvestatud – jäta tühjaks, kui ei muuda)";

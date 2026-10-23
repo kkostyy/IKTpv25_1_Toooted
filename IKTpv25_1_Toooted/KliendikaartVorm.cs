@@ -9,7 +9,7 @@ namespace IKTpv25_1_Toooted
     //  kaart libiseb alt üles, klõps pöörab kaardi ümber (taga vöötkood),
     //  all viimased ostud ja boonuse muutus. Esc / ✕ / klõps mujal sulgeb.
     // ===================================================================
-    public class KliendikaartVorm : Form
+    public class KliendikaartVorm : Form, ITagasi
     {
         // Avab kaardi; kui kaarti pole, pakub selle kohe luua
         public static void Ava(IWin32Window? omanik)
@@ -54,6 +54,11 @@ namespace IKTpv25_1_Toooted
         private const int Laius = 460, Korgus = 650;
         private readonly RectangleF kaardiKoht = new(28, 74, 404, 255);   // 1,586 : 1 nagu pangakaart
         private RectangleF sulgeKoht => new(Laius - 50, 18, 32, 32);
+        private RectangleF tagasiKoht => new(22, 16, TextRenderer.MeasureText(Keel.T("Tagasi"), tagasiFont).Width + 50, 38);
+        private static readonly Font tagasiFont = new("Segoe UI", 10.5F, FontStyle.Bold);
+        private bool tagasiAll;
+
+        public bool MineTagasi() { Sulge(); return true; }
 
         public KliendikaartVorm()
         {
@@ -110,7 +115,7 @@ namespace IKTpv25_1_Toooted
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Escape) Sulge();
+            if (e.KeyCode == Keys.Escape || (e.Alt && e.KeyCode == Keys.Left)) Sulge();
             if (e.KeyCode == Keys.Space || e.KeyCode == Keys.Enter) Poora();
             base.OnKeyDown(e);
         }
@@ -118,14 +123,16 @@ namespace IKTpv25_1_Toooted
         protected override void OnMouseClick(MouseEventArgs e)
         {
             base.OnMouseClick(e);
-            if (sulgeKoht.Contains(e.Location)) Sulge();
+            if (sulgeKoht.Contains(e.Location) || tagasiKoht.Contains(e.Location)) Sulge();
             else if (kaardiKoht.Contains(e.Location)) Poora();
         }
 
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);
-            Cursor = kaardiKoht.Contains(e.Location) || sulgeKoht.Contains(e.Location) ? Cursors.Hand : Cursors.Default;
+            bool all = tagasiKoht.Contains(e.Location);
+            if (all != tagasiAll) { tagasiAll = all; Invalidate(Rectangle.Ceiling(tagasiKoht)); }
+            Cursor = kaardiKoht.Contains(e.Location) || sulgeKoht.Contains(e.Location) || all ? Cursors.Hand : Cursors.Default;
         }
 
         private void Poora()
@@ -192,10 +199,17 @@ namespace IKTpv25_1_Toooted
             double k = Pehme(avatud);
             float nihe = (float)((1 - k) * 380);
 
-            // Pealkiri ja sulgemisnupp
+            // ← Tagasi (hele "pill" tumedal taustal), pealkiri ja sulgemisnupp
+            var tk = tagasiKoht;
+            using (var tee = Ymardus.Tee(tk, tk.Height / 2))
+            using (var b = new SolidBrush(tagasiAll ? Color.FromArgb(225, 228, 232) : Color.White))
+                g.FillPath(b, tee);
+            Ikoonid.Joonista(g, Ikoonid.NoolVasakule, new Rectangle((int)tk.X + 10 - (tagasiAll ? 3 : 0), (int)tk.Y, 20, (int)tk.Height), Color.FromArgb(27, 28, 31), 10f);
+            TextRenderer.DrawText(g, Keel.T("Tagasi"), tagasiFont, new Rectangle((int)tk.X + 34, (int)tk.Y, (int)tk.Width - 34, (int)tk.Height),
+                Color.FromArgb(27, 28, 31), TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix | TextFormatFlags.NoPadding);
             using (var f = new Font("Segoe UI Semibold", 15F))
             using (var b = new SolidBrush(Color.White))
-                g.DrawString(Keel.T("Kliendikaart"), f, b, 26, 24);
+                g.DrawString(Keel.T("Kliendikaart"), f, b, tk.Right + 14, 21);
             using (var b = new SolidBrush(Color.FromArgb(60, 255, 255, 255)))
                 g.FillEllipse(b, sulgeKoht);
             using (var f = new Font("Segoe UI", 10F))
