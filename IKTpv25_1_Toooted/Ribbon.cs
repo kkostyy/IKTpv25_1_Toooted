@@ -1,7 +1,4 @@
-using System;
-using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Windows.Forms;
 
 namespace IKTpv25_1_Toooted
 {
@@ -35,12 +32,11 @@ namespace IKTpv25_1_Toooted
         {
             var g = e.Graphics;
             g.SmoothingMode = SmoothingMode.AntiAlias;
-            g.Clear(Parent != null ? Parent.BackColor : SystemColors.Control);
+            g.Clear(Parent != null ? Parent.BackColor : Teema.Taust);
 
-            Color ribbon = Color.FromArgb(245, 246, 248);
             if (_valitud || _hover)
             {
-                Color fill = _valitud ? ribbon : Color.FromArgb(226, 229, 234);
+                Color fill = _valitud ? Teema.Paneel : Teema.Paneel2;
                 // Ümardatud ülanurgad: alumine osa läheb juhtelemendi ääre taha
                 var r = new Rectangle(0, 0, Width - 1, Height + 10);
                 using (var path = Ymardus.Tee(r, 9))
@@ -50,7 +46,7 @@ namespace IKTpv25_1_Toooted
                 }
             }
 
-            Color tekst = _valitud ? UiStiil.Sinine : Color.FromArgb(70, 75, 82);
+            Color tekst = _valitud ? Teema.Teine : Teema.Tekst2;
             using (var f = new Font("Segoe UI", 9.5F, _valitud ? FontStyle.Bold : FontStyle.Regular))
             {
                 TextRenderer.DrawText(g, Text, f, new Rectangle(0, 0, Width, Height - 2), tekst,
@@ -60,7 +56,7 @@ namespace IKTpv25_1_Toooted
 
             if (_valitud)
             {
-                using (var brush = new SolidBrush(UiStiil.Sinine))
+                using (var brush = new SolidBrush(Teema.Teine))
                 {
                     g.FillRectangle(brush, 14, Height - 3, Width - 28, 3);
                 }

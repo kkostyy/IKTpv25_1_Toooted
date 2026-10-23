@@ -1,252 +1,214 @@
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
-using System.Drawing;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-
 namespace IKTpv25_1_Toooted
 {
-    // Kassa vaheleht: Valin -> Ostan -> Maksta -> Saada arve, Pood = ostukorv
+    // Kassa vaheleht: Valin -> Ostan/Maksta (üks aken: klient, boonus, e-post, makse) -> tšekk e-postile.
+    // Pood = visuaalne kassa.
     public partial class Form1
     {
-        private class KorvRida
-        {
-            public int Id;
-            public string Nimi;
-            public decimal Hind;
-            public int Kogus;
-            public int Saadaval; // laoseis valimise hetkel
-            public decimal Summa { get { return Hind * Kogus; } }
-        }
+        // Boonus: iga tootele kulutatud euro annab 1 sendi (1 %) boonust; boonusega saab järgmisel ostul maksta
+        public const decimal BoonusProtsent = 0.01m;
+        // Sellest väiksema laoseisu korral tuleb hoiatus
+        public const int VaikeLaoseis = 10;
 
-        private readonly List<KorvRida> korv = new List<KorvRida>();
+        // Viimane tehtud ost ja selle tšekk ("Saada arve" jaoks)
+        private Ost? viimaneOst = null;
+        private string? viimanePdf = null;
 
-        // Viimane tehtud ost (arve ja makse jaoks)
-        private List<KorvRida> viimaneOst = null;
-        private decimal viimaneSumma = 0;
-        private bool viimaneMakstud = false;
-        private DateTime viimaneAeg;
-
-        private static string Eur(decimal v)
-        {
-            return v.ToString("0.00", CultureInfo.InvariantCulture) + " €";
-        }
+        // Ostukorvi kaart Kassa vahelehel (luuakse koodis, Designer-faili ei muudeta)
+        private readonly RoundedPanel kaartKorv = new();
+        private KorvVaade korvVaade = null!;
 
         private void SeadistaKassa()
         {
-            btnValin.Click += btnValin_Click;
-            btnOstan.Click += btnOstan_Click;
-            btnMaksta.Click += btnMaksta_Click;
-            btnSaadaArve.Click += btnSaadaArve_Click;
-            btnPood.Click += btnPood_Click;
-            LooVormideMenuu();
+            btnValin.Click += (s, e) => Valin();
+            btnOstan.Click += (s, e) => Vormista();
+            btnMaksta.Click += (s, e) => Vormista();
+            btnSaadaArve.Click += (s, e) => SaadaArve();
+            btnPood.Click += (s, e) => AvaPood();
+
+            LooKorviKaart();
+            LooMenuu();
+
+            Ostukorv.Muutus += UuendaKokku;
+            FormClosed += (s, e) => Ostukorv.Muutus -= UuendaKokku;
             UuendaKokku();
+        }
+
+        // ---------------------------------------------------------------
+        //  Ostukorvi kaart (näha Kassa vahelehel)
+        // ---------------------------------------------------------------
+        private void LooKorviKaart()
+        {
+            korvVaade = new KorvVaade();
+            var sisu = UiStiil.LooKaardiPaneel("Ostukorv", korvVaade);
+
+            kaartKorv.Dock = DockStyle.Top;
+            kaartKorv.Height = 250;
+            kaartKorv.Padding = new Padding(0);
+            kaartKorv.BorderColor = Color.Transparent;   // raami joonistab sisemine kaart
+            kaartKorv.Visible = false;
+            sisu.Dock = DockStyle.Fill;
+            kaartKorv.Controls.Add(sisu);
+
+            pnlSisu.Controls.Add(kaartKorv);
+            kaartKorv.SendToBack();   // dokitakse esimesena = kõige üles
         }
 
         private void UuendaKokku()
         {
-            txtKokku.Text = Eur(korv.Sum(r => r.Summa));
+            txtKokku.Text = Ostukorv.Eur(Ostukorv.Kokku);
         }
 
-        // ---- Valin: lisa tabelis valitud toode ostukorvi ----
-        private void btnValin_Click(object sender, EventArgs e)
+        // ---------------------------------------------------------------
+        //  Valin: lisa tabelis valitud toode ostukorvi
+        // ---------------------------------------------------------------
+        private void Valin()
         {
-            int id;
-            if (!ValitudId(out id)) return;
+            if (ValitudId() is not int id) return;
 
-            DataGridViewRow rida = dataGridTooted.CurrentRow;
-            string nimi = Convert.ToString(rida.Cells["Toodenimetus"].Value);
+            DataGridViewRow rida = dataGridTooted.CurrentRow!;
+            string nimi = Convert.ToString(rida.Cells["Toodenimetus"].Value) ?? "";
             decimal hind = Convert.ToDecimal(rida.Cells["Hind"].Value);
             int laos = Convert.ToInt32(rida.Cells["Kogus"].Value);
+            string? pilt = Convert.ToString(rida.Cells["Pilt"].Value);
 
-            KorvRida olemas = korv.FirstOrDefault(r => r.Id == id);
-            int korvis = olemas != null ? olemas.Kogus : 0;
-            if (korvis + 1 > laos)
-            {
-                MessageBox.Show("Toodet \"" + nimi + "\" pole rohkem laos (laos: " + laos + ").");
-                return;
-            }
-
-            if (olemas != null)
-            {
-                olemas.Kogus++;
-                olemas.Saadaval = laos;
-            }
-            else
-            {
-                korv.Add(new KorvRida { Id = id, Nimi = nimi, Hind = hind, Kogus = 1, Saadaval = laos });
-            }
-            UuendaKokku();
+            string? viga = Ostukorv.Lisa(id, nimi, hind, laos, 1, pilt);
+            if (viga != null) Teade.Toast(viga, TeateTyyp.Hoiatus);
+            else Teade.Toast(Keel.F("{0} lisati korvi", nimi), TeateTyyp.Edu, 1500);
         }
 
-        // ---- Ostan: vähenda laoseisu ja salvesta ost ----
-        private void btnOstan_Click(object sender, EventArgs e)
+        // ---------------------------------------------------------------
+        //  Ostan / Maksta: üks aken (klient, boonus, e-post, makse)
+        //  Tagastab true, kui ost tehti (avalik, et ka Pood saaks seda kasutada)
+        // ---------------------------------------------------------------
+        public bool Vormista()
         {
-            if (korv.Count == 0)
+            if (Ostukorv.Ridad.Count == 0)
             {
-                MessageBox.Show("Ostukorv on tühi. Vali enne tooted nupuga \"Valin\".");
-                return;
+                Teade.Toast("Ostukorv on tühi. Lisa tooteid nupuga \"Valin\" või \"Pood\".", TeateTyyp.Hoiatus);
+                return false;
             }
 
-            if (viimaneOst != null && !viimaneMakstud)
+            using var vorm = new MaksmineVorm();
+            IWin32Window omanik = Form.ActiveForm ?? (IWin32Window)this;
+            if (vorm.ShowDialog(omanik) != DialogResult.OK || vorm.Tulemus == null) return false;
+
+            Ost ost = vorm.Tulemus;
+            viimaneOst = ost;
+            viimanePdf = vorm.PdfFail;
+
+            Ostukorv.Tyhjenda();
+            LaadiTooted();
+
+            decimal tagasi = ost.MakstudSumma - ost.Summa;
+            Teade.Toast(Keel.F("Ost nr {0} makstud: {1}", ost.Id, Ostukorv.Eur(ost.Summa)) +
+                        (tagasi > 0 ? "\n" + Keel.F("Tagasiraha: {0}", Ostukorv.Eur(tagasi)) : "") +
+                        (ost.Klient != null ? "\n" + Keel.F("Boonust lisandus {0}", Ostukorv.Eur(ost.BoonusLisatud)) : ""),
+                        TeateTyyp.Edu, 5000);
+
+            // Ostunimekiri: ostetud tooted saavad linnukese (ostja või töötaja oma kaardiga)
+            if (AktiivneKasutaja.OnOstja || (ost.KlientId != null && ost.KlientId == AktiivneKasutaja.KlientId))
             {
-                MessageBox.Show("Eelmine ost on veel maksmata. Vajuta \"Maksta\".");
-                return;
+                int margitud = Ostunimekiri.MargiOstetuks(ost);
+                if (margitud > 0) Teade.Toast(Keel.F("Ostunimekirjas märgiti ostetuks: {0}", margitud), TeateTyyp.Info, 3000);
+                AktiivneKasutaja.Uuenda();   // boonus muutus
             }
 
+            if (vorm.VaheseLaoga.Count > 0 && !AktiivneKasutaja.OnOstja)
+                Teade.Toast("Väike laoseis:\n" + string.Join("\n", vorm.VaheseLaoga), TeateTyyp.Hoiatus, 6000);
+
+            // Tšekk e-postile taustal (programm ei jää ootama)
+            if (ost.Email != null && viimanePdf != null)
+                SaadaTaustal(ost, viimanePdf, ost.Email);
+
+            return true;
+        }
+
+        // Saadab tšeki e-postiga taustal ja annab tulemusest teada
+        private async void SaadaTaustal(Ost ost, string pdf, string email)
+        {
+            Teade.Toast(Keel.F("Saadan tšeki aadressile {0}...", email), TeateTyyp.Info, 2000);
             try
             {
-                using (var c = new SqlConnection(AndmeBaas.Uhendus))
+                string tulemus = await Task.Run(() => Arve.Saada(email, pdf, ost));
+                Teade.Toast(tulemus, TeateTyyp.Edu, 4000);
+            }
+            catch (Exception ex)
+            {
+                Teade.Show("Tšeki saatmine e-postile ebaõnnestus:\n" + ex.Message +
+                           "\n\nProovi uuesti nupuga \"Saada arve\" või kontrolli Haldus → E-posti seaded.",
+                           "E-post", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        // ---------------------------------------------------------------
+        //  Saada arve: viimase ostu tšekk uuesti (soovi korral teisele aadressile)
+        // ---------------------------------------------------------------
+        public void SaadaArve()
+        {
+            if (viimaneOst == null)
+            {
+                Teade.Show("Selles seansis pole veel ostu tehtud.\nVanemaid tšekke leiad menüüst Haldus → Ostude ajalugu.",
+                    "Saada arve");
+                return;
+            }
+
+            if (viimanePdf == null || !File.Exists(viimanePdf))
+            {
+                try { viimanePdf = Arve.LooPdf(viimaneOst, viimaneOst.Makstud, viimaneOst.MakstudSumma); }
+                catch (Exception ex) { Teade.Show("PDF-i loomine ebaõnnestus:\n" + ex.Message, "Viga", MessageBoxButtons.OK, MessageBoxIcon.Error); return; }
+            }
+
+            string? email = KysiTekst("Saada arve",
+                Keel.F("Ost nr {0} ({1}).", viimaneOst.Id, Ostukorv.Eur(viimaneOst.Summa)) + "\n" + Keel.T("Kliendi e-post (tühi = ava PDF):"),
+                viimaneOst.Email ?? "");
+            if (email == null) return;
+
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                Arve.Ava(viimanePdf);
+                return;
+            }
+            if (!EmailSeaded.OnKorrektneAadress(email))
+            {
+                Teade.Show("E-posti aadress pole korrektne.", "E-post", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            SaadaTaustal(viimaneOst, viimanePdf, email.Trim());
+        }
+
+        // Kui ost tagastati ostude ajaloos
+        private void OstTagastati(int ostId)
+        {
+            if (viimaneOst != null && viimaneOst.Id == ostId)
+            {
+                viimaneOst = null;
+                viimanePdf = null;
+            }
+        }
+
+        // ---------------------------------------------------------------
+        //  Pood: visuaalne kassa
+        // ---------------------------------------------------------------
+        // Disaini järgi: e-poe (Rimi) pood või klassikaline pood.
+        // Kui poes vajutati Ctrl+Shift+D, avatakse kohe teise disaini pood.
+        private void AvaPood()
+        {
+            bool uuesti;
+            do
+            {
+                using Form vorm = Teema.OnRimi ? new PoodVorm(this) : new PoodKlassikVorm(this);
+                if (Visible) vorm.ShowDialog(this);
+                else
                 {
-                    c.Open();
-                    using (var tr = c.BeginTransaction())
-                    {
-                        foreach (KorvRida r in korv)
-                        {
-                            using (var cmd = new SqlCommand(
-                                "UPDATE Tooted SET Kogus = Kogus - @k WHERE Id = @id AND Kogus >= @k", c, tr))
-                            {
-                                cmd.Parameters.Add("@k", SqlDbType.Int).Value = r.Kogus;
-                                cmd.Parameters.Add("@id", SqlDbType.Int).Value = r.Id;
-                                if (cmd.ExecuteNonQuery() == 0)
-                                {
-                                    tr.Rollback();
-                                    MessageBox.Show("Toodet \"" + r.Nimi + "\" pole piisavalt laos. Ost katkestati.");
-                                    return;
-                                }
-                            }
-                        }
-                        tr.Commit();
-                    }
+                    // Ostja: peaaken on peidetud, pood on omaette aken
+                    vorm.StartPosition = FormStartPosition.CenterScreen;
+                    vorm.ShowInTaskbar = true;
+                    vorm.ShowDialog();
                 }
-
-                viimaneOst = korv.Select(r => new KorvRida
-                {
-                    Id = r.Id, Nimi = r.Nimi, Hind = r.Hind, Kogus = r.Kogus
-                }).ToList();
-                viimaneSumma = viimaneOst.Sum(r => r.Summa);
-                viimaneMakstud = false;
-                viimaneAeg = DateTime.Now;
-
-                korv.Clear();
-                UuendaKokku();
-                LaadiTooted();
-
-                MessageBox.Show("Ost tehtud. Summa: " + Eur(viimaneSumma) + "\nVajuta \"Maksta\".");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Viga ostmisel:\n" + ex.Message);
-            }
-        }
-
-        // ---- Maksta ----
-        private void btnMaksta_Click(object sender, EventArgs e)
-        {
-            if (viimaneOst == null)
-            {
-                MessageBox.Show("Pole midagi maksta. Tee enne ost nupuga \"Ostan\".");
-                return;
-            }
-            if (viimaneMakstud)
-            {
-                MessageBox.Show("See ost on juba makstud.");
-                return;
-            }
-
-            string sisend = KysiTekst("Maksmine", "Summa " + Eur(viimaneSumma) + ". Sisesta makstud summa:");
-            if (sisend == null) return;
-
-            decimal makstud;
-            if (!decimal.TryParse(sisend.Trim().Replace(',', '.'), NumberStyles.AllowDecimalPoint,
-                    CultureInfo.InvariantCulture, out makstud) || makstud < 0)
-            {
-                MessageBox.Show("Sisesta korrektne summa.");
-                return;
-            }
-            if (makstud < viimaneSumma)
-            {
-                MessageBox.Show("Makstud summa on liiga väike (puudu " + Eur(viimaneSumma - makstud) + ").");
-                return;
-            }
-
-            viimaneMakstud = true;
-            MessageBox.Show("Makstud!\nTagasiraha: " + Eur(makstud - viimaneSumma));
-        }
-
-        // ---- Saada arve: avab e-posti programmi valmis kirjaga ----
-        private void btnSaadaArve_Click(object sender, EventArgs e)
-        {
-            if (viimaneOst == null)
-            {
-                MessageBox.Show("Arve jaoks tee enne ost nupuga \"Ostan\".");
-                return;
-            }
-
-            string email = KysiTekst("Saada arve", "Kliendi e-posti aadress:");
-            if (string.IsNullOrWhiteSpace(email)) return;
-            email = email.Trim();
-            if (email.IndexOf('@') < 1 || email.IndexOf('.', email.IndexOf('@')) < 0)
-            {
-                MessageBox.Show("E-posti aadress pole korrektne.");
-                return;
-            }
-
-            var sb = new StringBuilder();
-            sb.AppendLine("Arve " + viimaneAeg.ToString("yyyy-MM-dd HH:mm"));
-            sb.AppendLine("----------------------------------------");
-            foreach (KorvRida r in viimaneOst)
-                sb.AppendLine(r.Nimi + "  " + r.Kogus + " x " + Eur(r.Hind) + " = " + Eur(r.Summa));
-            sb.AppendLine("----------------------------------------");
-            sb.AppendLine("Kokku: " + Eur(viimaneSumma));
-            sb.AppendLine(viimaneMakstud ? "Staatus: MAKSTUD" : "Staatus: MAKSMATA");
-
-            string url = "mailto:" + email + "?subject=" + Uri.EscapeDataString("Arve")
-                         + "&body=" + Uri.EscapeDataString(sb.ToString());
-            try
-            {
-                System.Diagnostics.Process.Start(url);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("E-posti programmi ei õnnestunud avada:\n" + ex.Message);
-            }
-        }
-
-        // ---- Pood: avab visuaalse kassa vormi (praegu ainult kujundus) ----
-        private void btnPood_Click(object sender, EventArgs e)
-        {
-            using (var vorm = new PoodVorm())
-            {
-                vorm.ShowDialog(this);
-            }
-        }
-
-        // Menüü "Vormid": avab ainult kujundusega vormid (need ei tööta veel)
-        private void LooVormideMenuu()
-        {
-            var menuu = new MenuStrip();
-            var vormid = new ToolStripMenuItem("Vormid");
-            vormid.DropDownItems.Add("Sisselogimine", null, (s, e) => AvaVorm(new LoginVorm()));
-            vormid.DropDownItems.Add("Registreerimine", null, (s, e) => AvaVorm(new RegistreerimineVorm()));
-            vormid.DropDownItems.Add("Kliendid", null, (s, e) => AvaVorm(new KliendidVorm()));
-            vormid.DropDownItems.Add("Statistika", null, (s, e) => AvaVorm(new StatistikaVorm()));
-            menuu.Items.Add(vormid);
-            Controls.Add(menuu);
-            MainMenuStrip = menuu;
-            menuu.SendToBack();
-        }
-
-        private void AvaVorm(Form vorm)
-        {
-            using (vorm)
-            {
-                vorm.ShowDialog(this);
-            }
+                uuesti = Equals(vorm.Tag, "disain");
+            } while (uuesti);
+            LaadiTooted();   // laoseis võis muutuda
         }
     }
 }

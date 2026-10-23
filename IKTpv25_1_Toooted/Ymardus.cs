@@ -1,17 +1,17 @@
-using System;
-using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Windows.Forms;
 
 namespace IKTpv25_1_Toooted
 {
     // Abifunktsioonid ümardatud nurkade jaoks
     public static class Ymardus
     {
-        public static GraphicsPath Tee(Rectangle r, int radius)
+        public static GraphicsPath Tee(Rectangle r, int radius) => Tee((RectangleF)r, radius);
+
+        public static GraphicsPath Tee(RectangleF r, float radius)
         {
             var path = new GraphicsPath();
-            int d = Math.Min(radius * 2, Math.Min(r.Width, r.Height));
+            if (Teema.Umarad && radius > 0) radius = Math.Max(radius * 2, radius + 10);   // "pehme" stiil
+            float d = Math.Min(radius * 2, Math.Min(r.Width, r.Height));
             if (d <= 0)
             {
                 path.AddRectangle(r);
@@ -39,7 +39,7 @@ namespace IKTpv25_1_Toooted
     {
         public int Radius { get; set; } = 12;
         public Color FillColor { get; set; } = Color.White;
-        public Color BorderColor { get; set; } = UiStiil.Joon;
+        public Color BorderColor { get; set; } = Color.FromArgb(210, 214, 220);
 
         public RoundedPanel()
         {
@@ -72,10 +72,14 @@ namespace IKTpv25_1_Toooted
         }
     }
 
-    // Ümardatud nurkadega nupp
+    // Ümardatud nurkadega nupp. Värvid tulevad teemast:
+    // Peamine = aktsentvärvi nupp, Ohtlik = punane (nt Kustuta), muidu hele nupp.
     public class RoundedButton : Button
     {
         public int Radius { get; set; } = 8;
+        public bool? Peamine { get; set; }
+        public bool Ohtlik { get; set; }
+
         private bool _hover;
         private bool _down;
 
@@ -86,6 +90,7 @@ namespace IKTpv25_1_Toooted
                      ControlStyles.OptimizedDoubleBuffer |
                      ControlStyles.ResizeRedraw, true);
             FlatStyle = FlatStyle.Flat;
+            FlatAppearance.BorderSize = 0;
         }
 
         protected override void OnMouseEnter(EventArgs e) { _hover = true; Invalidate(); base.OnMouseEnter(e); }
@@ -98,28 +103,46 @@ namespace IKTpv25_1_Toooted
         {
             var g = e.Graphics;
             g.SmoothingMode = SmoothingMode.AntiAlias;
-            Color taust = Parent != null ? Parent.BackColor : SystemColors.Control;
+            Color taust = Parent != null ? Parent.BackColor : Teema.Taust;
             g.Clear(taust);
 
-            Color fill = BackColor;
-            Color border = FlatAppearance.BorderColor;
-            Color tekst = ForeColor;
+            // Designeris loodud nuppude puhul otsustame algse taustavärvi järgi
+            bool peamine = Peamine ??= Teema.OnAktsent(BackColor);
 
-            bool tume = BackColor.GetBrightness() < 0.6f;
+            Color fill, border, tekst;
+            if (Ohtlik)
+            {
+                fill = peamine ? Teema.Viga : Teema.Pind;
+                border = Teema.Viga;
+                tekst = peamine ? Color.White : Teema.Viga;
+            }
+            else if (peamine)
+            {
+                fill = Teema.Aktsent;
+                border = Teema.Aktsent;
+                tekst = Color.White;
+            }
+            else
+            {
+                fill = Teema.Pind;
+                border = Teema.Raam;
+                tekst = Teema.Tekst;
+            }
+
             if (!Enabled)
             {
-                fill = Color.FromArgb(238, 239, 241);
-                border = Color.FromArgb(220, 223, 228);
-                tekst = Color.FromArgb(160, 164, 170);
+                fill = Teema.Paneel2;
+                border = Teema.Joon;
+                tekst = Teema.TekstNork;
             }
             else if (_down)
             {
-                fill = tume ? Ymardus.Segu(BackColor, Color.Black, 0.2f) : Ymardus.Segu(BackColor, UiStiil.Sinine, 0.16f);
+                fill = peamine || Ohtlik ? Ymardus.Segu(fill, Color.Black, 0.2f) : Ymardus.Segu(fill, Teema.Aktsent, 0.22f);
             }
             else if (_hover)
             {
-                fill = tume ? Ymardus.Segu(BackColor, Color.Black, 0.1f) : Ymardus.Segu(BackColor, UiStiil.Sinine, 0.08f);
-                if (!tume) border = UiStiil.Sinine;
+                fill = peamine ? Ymardus.Segu(fill, Color.Black, 0.1f) : Ymardus.Segu(fill, Ohtlik ? Teema.Viga : Teema.Aktsent, 0.1f);
+                if (!peamine) border = Ohtlik ? Teema.Viga : Teema.Aktsent;
             }
 
             var r = new Rectangle(0, 0, Width - 1, Height - 1);
@@ -131,9 +154,20 @@ namespace IKTpv25_1_Toooted
                 g.DrawPath(pen, path);
             }
 
-            TextRenderer.DrawText(g, Text, Font, ClientRectangle, tekst,
-                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter |
+            // Tekst keskel või vasakul (TextAlign = MiddleLeft, nt "Maksma")
+            bool vasakul = TextAlign is ContentAlignment.MiddleLeft or ContentAlignment.TopLeft or ContentAlignment.BottomLeft;
+            var tekstiAla = vasakul ? new Rectangle(16, 0, Width - 32, Height) : ClientRectangle;
+            TextRenderer.DrawText(g, Text, Font, tekstiAla, tekst,
+                (vasakul ? TextFormatFlags.Left : TextFormatFlags.HorizontalCenter) | TextFormatFlags.VerticalCenter |
                 TextFormatFlags.SingleLine | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
+
+            if (Focused && ShowFocusCues)
+            {
+                var f = new Rectangle(3, 3, Width - 7, Height - 7);
+                using var fp = new Pen(peamine ? Color.FromArgb(160, Color.White) : Teema.Aktsent) { DashStyle = DashStyle.Dot };
+                using var fpath = Ymardus.Tee(f, Math.Max(2, Radius - 3));
+                g.DrawPath(fp, fpath);
+            }
         }
     }
 }
