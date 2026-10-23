@@ -161,7 +161,7 @@ public static class Arve
             {
                 double x = (vasak + parem) / 2 - w / 2, y = Y;
                 var silt = new XGraphicsPath();
-                silt.AddRoundedRectangle(new XRect(x, y, w, h), new XSize(h * 0.36, h * 0.36));
+                silt.AddRoundedRectangle(x, y, w, h, h * 0.36, h * 0.36);
                 g.DrawPath(XBrushes.Black, silt);
 
                 double kx = x + h * 0.20, ky = y + h * 0.36, kw = h * 0.46, kh = h * 0.44;

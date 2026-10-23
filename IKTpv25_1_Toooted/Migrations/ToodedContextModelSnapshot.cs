@@ -23,6 +23,9 @@ namespace IKTpv25_1_Toooted.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Aadress")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Email")
                         .HasColumnType("TEXT");
 
@@ -43,6 +46,9 @@ namespace IKTpv25_1_Toooted.Migrations
                     b.Property<string>("Roll")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("TsekkEmailile")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -144,6 +150,9 @@ namespace IKTpv25_1_Toooted.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Aadress")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("Aeg")
                         .HasColumnType("TEXT");
 
@@ -160,6 +169,9 @@ namespace IKTpv25_1_Toooted.Migrations
 
                     b.Property<int?>("KlientId")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Makseviis")
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("Makstud")
                         .HasColumnType("INTEGER");
@@ -178,6 +190,13 @@ namespace IKTpv25_1_Toooted.Migrations
 
                     b.Property<bool>("Tagastatud")
                         .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("TarneHind")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Tarneviis")
+                        .HasColumnType("TEXT");
 
                     b.Property<decimal>("Vahesumma")
                         .HasPrecision(10, 2)
