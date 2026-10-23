@@ -16,6 +16,7 @@ internal static class Program
         Teema.Lae();   // hele/tume teema ja poe värv (salvestatud valik)
         Keel.Lae();    // eesti / vene / inglise
         Application.AddMessageFilter(new DisainiKlahv());   // Ctrl+Shift+D igas aknas
+        Application.AddMessageFilter(new TagasiHiir());     // hiire külgnupp = tagasi
 
         try
         {

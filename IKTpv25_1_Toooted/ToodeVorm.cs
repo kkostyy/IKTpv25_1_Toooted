@@ -50,6 +50,7 @@ public class ToodeVorm : Form
     protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
+        UiStiil.LisaTagasiNupp(this);   // ← Tagasi poodi (ka Esc, Alt+←)
         Teema.Rakenda(this);
     }
 

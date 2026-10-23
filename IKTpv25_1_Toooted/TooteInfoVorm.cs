@@ -14,6 +14,7 @@ public class TooteInfoVorm : KujundusVorm
 
     public TooteInfoVorm(int tooteId) : base("Tooteinfo", 720, 700)
     {
+        KysiSulgemisel = true;
         id = tooteId;
         FormBorderStyle = FormBorderStyle.Sizable;
         MinimumSize = new Size(720, 600);
