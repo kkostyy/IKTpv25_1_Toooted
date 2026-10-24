@@ -95,7 +95,7 @@ fun SisseEkraan(olek: AppOlek) {
                 T(Keel.t("Pole kontot? Registreeru"), 14.sp, V.Ploom, FontWeight.Bold)
             }
             Vahe(6.dp)
-            T(Keel.t("Proovi: mari / mari123 (klient) või admin / admin123 (omanik)"), 11.sp, V.Nork, Modifier.fillMaxWidth(), keskel = true)
+            T(Keel.t("Proovi: mari / mari123 (klient) või admin / admin123 (omanik)"), 11.sp, V.Nork, modifier = Modifier.fillMaxWidth(), keskel = true)
         }
     }
 }
@@ -490,7 +490,7 @@ fun ToodeEkraan(olek: AppOlek, id: Int) {
                     T(Keel.t("Toitumisalane teave (100 g)"), 14.sp, V.Tekst, FontWeight.ExtraBold)
                     Vahe(6.dp)
                     for (r in tv) Row(Modifier.fillMaxWidth().padding(vertical = 3.dp, horizontal = if (r.alam) 12.dp else 0.dp)) {
-                        T(Keel.t(r.nimi), 13.sp, if (r.alam) V.Nork else V.Tekst2, Modifier.weight(1f))
+                        T(Keel.t(r.nimi), 13.sp, if (r.alam) V.Nork else V.Tekst2, modifier = Modifier.weight(1f))
                         T(r.vaartus, 13.sp, V.Tekst, FontWeight.Bold)
                     }
                 }
