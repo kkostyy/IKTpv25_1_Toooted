@@ -33,6 +33,14 @@ namespace IKTpv25_1_Toooted
             dataGridTooted.CellFormatting += dataGridTooted_CellFormatting;
             dataGridTooted.CellDoubleClick += (s, e) => { if (e.RowIndex >= 0 && tabKassa.Valitud) Valin(); };
             Load += Form1_Load;
+            // Rimi kataloog laaditakse taustal: tootetabel täieneb, kui uued tooted lisanduvad
+            var viimati = DateTime.MinValue;
+            KataloogiEdenemine.Kuula(this, () =>
+            {
+                if (RimiKataloog.Kaib && (DateTime.Now - viimati).TotalSeconds < 4) return;
+                viimati = DateTime.Now;
+                try { LaadiKategooriad(); LaadiTooted(); } catch { }
+            });
 
             btnPuhasta.Click += (s, e) => { Tuhjenda(); dataGridTooted.ClearSelection(); };
 

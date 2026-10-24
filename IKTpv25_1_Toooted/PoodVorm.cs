@@ -342,6 +342,17 @@ namespace IKTpv25_1_Toooted
             Teema.Muutus += DisainMuutus;
             Load += (s, e) => { LaadiTooted(); NaitaAvaleht(); UuendaKokku(); PereKorv.Alusta(); };
             FormClosed += (s, e) => PereKorv.Peata();
+            var viimati = DateTime.MinValue;
+            KataloogiEdenemine.Kuula(this, () =>
+            {
+                if (!RimiKataloog.Kaib || (DateTime.Now - viimati).TotalSeconds > 1.5)
+                {
+                    viimati = DateTime.Now;
+                    LaadiTooted();
+                    MargiAegunuks();
+                    Varskenda();
+                }
+            });
 
             // Kord minutis: kas õhtune soodustus algas/lõppes → korvi hinnad ja kaartide "tempel"
             ohtuKaib = OhtuSoodustus.Kaib(Hinnad.Kell());
