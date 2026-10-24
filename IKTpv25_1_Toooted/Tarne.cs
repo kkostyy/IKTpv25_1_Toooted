@@ -16,7 +16,7 @@ public static class Tarne
     // Kui palju on veel puudu tasuta tarneni (0 = juba tasuta)
     public static decimal Puudu(decimal korviSumma) => Math.Max(0, TasutaAlates - korviSumma);
 
-    // Boonust saab ainult toodete eest (tarne ei anna boonust)
-    public static decimal Boonus(decimal toodeteEestMakstud) =>
-        Math.Round(Math.Max(0, toodeteEestMakstud) * Form1.BoonusProtsent, 2, MidpointRounding.AwayFromZero);
+    // Boonust saab ainult toodete eest (tarne ega pant boonust ei anna); protsent sõltub kaardi tasemest
+    public static decimal Boonus(decimal toodeteEestMakstud, decimal protsent) =>
+        Math.Round(Math.Max(0, toodeteEestMakstud) * protsent, 2, MidpointRounding.AwayFromZero);
 }

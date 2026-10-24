@@ -19,7 +19,7 @@ namespace IKTpv25_1_Toooted
     // ===================================================================
     //  Ostude ajalugu: tšeki korduv printimine, tagastamine (ainult Omanik), CSV
     // ===================================================================
-    public class OstudVorm : KujundusVorm
+    public partial class OstudVorm : KujundusVorm
     {
         private readonly bool lubaTagastus;
         private readonly DataGridView ostud, read;
@@ -46,7 +46,7 @@ namespace IKTpv25_1_Toooted
             ostud.SelectionChanged += (s, e) => NaitaRead();
             ostud.CellFormatting += Ostud_CellFormatting;
 
-            Silt("Ostu read", 20, 326);
+            var readSilt = Silt("Ostu read", 20, 326);
             read = Tabel(new Rectangle(20, 346, 780, 180));
             read.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 
@@ -67,6 +67,7 @@ namespace IKTpv25_1_Toooted
             nupud.Controls.Add(sulge);
             CancelButton = sulge;
             Controls.Add(nupud);
+            if (Teema.OnMoodne) RakendaMoodne(nupud, readSilt);   // lõuend 3.1: tabel + tšekk paberil
 
             Load += (s, e) => Laadi();
         }

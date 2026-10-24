@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted
@@ -117,6 +117,63 @@ namespace IKTpv25_1_Toooted
         private readonly TegevusteLoend tegevusteLoend = new();
         private readonly System.Windows.Forms.Timer elav = new() { Interval = 5000 };
 
+        // Moodne rida: kogu rida joonistatakse ise (ümar hall taust, ploom ring, nimi, kogus, hind, avatar)
+        private void MoodneRida(object? sender, DataGridViewRowPrePaintEventArgs e)
+        {
+            if (e.RowIndex < 0 || vork.Rows[e.RowIndex].DataBoundItem is not NimekirjaVaade r) return;
+            var g = e.Graphics;
+            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            var rb = e.RowBounds;
+            using (var b = new SolidBrush(vork.BackgroundColor)) g.FillRectangle(b, rb);
+            var kast = new RectangleF(rb.X + 2, rb.Y + 3, vork.ClientSize.Width - 6, rb.Height - 6);
+            bool valitud = vork.Rows[e.RowIndex].Selected;
+            using (var tee = Ymardus.Tee(kast, 22))
+            {
+                using (var b = new SolidBrush(r.Ostetud ? Color.FromArgb(246, 248, 249) : Teema.Paneel2)) g.FillPath(b, tee);
+                if (valitud) using (var p = new Pen(Teema.Teine, 2)) g.DrawPath(p, tee);
+            }
+            var ring = new RectangleF(kast.X + 16, kast.Y + (kast.Height - 28) / 2, 28, 28);
+            if (r.Ostetud)
+            {
+                using (var b = new SolidBrush(Teema.Teine)) g.FillEllipse(b, ring);
+                using var p = new Pen(Color.White, 2.2f) { StartCap = System.Drawing.Drawing2D.LineCap.Round, EndCap = System.Drawing.Drawing2D.LineCap.Round };
+                g.DrawLines(p, new[] { new PointF(ring.X + 8, ring.Y + 14), new PointF(ring.X + 12, ring.Y + 18), new PointF(ring.X + 20, ring.Y + 10) });
+            }
+            else
+            {
+                using (var b = new SolidBrush(Color.White)) g.FillEllipse(b, ring);
+                using var p = new Pen(Color.FromArgb(205, 211, 215), 2);
+                g.DrawEllipse(p, ring);
+            }
+            int parem = (int)kast.Right - 14;
+            using var fn = new Font("Segoe UI Semibold", 11F, r.Ostetud ? FontStyle.Strikeout : FontStyle.Regular);
+            using var f = new Font("Segoe UI", 8.5F);
+            using var fb = new Font("Segoe UI", 8.5F, FontStyle.Bold);
+            const TextFormatFlags V = TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix | TextFormatFlags.EndEllipsis;
+            var rida = new Rectangle((int)kast.X, (int)kast.Y, (int)kast.Width, (int)kast.Height);
+            if (r.Ostis.Length > 0)
+            {
+                int w = TextRenderer.MeasureText(r.Ostis, fb).Width + 4;
+                TextRenderer.DrawText(g, r.Ostis, fb, new Rectangle(parem - w, rida.Y, w, rida.Height), Color.FromArgb(17, 104, 58), V);
+                parem -= w + 10;
+            }
+            if (r.Lisas.Length > 0)
+            {
+                var av = new RectangleF(parem - 30, kast.Y + (kast.Height - 30) / 2, 30, 30);
+                using (var b = new SolidBrush(Pere.AvatariVarv(r.KasutajaId))) g.FillEllipse(b, av);
+                string ini = string.Concat(r.Lisas.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(x => char.ToUpper(x[0])));
+                using var fa = new Font("Segoe UI", 7.5F, FontStyle.Bold);
+                TextRenderer.DrawText(g, ini, fa, Rectangle.Round(av), Color.White, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                parem -= 42;
+            }
+            string info = $"{r.Kogus} {Keel.T("tk")}" + (r.Hind.Length > 0 ? "  ·  " + r.Hind : "");
+            int iw = TextRenderer.MeasureText(info, f).Width + 4;
+            TextRenderer.DrawText(g, info, f, new Rectangle(parem - iw, rida.Y, iw, rida.Height), Teema.TekstNork, V);
+            parem -= iw + 12;
+            TextRenderer.DrawText(g, r.Toode, fn, new Rectangle((int)ring.Right + 14, rida.Y, Math.Max(40, parem - (int)ring.Right - 14), rida.Height), r.Ostetud ? Teema.TekstNork : Teema.Tekst, V);
+            e.Handled = true;
+        }
+
         public OstunimekiriVorm() : base("Ostunimekiri", 1040, 660)
         {
             FormBorderStyle = FormBorderStyle.Sizable;
@@ -216,7 +273,7 @@ namespace IKTpv25_1_Toooted
             };
             vork.CellClick += (s, e) =>
             {
-                if (e.RowIndex >= 0 && e.ColumnIndex >= 0 && vork.Columns[e.ColumnIndex].Name == "Ostetud")
+                if (!Teema.OnMoodne && e.RowIndex >= 0 && e.ColumnIndex >= 0 && vork.Columns[e.ColumnIndex].Name == "Ostetud")
                     Vaheta(e.RowIndex);
             };
             vork.CellDoubleClick += (s, e) => { if (e.RowIndex >= 0 && vork.Columns[e.ColumnIndex].Name != "Ostetud") Vaheta(e.RowIndex); };
@@ -262,6 +319,20 @@ namespace IKTpv25_1_Toooted
                     e.CellStyle.Font = vork.Font;
                 }
             };
+            if (Teema.OnMoodne)
+            {
+                // lõuend N5: iga rida on hall ümar "nupp" – ring vasakul (klõps = ostetud), lisaja avatar, "ostis …"
+                vork.ColumnHeadersVisible = false;
+                vork.CellBorderStyle = DataGridViewCellBorderStyle.None;
+                vork.RowTemplate.Height = 64;
+                vork.RowPrePaint += MoodneRida;
+                vork.RowsAdded += (s, e) => { for (int i = e.RowIndex; i < e.RowIndex + e.RowCount; i++) vork.Rows[i].Height = 64; };
+                vork.MouseClick += (s, e) =>
+                {
+                    var h = vork.HitTest(e.X, e.Y);
+                    if (h.RowIndex >= 0 && e.X < 64) Vaheta(h.RowIndex);
+                };
+            }
             var tabeliKaart = UiStiil.LooKaardiPaneel("Nimekiri  (klõps ruudul või tühik = ostetud / ostmata)", vork);
             var keskel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(16, 0, 16, 8), BackColor = Teema.Taust };
             tabeliKaart.Dock = DockStyle.Fill;
@@ -284,6 +355,22 @@ namespace IKTpv25_1_Toooted
             Controls.Add(lisa);
             Controls.Add(yla);
             keskel.BringToFront();
+
+            // Moodne (lõuend 2.4): nimekiri valgel ümaral kaardil, pere paneel paremal
+            if (Teema.OnMoodne)
+            {
+                filter.Height = 50;   // "pill" valikud on kõrgemad
+                MoodneStiil.KaardiSisse(this, yla, lisa, filter, keskel, nupud);
+                lblPealkiri.Font = new Font("Segoe UI", 19F, FontStyle.Bold);
+                tabeliKaart.BorderColor = tabeliKaart.FillColor;
+                if (nupud.Controls.Count > 0 && nupud.Controls[0] is RoundedButton peamine)
+                {
+                    peamine.AutoSize = false;
+                    peamine.Size = new Size(230, 46);
+                    peamine.TextAlign = ContentAlignment.MiddleLeft;
+                    MoodneUi.NoolStiil(peamine);
+                }
+            }
 
             Load += (s, e) => Laadi();
             Shown += (s, e) => txtToode.Focus();
@@ -375,9 +462,8 @@ namespace IKTpv25_1_Toooted
         // Pere loomine / liitumine / lahkumine
         private void AvaPereDialoog()
         {
-            using var d = new PereDialoog(pereKood != null);
-            d.ShowDialog(this);
-            if (d.Muudetud) Laadi();
+            var d = new PereDialoog(pereKood != null);
+            Aken.Ava(this, d, () => { if (d.Muudetud) Laadi(); });
         }
 
         private void LisaRida()
@@ -478,7 +564,7 @@ namespace IKTpv25_1_Toooted
                 {
                     if (!tooted.TryGetValue(r.ToodeId!.Value, out var t)) continue;
                     string? viga = t.Kogus <= 0 ? Keel.F("„{0}“ on otsas.", t.Toodenimetus)
-                        : Ostukorv.Lisa(t.Id, t.Toodenimetus, t.Hind, t.Kogus, r.Kogus, t.Pilt);
+                        : Ostukorv.LisaToode(t, r.Kogus);
                     if (viga == null) lisatud++; else vead.Add(viga);
                 }
                 if (lisatud > 0) Teade.Toast(Keel.F("Korvi lisati {0} toodet", lisatud), TeateTyyp.Edu);

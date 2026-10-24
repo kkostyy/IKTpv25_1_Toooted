@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted
 {
@@ -6,7 +6,7 @@ namespace IKTpv25_1_Toooted
     //  Seaded: kõik kasutaja seaded ühes aknas
     //  Profiil (nimi, e-post, kliendikaart) · Turvalisus · Välimus (teema, värv, disain, keel)
     // ===================================================================
-    public class SeadedVorm : KujundusVorm
+    public partial class SeadedVorm : KujundusVorm
     {
         private readonly TextBox txtTaisNimi, txtEmail, txtAadress;
         private readonly CheckBox chkTsekk, chkUmarad;
@@ -21,13 +21,11 @@ namespace IKTpv25_1_Toooted
         // Avab seaded ja rakendab pärast sulgemist disaini vahetuse
         public static void Ava(IWin32Window? omanik)
         {
-            Disain? disain;
-            using (var vorm = new SeadedVorm())
+            var vorm = new SeadedVorm();
+            Aken.Ava(omanik, vorm, () =>
             {
-                if (omanik != null) vorm.ShowDialog(omanik); else vorm.ShowDialog();
-                disain = vorm.UusDisain;
-            }
-            if (disain is Disain d && d != Teema.Stiil) Teema.VahetaDisain();
+                if (vorm.UusDisain is Disain d && d != Teema.Stiil) Teema.SeaDisain(d);
+            });
         }
 
         public SeadedVorm() : base("Seaded", 580, 752)
@@ -79,11 +77,11 @@ namespace IKTpv25_1_Toooted
             // ---------------- Turvalisus ----------------
             Plokk("TURVALISUS", 368);
             var parool = Nupp("Muuda parooli...", x, 394);
-            parool.Click += (s, e) => { using var v = new ParooliMuutmineVorm(); v.ShowDialog(this); };
+            parool.Click += (s, e) => Aken.Ava(this, new ParooliMuutmineVorm());
             if (AktiivneKasutaja.OnOmanik)
             {
                 var email = Nupp("E-posti seaded (saatja)...", x + 170, 394);
-                email.Click += (s, e) => { using var v = new EmailSeadedVorm(); v.ShowDialog(this); };
+                email.Click += (s, e) => Aken.Ava(this, new EmailSeadedVorm());
             }
 
             // ---------------- Välimus ----------------
@@ -92,7 +90,7 @@ namespace IKTpv25_1_Toooted
             cmbTeema = Valik(x, 496, 250);
             Silt("Poe värv", 290, 476);
             cmbVarv = Valik(290, 496, 250);
-            Silt("Disain (Ctrl+Shift+D)", x, 536);
+            Silt(Teema.OnMoodne ? "Disain (Ctrl+Shift+M)" : "Disain (Ctrl+Shift+D)", x, 536);
             cmbDisain = Valik(x, 556, 250);
             Silt("Keel", 290, 536);
             cmbKeel = Valik(290, 556, 250);
@@ -100,6 +98,7 @@ namespace IKTpv25_1_Toooted
             chkUmarad.CheckedChanged += (s, e) => { if (!taidan) Teema.SeaUmarad(chkUmarad.Checked); };
             Controls.Add(chkUmarad);
             TaidaValikud();
+            foreach (var c in new Control[] { cmbTeema, cmbVarv, cmbDisain, cmbKeel, chkUmarad }) c.Tag = "ei-jalgi";
 
             cmbTeema.SelectedIndexChanged += (s, e) => { if (!taidan) Teema.Sea(cmbTeema.SelectedIndex == 1, Teema.AktsendiNimi); };
             cmbVarv.SelectedIndexChanged += (s, e) =>
@@ -109,7 +108,7 @@ namespace IKTpv25_1_Toooted
             };
             cmbDisain.SelectedIndexChanged += (s, e) =>
             {
-                if (!taidan) UusDisain = cmbDisain.SelectedIndex == 1 ? Disain.Klassikaline : Disain.Rimi;
+                if (!taidan) UusDisain = cmbDisain.SelectedIndex switch { 1 => Disain.Klassikaline, 2 => Disain.Moodne, _ => Disain.Rimi };
             };
             cmbKeel.SelectedIndexChanged += (s, e) =>
             {
@@ -127,6 +126,8 @@ namespace IKTpv25_1_Toooted
             var sulge = Nupp("Sulge", x + 120, 696);
             sulge.DialogResult = DialogResult.Cancel;
             CancelButton = sulge;
+
+            if (Teema.OnMoodne) RakendaMoodne();   // lõuend 3.3: jaotised vasakul, segmendid, värvitäpid
 
             // Keele vahetusel tõlgitakse ka valikute tekstid
             Teema.Muutus += ValikudHiljem;
@@ -150,7 +151,7 @@ namespace IKTpv25_1_Toooted
         // Mitte valiku enda sündmuse sees (combobox ei taha oma ridu muuta sel hetkel)
         private void ValikudHiljem()
         {
-            if (IsHandleCreated && !IsDisposed) BeginInvoke(new Action(TaidaValikud));
+            if (IsHandleCreated && !IsDisposed) BeginInvoke(new Action(() => { TaidaValikud(); NaitaKaart(); }));   // ka kaardi rida uues keeles
         }
 
         private void TaidaValikud()
@@ -162,7 +163,8 @@ namespace IKTpv25_1_Toooted
                 Taida(cmbTeema, new[] { Keel.T("Hele teema"), Keel.T("Tume teema") }, Teema.Tume ? 1 : 0);
                 Taida(cmbVarv, Teema.Aktsendid.Keys.Select(Keel.T).ToArray(), Teema.Aktsendid.Keys.ToList().IndexOf(Teema.AktsendiNimi));
                 var disain = UusDisain ?? Teema.Stiil;
-                Taida(cmbDisain, new[] { Keel.T("E-poe disain (Rimi)"), Keel.T("Klassikaline disain") }, disain == Disain.Rimi ? 0 : 1);
+                Taida(cmbDisain, new[] { Keel.T("E-poe disain (Rimi)"), Keel.T("Klassikaline disain"), Keel.T("Moodne disain") },
+                    disain switch { Disain.Klassikaline => 1, Disain.Moodne => 2, _ => 0 });
                 var keeled = Enum.GetValues<KeeleKood>();
                 Taida(cmbKeel, keeled.Select(Keel.Nimi).ToArray(), Array.IndexOf(keeled, Keel.Praegu));
             }
@@ -405,8 +407,8 @@ namespace IKTpv25_1_Toooted
 
         private void Uus()
         {
-            using var vorm = new RegistreerimineVorm(lubaOmanik: true);
-            if (vorm.ShowDialog(this) == DialogResult.OK) Laadi();
+            var vorm = new RegistreerimineVorm(lubaOmanik: true);
+            Aken.Ava(this, vorm, () => { if (vorm.DialogResult == DialogResult.OK) Laadi(); });
         }
 
         private void Salvesta()

@@ -1,9 +1,9 @@
-using System.Globalization;
+﻿using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted
 {
-    public partial class Form1 : Form
+    public partial class Form1 : Form, IVormiHost
     {
         // Uus valitud pildifail (täistee); null = pilti ei muudeta
         private string? uusPiltTee = null;
@@ -47,6 +47,7 @@ namespace IKTpv25_1_Toooted
 
             LooOtsing();
             SeadistaKassa();
+            if (Teema.OnMoodne) RakendaMoodne();   // Ctrl+Shift+M: tume menüü vasakul, KPI-d, paneel paremal
 
             try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch { }
 
@@ -61,17 +62,20 @@ namespace IKTpv25_1_Toooted
         private void MuudaTooteinfot()
         {
             if (ValitudId() is not int id) return;
-            using var vorm = new TooteInfoVorm(id);
-            if (vorm.ShowDialog(this) == DialogResult.OK)
+            var vorm = new TooteInfoVorm(id);
+            Aken.Ava(this, vorm, () =>
             {
+                if (vorm.DialogResult != DialogResult.OK) return;
                 Teade.Toast("Tooteinfo salvestatud");
                 LaadiTooted();
-            }
+            });
         }
 
         // Teema muutus menüüst Vaade: värvime kõik ümber
         private void VarviUmber()
         {
+            KontrolliMoodneVahetust();
+            if (moodne) BackColor = Teema.Taust;
             NaitaDisain();
             UuendaKeeleTekstid();
             Teema.Rakenda(this);
@@ -83,13 +87,14 @@ namespace IKTpv25_1_Toooted
         {
             tabToode.Valitud = tab == tabToode;
             tabKassa.Valitud = tab == tabKassa;
-            pnlTop.Visible = tab == tabToode;
-            pnlKassaRibbon.Visible = tab == tabKassa;
+            pnlTop.Visible = !moodne && tab == tabToode;   // moodsas disainis vana lint ei ilmu (ka hetkeks mitte)
+            pnlKassaRibbon.Visible = !moodne && tab == tabKassa;
 
             // Kassa vahelehel on toote sisestuse asemel ostukorv
             kaartSisestus.Visible = tab == tabToode;
             kaartKorv.Visible = tab == tabKassa;
             MargiKulg(tab == tabToode ? "tooted" : "kassa");
+            MoodneVaheleht(tab == tabToode);
         }
 
         private static void LisaFookuseEfekt(RoundedPanel raam, Control sisu)
@@ -153,6 +158,7 @@ namespace IKTpv25_1_Toooted
 
             UuendaOtsinguKategooriad();
             NaitaTooted();   // arvestab otsingut (Form1Otsing.cs)
+            UuendaMoodneKpi();
         }
 
         // Väikese laoseisuga tooted on tabelis punaka taustaga (hoiatus)
