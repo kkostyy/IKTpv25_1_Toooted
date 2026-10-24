@@ -1,0 +1,31 @@
+# Väljalase: sildi (nt v1.0) lükkamisel ehitatakse Windowsi versioon ja lisatakse GitHub Release'i
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Ehita
+        run: dotnet publish IKTpv25_1_Toooted/IKTpv25_1_Toooted.csproj -c Release -r win-x64 --self-contained false -o valjund
+      - name: Paki
+        run: |
+          Remove-Item valjund\*.pdb -ErrorAction SilentlyContinue
+          Compress-Archive -Path valjund\* -DestinationPath AktPood-Windows.zip
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: AktPood-Windows.zip
+          name: AKT pood ${{ github.ref_name }}
+          body: |
+            Windowsi versioon (vajab .NET 8 Desktop Runtime'i).
+            Paki lahti ja käivita IKTpv25_1_Toooted.exe. Moodne disain: Ctrl+Shift+M.
