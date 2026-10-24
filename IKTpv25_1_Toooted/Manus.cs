@@ -43,12 +43,20 @@ public static class Aken
         vorm.TopLevel = false;
         vorm.FormBorderStyle = FormBorderStyle.None;
         vorm.ShowInTaskbar = false;
+        vorm.MinimumSize = Size.Empty;   // akna miinimum ei tohi lehte laiemaks venitada
         if (taida) vorm.Dock = DockStyle.Fill;
         else
         {
             void Keskele() => vorm.Location = new Point(Math.Max(0, (konteiner.ClientSize.Width - vorm.Width) / 2), 0);
             konteiner.Resize += (s, e) => { if (!vorm.IsDisposed) Keskele(); };
             Keskele();
+            // valge dialoog hallil alusel: ümarad nurgad
+            if (Teema.OnMoodne && vorm.BackColor.ToArgb() != konteiner.BackColor.ToArgb())
+            {
+                void Ymarda() { using var tee = Ymardus.Tee(new RectangleF(0, 0, vorm.Width, vorm.Height), 24); vorm.Region = new Region(tee); }
+                vorm.SizeChanged += (s, e) => Ymarda();
+                Ymarda();
+            }
         }
 
         // Dialoogi tulemus (OK / Cancel) sulgeb ka manustatud vormi
@@ -80,6 +88,7 @@ public class VormiLeht : Leht
     private bool kinni;
 
     public override string Pealkiri { get; }
+    public Type VormiTyyp => vorm.GetType();
 
     public VormiLeht(Form vorm, Action? suletud, Action tagasi)
     {

@@ -40,6 +40,7 @@ public class MyygipaneelVorm : KujundusVorm
         }
 
         kpiRida = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 116, Padding = new Padding(16, 0, 16, 8), BackColor = Teema.Taust, WrapContents = false };
+        if (Teema.OnMoodne) kpiRida.Resize += (s, e) => VenitaKpi();
 
         var tabel = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1, Padding = new Padding(16, 0, 16, 16), BackColor = Teema.Taust };
         tabel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 62));
@@ -66,6 +67,13 @@ public class MyygipaneelVorm : KujundusVorm
         tabel.BringToFront();
 
         Load += (s, e) => Laadi();
+    }
+
+    // moodne: 4 plaati jagavad rea laiuse võrdselt
+    private void VenitaKpi()
+    {
+        int w = (kpiRida.ClientSize.Width - kpiRida.Padding.Horizontal - 36) / 4;
+        foreach (Control c in kpiRida.Controls) c.Width = Math.Max(180, w);
     }
 
     private void Laadi()
@@ -99,12 +107,7 @@ public class MyygipaneelVorm : KujundusVorm
             kpiRida.Controls.Add(new KpiPlaat("Marginaal", Ostukorv.Eur(k.Marginaal), Myygianalyys.Muutus(k.Marginaal, k0.Marginaal), 240, 3));
             kpiRida.ResumeLayout();
             Teema.Rakenda(kpiRida);
-            if (Teema.OnMoodne)
-            {
-                // plaadid jagavad rea laiuse võrdselt
-                int w = (kpiRida.ClientSize.Width - kpiRida.Padding.Horizontal - 36) / 4;
-                foreach (Control c in kpiRida.Controls) c.Width = Math.Max(200, w);
-            }
+            if (Teema.OnMoodne) VenitaKpi();
 
             kaart.Naita(Myygianalyys.Soojuskaart(ostud));
             ribad.Naita(Myygianalyys.Kategooriad(ostud, tooted, nimed));
