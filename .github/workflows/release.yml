@@ -4,6 +4,12 @@ name: Release
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      versioon:
+        description: 'Versioon (silt), nt v1.0'
+        required: true
+        default: 'v1.0'
 
 permissions:
   contents: write
@@ -25,7 +31,9 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           files: AktPood-Windows.zip
-          name: AKT pood ${{ github.ref_name }}
+          tag_name: ${{ inputs.versioon || github.ref_name }}
+          target_commitish: ${{ github.sha }}
+          name: AKT pood ${{ inputs.versioon || github.ref_name }}
           body: |
             Windowsi versioon (vajab .NET 8 Desktop Runtime'i).
             Paki lahti ja käivita IKTpv25_1_Toooted.exe. Moodne disain: Ctrl+Shift+M.
