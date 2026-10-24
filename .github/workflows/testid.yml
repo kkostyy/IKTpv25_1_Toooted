@@ -1,0 +1,18 @@
+# Testid: iga push'i ja pull request'i peale ehitatakse programm ja käivitatakse ühiktestid
+name: Testid
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  testid:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Testid
+        run: dotnet test IKTpv25_1_Toooted.Tests/IKTpv25_1_Toooted.Tests.csproj -c Release --logger "console;verbosity=normal"

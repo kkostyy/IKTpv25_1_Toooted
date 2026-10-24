@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="IKTpv25_1_Toooted/IKTpv25_1_Toooted.csproj" Id="86505e0e-9780-414e-b7da-6c0d99e22cc4" />
+  <Project Path="IKTpv25_1_Toooted.Tests/IKTpv25_1_Toooted.Tests.csproj" />
 </Solution>
