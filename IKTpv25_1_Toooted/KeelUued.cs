@@ -128,6 +128,8 @@ public static partial class Keel
         L("Ei liitu kampaania ega säilivusaja soodustusega – kehtib suurim. Hind arvutatakse maksmise hetkel.", "Не суммируется с акцией и скидкой по сроку – действует большая. Цена считается в момент оплаты.", "Does not stack with campaign or expiry discounts – the larger applies. Price is set at payment.");
         L("Õhtune küpsetiste tund algas: −{0} %", "Вечерний час выпечки начался: −{0} %", "Evening bakery hour started: −{0} %");
         L("Hinnad uuenesid (soodustus algas või lõppes) – kontrolli summat", "Цены обновились (скидка началась или закончилась) – проверьте сумму", "Prices updated (a discount started or ended) – check the total");
+        // --- Moodne disain ---
+        L("Moodne disain", "Современный дизайн", "Modern design"); L("Disain: moodne", "Дизайн: современный", "Design: modern");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }

@@ -61,9 +61,12 @@ namespace IKTpv25_1_Toooted
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             var r = new Rectangle(0, 0, Width - 1, Height - 1);
-            using (var path = Ymardus.Tee(r, Radius))
+            // Moodne: kaks korda suurem ümarus (väljad = "pill"), raam vaevu nähtav
+            int raadius = Teema.OnMoodne ? Math.Min(Math.Max(Radius * 2, 16), Math.Min(Width, Height) / 2) : Radius;
+            Color raam = Teema.OnMoodne ? Ymardus.Segu(BorderColor, FillColor, 0.55f) : BorderColor;
+            using (var path = Ymardus.Tee(r, raadius))
             using (var brush = new SolidBrush(FillColor))
-            using (var pen = new Pen(BorderColor))
+            using (var pen = new Pen(raam))
             {
                 e.Graphics.FillPath(brush, path);
                 e.Graphics.DrawPath(pen, path);
@@ -122,6 +125,13 @@ namespace IKTpv25_1_Toooted
                 border = Teema.Aktsent;
                 tekst = Color.White;
             }
+            else if (Teema.OnMoodne)
+            {
+                // Moodne: teisene nupp on hall "pill" ilma raamita
+                fill = Teema.Paneel2;
+                border = Teema.Paneel2;
+                tekst = Teema.Tekst;
+            }
             else
             {
                 fill = Teema.Pind;
@@ -146,7 +156,21 @@ namespace IKTpv25_1_Toooted
             }
 
             var r = new Rectangle(0, 0, Width - 1, Height - 1);
-            using (var path = Ymardus.Tee(r, Radius))
+            int raadius = Radius;
+            if (Teema.OnMoodne)
+            {
+                raadius = r.Height / 2;                                 // "pill"
+                if (_down) r = Rectangle.Inflate(r, -3, -2);            // vajutus: nupp väheneb
+                else if (_hover && Enabled)
+                {
+                    // hõljumisel pehme vari all
+                    using var vari = new SolidBrush(Color.FromArgb(28, 0, 0, 0));
+                    using var vt = Ymardus.Tee(new Rectangle(r.X + 2, r.Y + 3, r.Width - 4, r.Height - 2), raadius);
+                    g.FillPath(vari, vt);
+                    r = new Rectangle(r.X, r.Y, r.Width, r.Height - 2);
+                }
+            }
+            using (var path = Ymardus.Tee(r, raadius))
             using (var brush = new SolidBrush(fill))
             using (var pen = new Pen(border))
             {

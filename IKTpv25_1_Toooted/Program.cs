@@ -115,6 +115,13 @@ internal sealed class DisainiKlahv : IMessageFilter
             Teade.Toast(Teema.OnRimi ? "Disain: e-pood (Rimi stiil)" : "Disain: klassikaline", TeateTyyp.Info, 1800);
             return true;   // klahvi rohkem edasi ei saadeta
         }
+        if (m.Msg == WM_KEYDOWN && (Keys)(int)m.WParam == Keys.M &&
+            Control.ModifierKeys == (Keys.Control | Keys.Shift))
+        {
+            Teema.VahetaMoodne();
+            Teade.Toast(Teema.OnMoodne ? "Disain: moodne" : "Disain: e-pood (Rimi stiil)", TeateTyyp.Info, 1800);
+            return true;
+        }
         return false;
     }
 }
