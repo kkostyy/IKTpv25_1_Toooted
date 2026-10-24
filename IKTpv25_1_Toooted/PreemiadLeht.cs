@@ -113,6 +113,7 @@ public class PreemiadLeht : Leht
     private readonly TaseVeerg taseVeerg = new() { Dock = DockStyle.Fill };
     private readonly FlowLayoutPanel keskSisu;
     private readonly YllatusPaneel yllatus = new() { Dock = DockStyle.Fill };
+    private bool viimaneKitsas;
     public override string Pealkiri => "Preemiad";
 
     public PreemiadLeht()
@@ -130,8 +131,21 @@ public class PreemiadLeht : Leht
         tabel.Controls.Add(vasak, 0, 0);
 
         keskSisu = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, WrapContents = false, AutoScroll = true, BackColor = Teema.Taust, Margin = new Padding(0, 0, 12, 0) };
-        keskSisu.Resize += (s, e) => { foreach (Control c in keskSisu.Controls) c.Width = Math.Max(300, keskSisu.ClientSize.Width - 8); };
+        keskSisu.Resize += (s, e) =>
+        {
+            foreach (Control c in keskSisu.Controls) c.Width = Math.Max(260, keskSisu.ClientSize.Width - 8);
+            // kitsas ↔ lai: väljakutsed ja kleebised paigutatakse ümber
+            bool kitsas = keskSisu.ClientSize.Width < 620;
+            if (Teema.OnMoodne && kitsas != viimaneKitsas && AktiivneKasutaja.KlientId != null && keskSisu.Controls.Count > 0) { viimaneKitsas = kitsas; BeginInvoke(new Action(Laadi)); }
+        };
         tabel.Controls.Add(keskSisu, 1, 0);
+        // külgveerud kahanevad kitsas aknas (220–290 px)
+        tabel.Resize += (s, e) =>
+        {
+            float kylg = Math.Clamp(tabel.Width * 0.24f, 220, 290);
+            tabel.ColumnStyles[0].Width = kylg;
+            tabel.ColumnStyles[2].Width = kylg;
+        };
 
         var parem = new RoundedPanel { Dock = DockStyle.Fill, Radius = 24, FillColor = Color.FromArgb(160, 35, 110), BorderColor = Color.FromArgb(160, 35, 110), BackColor = Teema.Taust, Padding = new Padding(18), Margin = new Padding(0) };
         parem.Controls.Add(yllatus);
@@ -187,14 +201,20 @@ public class PreemiadLeht : Leht
     private void LaadiMoodne(List<Valjakutse> valjakutsed, List<Kleeps> kleebised, bool komplekt)
     {
         int paevi = 7 - ((int)DateTime.Now.DayOfWeek + 6) % 7;
-        var vorgustik = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = Math.Max(1, valjakutsed.Count), RowCount = 1, BackColor = Teema.Pind };
-        for (int i = 0; i < vorgustik.ColumnCount; i++) vorgustik.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f / vorgustik.ColumnCount));
+        bool kitsas = keskSisu.ClientSize.Width < 620;
+        viimaneKitsas = kitsas;
+        int veerge = kitsas ? 1 : Math.Max(1, valjakutsed.Count), ridu = kitsas ? Math.Max(1, valjakutsed.Count) : 1;
+        var vorgustik = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = veerge, RowCount = ridu, BackColor = Teema.Pind };
+        for (int i = 0; i < veerge; i++) vorgustik.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f / veerge));
+        for (int i = 0; i < ridu; i++) vorgustik.RowStyles.Add(new RowStyle(SizeType.Absolute, 168));
         for (int i = 0; i < valjakutsed.Count; i++)
-            vorgustik.Controls.Add(new ValjakutseKaart(valjakutsed[i], 150 + i * 120) { Dock = DockStyle.Fill, Margin = new Padding(i == 0 ? 0 : 6, 0, i == valjakutsed.Count - 1 ? 0 : 6, 0) }, i, 0);
-        keskSisu.Controls.Add(Sektsioon("Nädala väljakutsed", Keel.F("Uued esmaspäeval · {0} päeva jäänud", paevi), Teema.TekstNork, vorgustik, 176));
+            vorgustik.Controls.Add(new ValjakutseKaart(valjakutsed[i], 150 + i * 120) { Dock = DockStyle.Fill, Margin = kitsas ? new Padding(0, 0, 0, 8) : new Padding(i == 0 ? 0 : 6, 0, i == valjakutsed.Count - 1 ? 0 : 6, 0) }, kitsas ? 0 : i, kitsas ? i : 0);
+        keskSisu.Controls.Add(Sektsioon("Nädala väljakutsed", Keel.F("Uued esmaspäeval · {0} päeva jäänud", paevi), Teema.TekstNork, vorgustik, ridu * 176));
 
         var album = new KleepsuAlbum(kleebised, komplekt) { Dock = DockStyle.Fill };
-        keskSisu.Controls.Add(Sektsioon("Kleepsualbum", $"{kleebised.Count(k => k.Saadud)} / {kleebised.Count}", Teema.Teine, album, album.Height));
+        var albumiKaart = Sektsioon("Kleepsualbum", $"{kleebised.Count(k => k.Saadud)} / {kleebised.Count}", Teema.Teine, album, album.Height);
+        keskSisu.Controls.Add(albumiKaart);
+        if (kitsas) albumiKaart.Height += 2 * 158;   // 2 veergu = 4 rida
     }
 
     private static RoundedPanel Sektsioon(string pealkiri, string paremal, Color paremVarv, Control sisu, int sisuKorgus)
@@ -306,17 +326,28 @@ public class TaseVeerg : Control
         for (int i = Preemiad.Tasemed.Length - 1; i >= 0; i--)
         {
             var (tt, alates, pr) = Preemiad.Tasemed[i];
-            var rr = new RectangleF(0, y, Width - 2, 40);
+            bool kitsas = Width < 270;   // kitsas veerg: info teisel real
+            var rr = new RectangleF(0, y, Width - 2, kitsas ? 50 : 40);
             bool praegu = tt == tase.Tase;
             if (praegu)
                 using (var tee = Ymardus.Tee(rr, 12))
                 using (var b = new SolidBrush(Color.White))
                     g.FillPath(b, tee);
-            TaseKaart.Medal(g, new RectangleF(10, y + 8, 24, 24), tt);
+            TaseKaart.Medal(g, new RectangleF(10, y + (kitsas ? 13 : 8), 24, 24), tt);
             Color c = praegu ? Color.FromArgb(27, 28, 31) : Color.White;
-            TextRenderer.DrawText(g, Keel.T(Preemiad.TaseNimi(tt)), fb, new Point(44, (int)y + 10), c);
-            TextRenderer.DrawText(g, $"{(pr * 100).ToString("0.#", et)} %  ·  {Keel.F("alates {0}", Ostukorv.Eur(alates))}", f, new Rectangle(0, (int)y + 11, Width - 14, 20), praegu ? Color.FromArgb(90, 90, 100) : Color.FromArgb(170, 175, 182), TextFormatFlags.Right);
-            y += 46;
+            Color c2 = praegu ? Color.FromArgb(90, 90, 100) : Color.FromArgb(170, 175, 182);
+            string info = $"{(pr * 100).ToString("0.#", et)} %  ·  {Keel.F("alates {0}", Ostukorv.Eur(alates))}";
+            if (kitsas)
+            {
+                TextRenderer.DrawText(g, Keel.T(Preemiad.TaseNimi(tt)), fb, new Point(44, (int)y + 5), c);
+                TextRenderer.DrawText(g, info, f, new Point(45, (int)y + 26), c2);
+            }
+            else
+            {
+                TextRenderer.DrawText(g, Keel.T(Preemiad.TaseNimi(tt)), fb, new Point(44, (int)y + 10), c);
+                TextRenderer.DrawText(g, info, f, new Rectangle(0, (int)y + 11, Width - 14, 20), c2, TextFormatFlags.Right);
+            }
+            y += kitsas ? 56 : 46;
         }
     }
 }
@@ -420,6 +451,7 @@ public class KleepsuAlbum : Control
         this.komplekt = komplekt;
         SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
         Height = Teema.OnMoodne ? (komplekt ? 50 : 0) + 2 * 158 : komplekt ? 330 : 280;
+        Resize += (s, e) => Invalidate();   // kitsas: 2 veergu (kaardi kõrgus arvestatakse lehel)
         int ms = 400 + kleebised.Count * 90;
         Animatsioon.Kaivita(this, ms, x => { t = x * ms; Invalidate(); });
     }
@@ -430,10 +462,13 @@ public class KleepsuAlbum : Control
         base.Dispose(disposing);
     }
 
+    private int Veerge => Teema.OnMoodne && Width < 560 ? 2 : 4;
+
     private RectangleF Koht(int i)
     {
-        float w = (Width - 2) / 4f, h = Teema.OnMoodne ? 158 : 130;
-        return new RectangleF(i % 4 * w, (komplekt ? 50 : 0) + i / 4 * h, w, h);
+        int v = Veerge;
+        float w = (Width - 2) / (float)v, h = Teema.OnMoodne ? 158 : 130;
+        return new RectangleF(i % v * w, (komplekt ? 50 : 0) + i / v * h, w, h);
     }
 
     protected override void OnMouseMove(MouseEventArgs e)

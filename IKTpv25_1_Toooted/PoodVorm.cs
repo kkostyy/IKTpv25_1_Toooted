@@ -794,9 +794,26 @@ namespace IKTpv25_1_Toooted
         // Moodne: vormid (seaded, kliendikaart, ajalugu ...) avanevad poe lehena, mitte eraldi aknas
         public bool VoibManustada => moodne && Visible;
 
+        // Vormi enda "Tagasi" peidetakse; sama rea elemendid nihkuvad vasakule
+        private static void PeidaOmaTagasi(Control juur)
+        {
+            foreach (Control c in juur.Controls.Cast<Control>().ToList())
+            {
+                if (c is TagasiNupp t && t.Parent is Control p)
+                {
+                    int nihe = t.Width + 14;
+                    t.Visible = false;
+                    foreach (Control o in p.Controls)
+                        if (o != t && o.Left > t.Left && Math.Abs(o.Top - t.Top) < 36 && o.Dock == DockStyle.None) o.Left -= nihe;
+                }
+                else PeidaOmaTagasi(c);
+            }
+        }
+
         public void Manusta(Form vorm, Action? suletud)
         {
             if (vorm is KujundusVorm k) k.IlmaTagasita = true;   // poe riba "Tagasi" on juba olemas
+            else PeidaOmaTagasi(vorm);
             AvaLeht(new VormiLeht(vorm, suletud, () => lehed.Tagasi()));
         }
 
