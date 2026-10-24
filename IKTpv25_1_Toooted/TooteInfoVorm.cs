@@ -6,7 +6,7 @@ namespace IKTpv25_1_Toooted;
 public class TooteInfoVorm : KujundusVorm
 {
     private readonly int id;
-    private readonly TextBox txtKaubamark, txtTootja, txtParitolu, txtPakend, txtUhikuKogus, txtVanaHind;
+    private readonly TextBox txtKaubamark, txtTootja, txtParitolu, txtPakend, txtUhikuKogus, txtVanaHind, txtOstuhind, txtPant;
     private readonly ComboBox cmbUhik;
     private readonly TextBox txtKirjeldus, txtKoostis, txtLisainfo, txtToitevaartus;
     private readonly List<(CheckBox Kast, DieediMark Mark)> margid = new();
@@ -49,6 +49,10 @@ public class TooteInfoVorm : KujundusVorm
             margid.Add((ch, mark));
             mx += 130;
         }
+
+        // Müügipaneeli marginaal ja pakendi tagatisraha
+        Silt("Sisseostuhind € (marginaali jaoks)", 20, 650); txtOstuhind = Sisend(20, 670, 320);
+        Silt("Pakendi tagatisraha € (pudel/purk 0.10)", 370, 650); txtPant = Sisend(370, 670, 320);
 
         var salvesta = Nupp("Salvesta", 20, 730, true);
         salvesta.Click += (s, e) => Salvesta();
@@ -109,6 +113,8 @@ public class TooteInfoVorm : KujundusVorm
         txtKoostis.Text = Read(t.Koostisosad);
         txtLisainfo.Text = Read(t.Lisainfo);
         txtToitevaartus.Text = Read(t.Toitevaartus);
+        txtOstuhind.Text = t.Ostuhind?.ToString("0.00", Inv) ?? "";
+        txtPant.Text = t.Pant > 0 ? t.Pant.ToString("0.00", Inv) : "";
         var m = Dieet.LoeMargid(t.Margised);
         foreach (var (kast, mark) in margid) kast.Checked = m.HasFlag(mark);
     }
@@ -136,6 +142,8 @@ public class TooteInfoVorm : KujundusVorm
         { Teade.Show("Ühikuid pakendis peab olema arv (nt 0.5)."); return; }
         if (!LoeArv(txtVanaHind.Text, out decimal? vanaHind))
         { Teade.Show("Vana hind peab olema arv (nt 6.19) või tühi."); return; }
+        if (!LoeArv(txtOstuhind.Text, out decimal? ostuhind) || !LoeArv(txtPant.Text, out decimal? pant))
+        { Teade.Show("Sisseostuhind ja tagatisraha peavad olema arvud (nt 0.10) või tühjad."); return; }
 
         try
         {
@@ -154,6 +162,8 @@ public class TooteInfoVorm : KujundusVorm
             t.Koostisosad = Puhas(txtKoostis.Text);
             t.Lisainfo = Puhas(txtLisainfo.Text);
             t.Toitevaartus = Puhas(txtToitevaartus.Text);
+            t.Ostuhind = ostuhind is decimal oh ? Math.Round(oh, 2) : null;
+            t.Pant = pant is decimal pa ? Math.Round(pa, 2) : 0;
             var m = margid.Where(x => x.Kast.Checked).Aggregate(DieediMark.Puudub, (a, x) => a | x.Mark);
             t.Margised = m == DieediMark.Puudub ? null : Dieet.KirjutaMargid(m);
             db.SaveChanges();
