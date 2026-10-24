@@ -192,6 +192,7 @@ public static partial class Keel
         L("Kehtib iga päev {0:hh\\:mm} kuni poe sulgemiseni (00:00).", "Действует каждый день с {0:hh\\:mm} до закрытия магазина (00:00).", "Valid every day from {0:hh\\:mm} until closing (00:00).");
         L("Ei liitu kampaania ega säilivusaja soodustusega – rakendub suurim.", "Не суммируется с акцией и уценкой по сроку – действует наибольшая.", "Does not stack with campaigns or expiry discounts – the largest applies.");
         L("Hind arvutatakse kassas ostu hetkel, mitte korvi lisamisel.", "Цена считается на кассе в момент покупки, а не при добавлении в корзину.", "The price is calculated at checkout, not when added to the basket."); L("TŠEKIL", "В ЧЕКЕ", "ON THE RECEIPT");
+        L("tagasi", "назад", "back");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }
