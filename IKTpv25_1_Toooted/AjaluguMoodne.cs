@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted
@@ -118,6 +118,7 @@ namespace IKTpv25_1_Toooted
             y += 4;
             Kesk(ost.Aeg.ToString("dd.MM.yyyy  HH:mm"), f, hall);
             if (ost.Klient != null) Kesk(Keel.F("KLIENT: {0}", ost.Klient.Kaardinumber), f, hall);
+            if (ost.TarneAeg is DateTime ta) Kesk(Keel.T("Tarneaeg:") + " " + Tarne.AknaTekst(ta, ost.Aeg), fb, Color.FromArgb(160, 35, 110));
             Joon();
             foreach (var r in ost.Read)
             {

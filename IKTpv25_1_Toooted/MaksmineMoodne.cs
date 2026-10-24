@@ -28,7 +28,7 @@ public partial class MaksmineVorm
 
         int y = 158;
         var kaardid = new List<RoundedPanel>();
-        foreach (var (kaart, h0) in new[] { (tarne, 118), (klient, 206), (makse, 170) })
+        foreach (var (kaart, h0) in new[] { (tarne, 230), (klient, 206), (makse, 170) })
         {
             int h = h0;
             // valikud muutuvad kõrgemateks "pillideks" – nende all olevad read nihkuvad allapoole
@@ -44,7 +44,7 @@ public partial class MaksmineVorm
             kaart.Bounds = new Rectangle(14, y, 680, h);
             foreach (var l in kaart.Controls.OfType<Label>().Where(l => l.Font == UiStiil.AlapealkiriFont))
             {
-                l.Text = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(l.Text.ToLower());
+                l.Text = l.Text.Length > 0 ? char.ToUpper(l.Text[0]) + l.Text[1..].ToLower() : l.Text;
                 l.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
                 l.ForeColor = Teema.Tekst;
             }
@@ -52,6 +52,8 @@ public partial class MaksmineVorm
             y += h + 14;
         }
         Controls.Add(paa);
+        paa.AutoScroll = true;   // väiksemal ekraanil keritakse (kojuveo aeg teeb vormi pikemaks)
+        paa.Controls.Add(new Panel { Bounds = new Rectangle(0, y, 1, 14), BackColor = Teema.Pind });   // alumine vahe kerimisel
 
         // ---- Parem tume kokkuvõte ----
         kokkuvote = new MaksmineKokkuvote { Bounds = new Rectangle(744, 16, 340, 768) };
@@ -70,11 +72,18 @@ public partial class MaksmineVorm
             int W = ClientSize.Width, H = ClientSize.Height;
             int kw = Math.Clamp(W * 32 / 100, 260, 340), kx = W - 16 - kw;
             paa.Bounds = new Rectangle(16, 16, Math.Max(400, kx - 32), H - 32);
-            foreach (var k in kaardid) k.Width = paa.Width - 28;
-            foreach (var c in paa.Controls.OfType<MaksmiseSammud>()) c.Width = paa.Width - 52;
+            Laiused();
             kokkuvote.Bounds = new Rectangle(kx, 16, kw, H - 32);
             btnMaksa.Bounds = new Rectangle(20, kokkuvote.Height - 84, kw - 40, 60);
         }
+        // kaardid mahuvad kerimisriba kõrvale (ClientSize ilma kerimisribata) – horisontaalset kerimist ei teki
+        void Laiused()
+        {
+            int w = paa.ClientSize.Width;
+            foreach (var k in kaardid) k.Width = w - 28;
+            foreach (var c in paa.Controls.OfType<MaksmiseSammud>()) c.Width = w - 52;
+        }
+        paa.ClientSizeChanged += (s, e) => Laiused();
         Resize += (s, e) => Paiguta();
         Paiguta();
         ResumeLayout(true);

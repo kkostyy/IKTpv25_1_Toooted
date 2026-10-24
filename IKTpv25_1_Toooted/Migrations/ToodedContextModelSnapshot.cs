@@ -241,6 +241,9 @@ namespace IKTpv25_1_Toooted.Migrations
                     b.Property<bool>("Tagastatud")
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTime?>("TarneAeg")
+                        .HasColumnType("TEXT");
+
                     b.Property<decimal>("TarneHind")
                         .HasPrecision(10, 2)
                         .HasColumnType("TEXT");
