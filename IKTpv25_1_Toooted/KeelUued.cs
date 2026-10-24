@@ -282,6 +282,12 @@ public static partial class Keel
         L("Otsi toodet", "Искать товар", "Find a product");
         L("Maksa (vormista ost)", "Оплатить (оформить покупку)", "Pay (check out)");
         L("Salvesta ostukorv", "Сохранить корзину", "Save basket");
+        L("Ilma raiskamiseta", "Без отходов", "Zero waste");
+        L("Päästa toit prügikastist", "Спаси еду от мусорки", "Save food from the bin");
+        L("Need tooted aeguvad {0} päeva jooksul ja on −{1} % odavamad. Iga ost vähendab toidu raiskamist.", "У этих товаров срок годности истекает в течение {0} дней, и они дешевле на {1} %. Каждая покупка уменьшает пищевые отходы.", "These products expire within {0} days and are {1} % cheaper. Every purchase reduces food waste.");
+        L("toodet −30 %", "товаров −30 %", "products −30 %");
+        L("säästad kuni {0}", "экономия до {0}", "save up to {0}");
+        L("Praegu ei aegu ühtegi toodet – kõik on värske! Vaata hiljem uuesti.", "Сейчас нет товаров с истекающим сроком – всё свежее! Загляните позже.", "Nothing is about to expire – everything is fresh! Check back later.");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }
