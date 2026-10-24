@@ -62,7 +62,7 @@ for rida in open(SISSE, encoding='utf-8'):
         'oh': round(t['hind'] * juhus.uniform(0.55, 0.8), 2),
     })
 tooted.sort(key=lambda x: (x['k'], x['n']))
-data = {'versioon': 'rimi-' + datetime.datetime.now().strftime('%Y-%m-%dT%H:%M'),
+data = {'versioon': 'rimi-' + datetime.datetime.now().strftime('%Y-%m-%dT%H:%M'), 'arv': len(tooted),
         'kategooriad': [{'id': i, 'nimi': n} for i, n, _ in KATEGOORIAD],
         'tooted': tooted}
 with gzip.open(VALJA, 'wt', encoding='utf-8', compresslevel=9) as f:

@@ -10,6 +10,7 @@ object Tolked {
         L("Esmaspäev", "Понедельник", "Monday"); L("Teisipäev", "Вторник", "Tuesday"); L("Kolmapäev", "Среда", "Wednesday"); L("Neljapäev", "Четверг", "Thursday")
         L("Reede", "Пятница", "Friday"); L("Laupäev", "Суббота", "Saturday"); L("Pühapäev", "Воскресенье", "Sunday")
         L("{0} tk", "{0} шт", "{0} pcs"); L("{0} toodet", "{0} товаров", "{0} products")
+        L("Laadin Rimi tooteid…", "Загружаю товары Rimi…", "Loading Rimi products…"); L("Ainult esimesel käivitamisel", "Только при первом запуске", "Only on first launch")
         // ---- sisselogimine ----
         L("Tere tulemast!", "Добро пожаловать!", "Welcome!"); L("Kliendikaardiga 1 € = 1 sent boonust.", "С картой клиента 1 € = 1 цент бонуса.", "With the loyalty card 1 € = 1 cent bonus.")
         L("Logi sisse", "Войти", "Log in"); L("Logi välja", "Выйти", "Log out"); L("Kasutajanimi", "Имя пользователя", "Username"); L("Parool", "Пароль", "Password")

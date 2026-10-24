@@ -29,6 +29,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import kotlin.concurrent.thread
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,10 +51,26 @@ import kotlinx.coroutines.delay
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val olek = AppOlek(SqlPood(applicationContext))
+        // Esimesel käivitamisel laaditakse ~18 000 Rimi toodet andmebaasi: taustalõimes, ekraanil sujuv edenemisriba
+        val olekHoidja = mutableStateOf<AppOlek?>(null)
+        val edenemine = mutableFloatStateOf(0f)
+        val tehtud = mutableIntStateOf(0)
+        Rimi.edenemine = { t, k -> runOnUiThread { tehtud.intValue = t; edenemine.floatValue = t.toFloat() / k } }
+        thread(name = "andmebaas") {
+            val pood = SqlPood(applicationContext)
+            pood.readableDatabase   // käivitab onCreate (kataloogi laadimine) siin, mitte UI-lõimes
+            val o = AppOlek(pood)
+            runOnUiThread { olekHoidja.value = o }
+        }
         setContent {
-            BackHandler { if (!olek.tagasi()) finish() }
-            App(olek)
+            val olek = olekHoidja.value
+            AnimatedContent(olek, transitionSpec = { fadeIn(tween(400)) togetherWith fadeOut(tween(300)) }, label = "algus") { o ->
+                if (o == null) Laadimine(edenemine.floatValue, tehtud.intValue)
+                else {
+                    BackHandler { if (!o.tagasi()) finish() }
+                    App(o)
+                }
+            }
         }
     }
 }
@@ -148,6 +173,27 @@ fun Teade(olek: AppOlek, modifier: Modifier = Modifier) {
             Box(Modifier.size(28.dp).clip(CircleShape).background(V.Roheline), Alignment.Center) { Ikoon(Ik.Linnuke, Color.White, 16.dp, 3f) }
             androidx.compose.foundation.layout.Spacer(Modifier.size(12.dp))
             T(remember(tekst) { tekst ?: "" }, 14.sp, Color.White, FontWeight.SemiBold)
+        }
+    }
+}
+
+// Esimese käivitamise ekraan: tooted lisanduvad andmebaasi, riba liigub sujuvalt
+@Composable
+fun Laadimine(osa: Float, tehtud: Int) {
+    val riba by animateFloatAsState(osa, tween(600), label = "riba")
+    Box(Modifier.fillMaxSize().background(V.Tume).safeDrawingPadding().padding(28.dp)) {
+        Column(Modifier.align(Alignment.Center).fillMaxWidth()) {
+            Box(Modifier.size(64.dp).clip(RoundedCornerShape(20.dp)).background(V.Punane))
+            Spacer(Modifier.height(24.dp))
+            T("AKT pood", 28.sp, Color.White, FontWeight.Bold)
+            Spacer(Modifier.height(8.dp))
+            T(Keel.t("Laadin Rimi tooteid…"), 15.sp, Color(0xFFC9CDD2))
+            Spacer(Modifier.height(20.dp))
+            Box(Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)).background(V.Tume2)) {
+                Box(Modifier.fillMaxWidth(riba.coerceIn(0.02f, 1f)).height(8.dp).clip(RoundedCornerShape(4.dp)).background(V.Roheline))
+            }
+            Spacer(Modifier.height(10.dp))
+            T(if (tehtud > 0) Keel.f("{0} toodet", tehtud) else Keel.t("Ainult esimesel käivitamisel"), 12.sp, V.Nork)
         }
     }
 }
