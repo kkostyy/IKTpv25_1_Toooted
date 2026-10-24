@@ -152,7 +152,7 @@ fun PreemiadEkraan(olek: AppOlek, algus: Int) {
                         T("${t.promill / 10.0} %".replace('.', ','), 15.sp, V.Tekst, FontWeight.ExtraBold)
                     }
                 }
-                T(Keel.t("Tase arvutatakse viimase 12 kuu ostudest."), 12.sp, V.Nork, Modifier.fillMaxWidth(), keskel = true)
+                T(Keel.t("Tase arvutatakse viimase 12 kuu ostudest."), 12.sp, V.Nork, modifier = Modifier.fillMaxWidth(), keskel = true)
             }
             1 -> {
                 val nadal = ostud.filter { Reeglid.nadalaKood(it.aeg.toLocalDate()) == Reeglid.nadalaKood(LocalDate.now()) }
@@ -315,7 +315,7 @@ fun NimekiriEkraan(olek: AppOlek) {
             })
             Vahe(12.dp)
             Kaart(sisu = 6.dp) {
-                if (read.isEmpty()) T(Keel.t("Nimekiri on tühi."), 14.sp, V.Nork, Modifier.padding(12.dp))
+                if (read.isEmpty()) T(Keel.t("Nimekiri on tühi."), 14.sp, V.Nork, modifier = Modifier.padding(12.dp))
                 for (r in read) {
                     Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).vajuta { olek.pood.margiNimekirjas(r.id, !r.ostetud); varskenda() }.padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
                         Box(
@@ -505,7 +505,7 @@ fun OhtuEkraan(olek: AppOlek) {
         Vahe(14.dp)
         Ruudud(olek, kupsetised)
         Vahe(10.dp)
-        T(Keel.t("Ei liitu teiste soodustustega – kehtib suurim."), 11.sp, V.Nork, Modifier.fillMaxWidth(), keskel = true)
+        T(Keel.t("Ei liitu teiste soodustustega – kehtib suurim."), 11.sp, V.Nork, modifier = Modifier.fillMaxWidth(), keskel = true)
         Vahe(20.dp)
     }
 }
@@ -539,7 +539,7 @@ fun ToitevaartusEkraan(olek: AppOlek) {
         }
         Vahe(12.dp)
         Kaart(sisu = 6.dp) {
-            if (olek.korv.isEmpty()) T(Keel.t("Ostukorv on tühi."), 14.sp, V.Nork, Modifier.padding(12.dp))
+            if (olek.korv.isEmpty()) T(Keel.t("Ostukorv on tühi."), 14.sp, V.Nork, modifier = Modifier.padding(12.dp))
             for (r in olek.korv) {
                 val k = Toitevaartus.kcal(r.toode)
                 Row(Modifier.fillMaxWidth().padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
