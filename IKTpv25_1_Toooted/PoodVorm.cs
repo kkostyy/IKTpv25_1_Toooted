@@ -1422,6 +1422,19 @@ namespace IKTpv25_1_Toooted
 
             JoonistaNupp(g, laos);
 
+            // Säilivusaja allahindlus: "−30 % · aegub 25.10"
+            if (Aegumine.AllahindlusKuni(Toode.Id) is DateTime aegub)
+            {
+                using var fa = new Font("Segoe UI Semibold", 7.5F);
+                string tekst = Keel.F("−{0} % · aegub {1:dd.MM}", Aegumine.Protsent, aegub);
+                int aw = TextRenderer.MeasureText(tekst, fa).Width + 14;
+                var ar = new RectangleF(kaart.X + 12, kaart.Y + 150, aw, 20);
+                using (var tee = Ymardus.Tee(ar, 10))
+                using (var b = new SolidBrush(Teema.Hoiatus))
+                    g.FillPath(b, tee);
+                TextRenderer.DrawText(g, tekst, fa, Rectangle.Round(ar), Color.White, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+            }
+
             // Dieedi kiibid pildi vasakus ülanurgas
             DieediMargid.Joonista(g, Toode, kaart.X + 12, kaart.Y + 12, kaart.Width - 70);
 

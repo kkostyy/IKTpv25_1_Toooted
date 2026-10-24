@@ -408,6 +408,7 @@ public class MaksmineVorm : Form
                     return;
                 }
                 toode.Kogus -= r.Kogus;
+                Aegumine.VotaPartiidest(db, r.Id, r.Kogus);   // FEFO: enne varem aeguv partii
                 if (toode.Kogus < Form1.VaikeLaoseis) VaheseLaoga.Add($"{toode.Toodenimetus}: {toode.Kogus} tk");
 
                 ost.Read.Add(new OstuRida
