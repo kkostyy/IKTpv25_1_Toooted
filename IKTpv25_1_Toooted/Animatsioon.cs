@@ -1,11 +1,24 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace IKTpv25_1_Toooted;
 
-// Lihtne animatsioon: taimer (15 ms) + Stopwatch, samm(t) saab väärtuse 0 → 1.
+// Lihtne animatsioon: taimer (10 ms) + Stopwatch, samm(t) saab väärtuse 0 → 1.
 // Kui Windowsis on efektid välja lülitatud ("vähenda liikumist"), hüpatakse kohe lõppu.
 public static class Animatsioon
 {
+    // Kõik üleminekud kestavad kaks korda kauem (pehmem, vähem "hüplik")
+    public const double Kordaja = 2.0;
+
+    // Windowsi taimeri täpsus 1 ms (vaikimisi ~15,6 ms) – kaadreid tuleb ~100 sekundis, mitte ~64
+    [System.Runtime.InteropServices.DllImport("winmm.dll")] private static extern uint timeBeginPeriod(uint ms);
+    private static bool tapsus;
+    private static void Tapsus()
+    {
+        if (tapsus) return;
+        tapsus = true;
+        try { timeBeginPeriod(1); } catch { }
+    }
+
     // Sujuv lõpp (ease-out cubic)
     public static double Sujuv(double t) => 1 - Math.Pow(1 - Math.Clamp(t, 0, 1), 3);
 
@@ -29,7 +42,10 @@ public static class Animatsioon
             return null;
         }
 
-        var taimer = new System.Windows.Forms.Timer { Interval = 15 };
+        Tapsus();
+        ms = (int)(ms * Kordaja);
+        viivitus = (int)(viivitus * Kordaja);
+        var taimer = new System.Windows.Forms.Timer { Interval = 10 };
         var kell = Stopwatch.StartNew();
         void Peata(object? s, EventArgs e) { taimer.Stop(); taimer.Dispose(); }
         omanik.Disposed += Peata;
@@ -58,7 +74,8 @@ public static class Animatsioon
     public static System.Windows.Forms.Timer? Tsykkel(Control omanik, Action<double> faas, int intervall = 30)
     {
         if (!Lubatud) { faas(0); return null; }
-        var taimer = new System.Windows.Forms.Timer { Interval = intervall };
+        Tapsus();
+        var taimer = new System.Windows.Forms.Timer { Interval = Math.Max(10, intervall / 2) };   // 2× sagedamini = sujuvam
         var kell = Stopwatch.StartNew();
         taimer.Tick += (s, e) =>
         {
