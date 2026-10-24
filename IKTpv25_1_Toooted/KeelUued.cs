@@ -139,6 +139,12 @@ public static partial class Keel
         L("Tasuta kojuveoni", "До бесплатной доставки", "Until free delivery"); L("Kojuvedu on tasuta", "Доставка бесплатна", "Delivery is free");
         L("veel {0}", "ещё {0}", "{0} more"); L("Tasuta alates {0}", "Бесплатно от {0}", "Free from {0}"); L("Kategooriad", "Категории", "Categories");
         L("Tooteinfo", "О товаре", "Product info"); L("Ostukorv", "Корзина", "Basket");
+        L("Vali vasakult ost, et näha tšekki.", "Выберите покупку слева, чтобы увидеть чек.", "Select a purchase on the left to see the receipt.");
+        L("TAGASTATUD", "ВОЗВРАЩЕНО", "RETURNED"); L("Vahesumma", "Промежуточная сумма", "Subtotal"); L("Tarne", "Доставка", "Delivery");
+        L("Kättesaamine", "Получение", "Delivery"); L("Klient ja tšekk", "Клиент и чек", "Customer and receipt"); L("Makse", "Оплата", "Payment"); L("Maksa", "Оплатить", "Pay");
+        L("+ veel {0}", "+ ещё {0}", "+ {0} more");
+        L("Profiil", "Профиль", "Profile"); L("Turvalisus", "Безопасность", "Security"); L("Välimus", "Внешний вид", "Appearance");
+        L("Hele", "Светлая", "Light"); L("Tume", "Тёмная", "Dark"); L("Klassik", "Классика", "Classic"); L("Moodne", "Современный", "Modern");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }

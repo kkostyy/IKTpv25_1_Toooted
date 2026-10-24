@@ -285,6 +285,22 @@ namespace IKTpv25_1_Toooted
             Controls.Add(yla);
             keskel.BringToFront();
 
+            // Moodne (lõuend 2.4): nimekiri valgel ümaral kaardil, pere paneel paremal
+            if (Teema.OnMoodne)
+            {
+                filter.Height = 50;   // "pill" valikud on kõrgemad
+                MoodneStiil.KaardiSisse(this, yla, lisa, filter, keskel, nupud);
+                lblPealkiri.Font = new Font("Segoe UI", 19F, FontStyle.Bold);
+                tabeliKaart.BorderColor = tabeliKaart.FillColor;
+                if (nupud.Controls.Count > 0 && nupud.Controls[0] is RoundedButton peamine)
+                {
+                    peamine.AutoSize = false;
+                    peamine.Size = new Size(230, 46);
+                    peamine.TextAlign = ContentAlignment.MiddleLeft;
+                    MoodneUi.NoolStiil(peamine);
+                }
+            }
+
             Load += (s, e) => Laadi();
             Shown += (s, e) => txtToode.Focus();
             FormClosed += (s, e) => { labi.Dispose(); elav.Stop(); elav.Dispose(); };

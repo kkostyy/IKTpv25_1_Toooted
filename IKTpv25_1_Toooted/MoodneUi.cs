@@ -212,3 +212,97 @@ public static class MoodneUi
         };
     }
 }
+
+// Moodsa disaini üldised "kosmeetika" abid (kõik dialoogid)
+public static class MoodneStiil
+{
+    // CheckBox → lüliti, RadioButton → "pill"; rekursiivselt kõigile elementidele
+    public static void Rakenda(Control juur)
+    {
+        foreach (Control c in juur.Controls)
+        {
+            if (c is CheckBox cb && cb.Tag as string != "moodne") Lyliti(cb);
+            else if (c is RadioButton rb && rb.Tag as string != "moodne") Pill(rb);
+            Rakenda(c);
+        }
+    }
+
+    private static void Lyliti(CheckBox cb)
+    {
+        cb.Tag = "moodne";
+        cb.AutoSize = false;
+        cb.Height = Math.Max(cb.Height, 30);
+        cb.Width = TextRenderer.MeasureText(cb.Text, cb.Font).Width + 60;
+        cb.Cursor = Cursors.Hand;
+        double asend = cb.Checked ? 1 : 0;
+        cb.CheckedChanged += (s, e) =>
+        {
+            double algus = asend, siht = cb.Checked ? 1 : 0;
+            Animatsioon.Kaivita(cb, 200, t => { asend = algus + (siht - algus) * Animatsioon.Sujuv(t); cb.Invalidate(); });
+        };
+        cb.TextChanged += (s, e) => cb.Width = TextRenderer.MeasureText(Keel.T(cb.Text), cb.Font).Width + 60;
+        cb.Paint += (s, e) =>
+        {
+            var g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.Clear(cb.Parent?.BackColor ?? Teema.Pind);
+            var rada = new RectangleF(1, (cb.Height - 22) / 2f, 40, 22);
+            Color c = Ymardus.Segu(Teema.Raam, Teema.Edu, (float)asend);
+            if (!cb.Enabled) c = Teema.Joon;
+            using (var tee = Ymardus.Tee(rada, 11)) using (var b = new SolidBrush(c)) g.FillPath(b, tee);
+            float x = rada.X + 2 + (float)(asend * 18);
+            using (var b = new SolidBrush(Color.White)) g.FillEllipse(b, x, rada.Y + 2, 18, 18);
+            TextRenderer.DrawText(g, cb.Text, cb.Font, new Rectangle(50, 0, cb.Width - 50, cb.Height), cb.Enabled ? Teema.Tekst : Teema.TekstNork,
+                TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix | TextFormatFlags.EndEllipsis);
+        };
+    }
+
+    private static void Pill(RadioButton rb)
+    {
+        rb.Tag = "moodne";
+        rb.AutoSize = false;
+        rb.Height = 38;
+        rb.Width = TextRenderer.MeasureText(rb.Text, rb.Font).Width + 52;
+        rb.Cursor = Cursors.Hand;
+        rb.TextChanged += (s, e) => rb.Width = TextRenderer.MeasureText(Keel.T(rb.Text), rb.Font).Width + 52;
+        rb.CheckedChanged += (s, e) => rb.Invalidate();
+        rb.Paint += (s, e) =>
+        {
+            var g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.Clear(rb.Parent?.BackColor ?? Teema.Pind);
+            var r = new RectangleF(0.5f, 0.5f, rb.Width - 2, rb.Height - 2);
+            using (var tee = Ymardus.Tee(r, r.Height / 2))
+            using (var b = new SolidBrush(rb.Checked ? Ymardus.Segu(Teema.Pind, Teema.Teine, 0.1f) : Teema.Paneel2))
+            {
+                g.FillPath(b, tee);
+                if (rb.Checked) using (var p = new Pen(Teema.Teine, 2)) g.DrawPath(p, tee);
+            }
+            var ring = new RectangleF(14, (rb.Height - 16) / 2f, 16, 16);
+            using (var p = new Pen(rb.Checked ? Teema.Teine : Teema.Raam, 2)) g.DrawEllipse(p, ring);
+            if (rb.Checked) using (var b = new SolidBrush(Teema.Teine)) g.FillEllipse(b, RectangleF.Inflate(ring, -4, -4));
+            TextRenderer.DrawText(g, rb.Text, rb.Font, new Rectangle(38, 0, rb.Width - 40, rb.Height), rb.Enabled ? Teema.Tekst : Teema.TekstNork,
+                TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix | TextFormatFlags.EndEllipsis);
+        };
+    }
+
+    // Vormi dokitud osad valgele ümarale kaardile hallil taustal (lõuendi "bento" stiil)
+    public static RoundedPanel KaardiSisse(Form vorm, params Control[] osad)
+    {
+        vorm.BackColor = Teema.Taust;
+        vorm.Padding = new Padding(16);
+        var kaart = new RoundedPanel { Dock = DockStyle.Fill, Radius = 16, FillColor = Teema.Pind, BorderColor = Teema.Pind, BackColor = Teema.Taust, Padding = new Padding(12, 14, 12, 14) };
+        foreach (var o in osad.Reverse())
+        {
+            vorm.Controls.Remove(o);
+            if (o.BackColor == Teema.Taust) o.BackColor = Teema.Pind;
+            foreach (Control l in o.Controls) if (l.BackColor == Teema.Taust) l.BackColor = Teema.Pind;
+            kaart.Controls.Add(o);
+        }
+        // õige dokkimise järjekord: Fill viimasena
+        foreach (var o in osad.Where(o => o.Dock == DockStyle.Fill)) o.BringToFront();
+        vorm.Controls.Add(kaart);
+        kaart.BringToFront();
+        return kaart;
+    }
+}
