@@ -1,0 +1,43 @@
+# Android: APK + ekraanipildid kõigist vaadetest. Tulemus lisatakse eelväljalaske "android" juurde.
+name: Android
+
+on:
+  push:
+    paths: ['android/**', '.github/workflows/android.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: APK ja ekraanipildid
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease recordPaparazziDebug --stacktrace
+      - name: Paki
+        run: |
+          cp android/app/build/outputs/apk/release/app-release.apk AktPood.apk
+          cd android/app/src/test/snapshots/images && zip -q ../../../../../../ekraanid.zip *.png
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android
+          target_commitish: ${{ github.sha }}
+          name: AKT pood Android (testversioon)
+          prerelease: true
+          make_latest: false
+          files: |
+            AktPood.apk
+            ekraanid.zip
+          body: |
+            Telefoni versioon (Android 8+). Laadi AktPood.apk telefoni ja ava (luba "tundmatutest allikatest").
+            Proovi: mari / mari123 (klient) või admin / admin123 (omanik).
