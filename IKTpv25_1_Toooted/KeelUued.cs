@@ -178,6 +178,8 @@ public static partial class Keel
         L("{0} toodet ja toiteväärtus", "{0} товаров и пищевая ценность", "{0} products and nutrition"); L("{1} klienti kliendikaardiga", "{1} клиента с картой клиента", "{1} customers with loyalty card");
         L("{2} ostu 30 päeva peale", "{2} покупок за 30 дней", "{2} purchases over 30 days"); L("Statistika ja soojuskaart", "Статистика и тепловая карта", "Statistics and heat map");
         L("Valmis!", "Готово!", "Done!"); L("Pood, ajalugu, statistika ja soojuskaart on täidetud.", "Магазин, история, статистика и тепловая карта заполнены.", "Shop, history, statistics and heat map are filled.");
+        L("Vähem", "Меньше", "Less"); L("Rohkem", "Больше", "More"); L("Tipp:", "Пик:", "Peak:");
+        L("Marginaal = (müügihind − sisseostuhind) / müügihind. Sisseostuhind lisatakse toote andmetesse.", "Маржа = (цена продажи − закупочная цена) / цена продажи. Закупочная цена указывается в данных товара.", "Margin = (sale price − purchase price) / sale price. The purchase price is set in the product data.");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }
