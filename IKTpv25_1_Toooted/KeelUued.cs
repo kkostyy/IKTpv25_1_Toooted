@@ -25,6 +25,17 @@ public static partial class Keel
         L("Sellel tootel on samal ajal juba kampaania.", "У этого товара в это время уже есть акция.", "This product already has a campaign at that time.");
         L("Kampaania „{0}“ salvestatud", "Акция «{0}» сохранена", "Campaign “{0}” saved"); L("Kampaania „{0}“ lõpetatud – hind on tagasi", "Акция «{0}» завершена – цена вернулась", "Campaign “{0}” ended – price restored");
         L("Kas kustutan kampaania?", "Удалить акцию?", "Delete the campaign?");
+        // --- Dieet ja allergeenid ---
+        L("Minu dieet", "Моя диета", "My diet"); L("Laktoosivaba", "Без лактозы", "Lactose-free"); L("Gluteenivaba", "Без глютена", "Gluten-free");
+        L("Vegan", "Веган", "Vegan"); L("Pähklivaba", "Без орехов", "Nut-free"); L("Eesti toode", "Эстонский товар", "Estonian product");
+        L("Range režiim", "Строгий режим", "Strict mode"); L("Peida sobimatud", "Скрыть неподходящие", "Hide unsuitable");
+        L("Sulle sobib {0} / {1} toodet", "Вам подходит {0} / {1} товаров", "{0} / {1} products suit you");
+        L("Koostis on teada {0} tootel", "Состав известен у {0} товаров", "Ingredients known for {0} products");
+        L("Ei sobi", "Не подходит", "Not suitable"); L("Sisaldab: {0}", "Содержит: {0}", "Contains: {0}");
+        L("Võib sisaldada: {0}", "Может содержать: {0}", "May contain: {0}"); L("Allergeenid", "Аллергены", "Allergens"); L("Märgised", "Отметки", "Labels");
+        L("piim", "молоко", "milk"); L("nisu", "пшеница", "wheat"); L("rukis", "рожь", "rye"); L("oder", "ячмень", "barley"); L("kaer", "овёс", "oats");
+        L("gluteen", "глютен", "gluten"); L("muna", "яйцо", "egg"); L("soja", "соя", "soy"); L("kala", "рыба", "fish"); L("pähklid", "орехи", "nuts");
+        L("seller", "сельдерей", "celery"); L("sinep", "горчица", "mustard"); L("seesam", "кунжут", "sesame");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }
