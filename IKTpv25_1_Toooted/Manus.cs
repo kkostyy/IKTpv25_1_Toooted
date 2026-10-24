@@ -13,7 +13,8 @@ public static class Aken
 {
     public static void Ava(IWin32Window? omanik, Form vorm, Action? suletud = null)
     {
-        if (Teema.OnMoodne && Host(omanik) is IVormiHost h)
+        // läbipaistvusega "leht" (nt pere dialoog oma tumeda kihiga) jääb hüpikaknaks
+        if (Teema.OnMoodne && vorm.Opacity >= 1 && Host(omanik) is IVormiHost h)
         {
             h.Manusta(vorm, suletud);
             return;
@@ -79,6 +80,16 @@ public static class Aken
         konteiner.Controls.Add(vorm);
         vorm.Show();
         vorm.BringToFront();
+        // sisu paigutus uue suuruse järgi (muidu jäi dokitud sisu algse akna suuruseks)
+        // raamita lapsaknal on sisu = kogu suurus; vahel jäi ClientSize vanaks (sisu ei venind)
+        void Sobita()
+        {
+            if (vorm.IsDisposed) return;
+            if (vorm.ClientSize != vorm.Size) vorm.ClientSize = vorm.Size;
+            vorm.PerformLayout();
+        }
+        vorm.SizeChanged += (s, e) => Sobita();
+        vorm.BeginInvoke(new Action(() => { Sobita(); if (!vorm.IsDisposed) vorm.Invalidate(true); }));
         vorm.Focus();
     }
 }
