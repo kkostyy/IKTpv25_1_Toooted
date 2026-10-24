@@ -50,6 +50,7 @@ public class ToodeVorm : Form
     protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
+        UiStiil.LisaTagasiNupp(this);   // ← Tagasi poodi (ka Esc, Alt+←)
         Teema.Rakenda(this);
     }
 
@@ -360,7 +361,30 @@ public class ToodeVorm : Form
         Info("Kategooria", toode.Kategooria?.Kategooria_nimetus);
 
         if (!string.IsNullOrWhiteSpace(toode.Kirjeldus)) { Pealkiri("Toote andmed"); Tekst(toode.Kirjeldus); }
-        if (!string.IsNullOrWhiteSpace(toode.Koostisosad)) { Pealkiri("Koostisosad"); Tekst(toode.Koostisosad); }
+        // Allergeenid: kiibid + koostis, kus allergeenid on punasel taustal
+        var kiibid = DieediMargid.Kiibid(toode);
+        if (kiibid.Count > 0)
+        {
+            Pealkiri("Allergeenid");
+            var rida = new FlowLayoutPanel { AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, BackColor = Teema.Pind, Margin = new Padding(0, 4, 0, 4), MaximumSize = new Size(Laius - 60, 0) };
+            foreach (var (tekst, varv) in kiibid)
+                rida.Controls.Add(new Label
+                {
+                    Text = tekst,
+                    AutoSize = true,
+                    Padding = new Padding(10, 4, 10, 4),
+                    Margin = new Padding(0, 0, 8, 0),
+                    Font = new Font("Segoe UI Semibold", 9F),
+                    ForeColor = Color.White,
+                    BackColor = varv
+                });
+            p.Controls.Add(rida);
+        }
+        if (!string.IsNullOrWhiteSpace(toode.Koostisosad))
+        {
+            Pealkiri("Koostisosad");
+            p.Controls.Add(DieediMargid.Koostis(toode.Koostisosad.Trim(), Laius - 60));
+        }
         if (!string.IsNullOrWhiteSpace(toode.Lisainfo)) { Pealkiri("Lisainfo"); Tekst(toode.Lisainfo); }
 
         if (!string.IsNullOrWhiteSpace(toode.Toitevaartus))

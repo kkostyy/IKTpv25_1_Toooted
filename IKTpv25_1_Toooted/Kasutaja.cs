@@ -5,6 +5,7 @@ namespace IKTpv25_1_Toooted;
 // Rollid: "Omanik" näeb vahelehti Tooted ja Kassa, "Müüja" ainult Kassa,
 // "Ostja" (klient) näeb ainult e-poodi; tal on alati kliendikaart.
 [Index(nameof(Kasutajanimi), IsUnique = true)]   // sama nimega kahte kasutajat ei saa olla
+[Index(nameof(PereKood))]
 public class Kasutaja
 {
     public const string Omanik = "Omanik";
@@ -23,5 +24,8 @@ public class Kasutaja
 
     // Kasutaja kliendikaart (ostjal luuakse registreerimisel automaatselt)
     public int? KlientId { get; set; }
+
+    // Pere ühine ostunimekiri: sama koodiga kasutajad näevad sama nimekirja
+    public string? PereKood { get; set; }
     public Klient? Klient { get; set; }
 }

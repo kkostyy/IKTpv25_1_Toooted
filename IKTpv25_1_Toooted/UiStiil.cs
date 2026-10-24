@@ -200,5 +200,87 @@
             nupp.Enabled = lubatud;
             nupp.Cursor = lubatud ? Cursors.Hand : Cursors.Default;
         }
+
+        // ---------------------------------------------------------------
+        //  Nupp "← Tagasi" akna vasakus ülanurgas: sulgeb akna (dialoogil Cancel).
+        //  Kui akna ülaosas on päisepaneel, läheb nupp sinna; muidu tekib uus päis
+        //  ja ülejäänud elemendid nihkuvad allapoole. Esc ja Alt+← sulgevad samuti.
+        // ---------------------------------------------------------------
+        private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Form, TagasiNupp> tagasiNupud = new();
+
+        public static TagasiNupp? AknaTagasiNupp(Form vorm) => tagasiNupud.TryGetValue(vorm, out var n) ? n : null;
+
+        public static TagasiNupp LisaTagasiNupp(Form vorm, Label? pealkiri = null, Action? tagasi = null)
+        {
+            if (AknaTagasiNupp(vorm) is TagasiNupp olemas) return olemas;
+
+            var nupp = new TagasiNupp { TabIndex = 0, Name = "tagasiNupp" };
+            nupp.Click += (s, e) => (tagasi ?? (() => SulgeTagasi(vorm)))();
+            tagasiNupud.AddOrUpdate(vorm, nupp);
+
+            vorm.SuspendLayout();
+            var ylemine = vorm.Controls.Cast<Control>()
+                .Where(c => c.Dock == DockStyle.Top && c.Visible)
+                .OrderByDescending(c => vorm.Controls.GetChildIndex(c))   // kõige ülemine dokitud
+                .FirstOrDefault();
+
+            if (pealkiri == null && ylemine is Panel p && p is not FlowLayoutPanel && p.Height >= 56)
+            {
+                // Olemasolev päis: vasakul olevad elemendid nihkuvad nupu võrra paremale
+                int nihe = nupp.Width + 16;
+                foreach (Control c in p.Controls)
+                    if (c.Dock == DockStyle.None && c.Left < nupp.Width + 32 && (c.Anchor & AnchorStyles.Right) == 0) c.Left += nihe;
+                nupp.Location = new Point(16, (p.Height - nupp.Height) / 2);
+                p.Controls.Add(nupp);
+            }
+            else
+            {
+                const int korgus = 68;
+                var pais = new Panel { Dock = DockStyle.Top, Height = korgus, BackColor = vorm.BackColor, Name = "tagasiPais" };
+                nupp.Location = new Point(16, 12);
+                pais.Controls.Add(nupp);
+
+                var vabad = vorm.Controls.Cast<Control>().Where(c => c.Dock == DockStyle.None && c != pealkiri).ToList();
+                bool dokitud = vorm.Controls.Cast<Control>().Any(c => c.Dock != DockStyle.None);
+                if (pealkiri != null)
+                {
+                    vorm.Controls.Remove(pealkiri);
+                    pealkiri.Location = new Point(nupp.Right + 16, (korgus - pealkiri.Height) / 2);
+                    pais.Controls.Add(pealkiri);
+                }
+                int nihe = vabad.Count == 0 ? 0 : pealkiri != null ? Math.Max(0, korgus + 8 - vabad.Min(c => c.Top)) : korgus;
+                foreach (var c in vabad)
+                    if ((c.Anchor & AnchorStyles.Top) != 0 || (c.Anchor & AnchorStyles.Bottom) == 0) c.Top += nihe;
+
+                int kasv = Math.Max(nihe, dokitud ? korgus : 0);
+                vorm.Controls.Add(pais);
+                pais.SendToBack();   // dokitakse esimesena → kõige üles
+                if (vorm.WindowState == FormWindowState.Normal)
+                {
+                    if (vorm.MinimumSize.Height > 0) vorm.MinimumSize = new Size(vorm.MinimumSize.Width, vorm.MinimumSize.Height + kasv);
+                    vorm.ClientSize = new Size(vorm.ClientSize.Width, vorm.ClientSize.Height + kasv);
+                }
+            }
+            vorm.ResumeLayout(true);
+
+            if (vorm is not ITagasi)
+            {
+                vorm.KeyPreview = true;
+                vorm.KeyDown += (s, e) =>
+                {
+                    bool esc = e.KeyCode == Keys.Escape && vorm.CancelButton == null && !(vorm.ActiveControl is TextBox t && t.TextLength > 0);
+                    if (esc || (e.Alt && e.KeyCode == Keys.Left)) { e.Handled = e.SuppressKeyPress = true; nupp.Vajuta(); }
+                };
+            }
+            return nupp;
+        }
+
+        // Sulgemine nupu "Tagasi" järgi (dialoogil Cancel)
+        public static void SulgeTagasi(Form vorm)
+        {
+            if (vorm is ITagasi t) { t.MineTagasi(); return; }
+            if (vorm.Modal) vorm.DialogResult = DialogResult.Cancel;
+            vorm.Close();
+        }
     }
 }

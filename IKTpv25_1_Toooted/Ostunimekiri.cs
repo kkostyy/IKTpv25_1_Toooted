@@ -24,8 +24,8 @@ namespace IKTpv25_1_Toooted
                 toodeId = toode;
             }
 
-            int kasutajaId = AktiivneKasutaja.Id;
-            var ostmata = db.Ostunimekiri.Where(r => r.KasutajaId == kasutajaId && !r.Ostetud);
+            var pere = Pere.NahtavadKasutajad(db);   // pere nimekirjas sama toode ainult üks kord
+            var ostmata = db.Ostunimekiri.Where(r => pere.Contains(r.KasutajaId) && !r.Ostetud);
             var olemas = toodeId is int tid
                 ? ostmata.FirstOrDefault(r => r.ToodeId == tid)
                 : ostmata.FirstOrDefault(r => r.Tekst == tekst);
@@ -50,11 +50,12 @@ namespace IKTpv25_1_Toooted
                 var ids = ost.Read.Where(r => r.ToodeId != null).Select(r => r.ToodeId).ToList();
                 var nimed = ost.Read.Select(r => r.Toodenimetus).ToList();
                 using var db = new ToodedContext();
+                var pere = Pere.NahtavadKasutajad(db);
                 var read = db.Ostunimekiri
-                    .Where(r => r.KasutajaId == AktiivneKasutaja.Id && !r.Ostetud &&
+                    .Where(r => pere.Contains(r.KasutajaId) && !r.Ostetud &&
                                 ((r.ToodeId != null && ids.Contains(r.ToodeId)) || nimed.Contains(r.Tekst)))
                     .ToList();
-                foreach (var r in read) { r.Ostetud = true; r.OstetudAeg = DateTime.Now; }
+                foreach (var r in read) { r.Ostetud = true; r.OstetudAeg = DateTime.Now; r.OstisKasutajaId = AktiivneKasutaja.Id; }
                 db.SaveChanges();
                 if (read.Count > 0) Muutus?.Invoke();
                 return read.Count;
@@ -68,7 +69,8 @@ namespace IKTpv25_1_Toooted
             try
             {
                 using var db = new ToodedContext();
-                return db.Ostunimekiri.Count(r => r.KasutajaId == AktiivneKasutaja.Id && !r.Ostetud);
+                var pere = Pere.NahtavadKasutajad(db);
+                return db.Ostunimekiri.Count(r => pere.Contains(r.KasutajaId) && !r.Ostetud);
             }
             catch { return 0; }
         }
@@ -83,7 +85,10 @@ namespace IKTpv25_1_Toooted
         public string Hind { get; set; } = "";
         public string Laos { get; set; } = "";
         public DateTime Lisatud { get; set; }
+        public string Lisas { get; set; } = "";     // pere nimekirjas: kes lisas
+        public string Ostis { get; set; } = "";     // "ostis Jaan"
         internal int? ToodeId;
+        internal int KasutajaId;
     }
 
     // ===================================================================
@@ -100,22 +105,65 @@ namespace IKTpv25_1_Toooted
         private readonly Font labi = new("Segoe UI", 9F, FontStyle.Strikeout);
         private List<NimekirjaVaade> koik = new();
 
-        public OstunimekiriVorm() : base("Ostunimekiri", 760, 640)
+        // Pere nimekiri
+        private record Tegevus(DateTime Aeg, int KasutajaId, string Nimi, string Tekst);
+        private List<Kasutaja> liikmed = new();
+        private List<Tegevus> tegevused = new();
+        private string? pereKood;
+        private readonly Label lblPealkiri;
+        private readonly PereAvatarid avatarid = new();
+        private readonly Panel perePaneel;
+        private readonly KoodiPlaadid koodiPlaadid = new();
+        private readonly TegevusteLoend tegevusteLoend = new();
+        private readonly System.Windows.Forms.Timer elav = new() { Interval = 5000 };
+
+        public OstunimekiriVorm() : base("Ostunimekiri", 1040, 660)
         {
             FormBorderStyle = FormBorderStyle.Sizable;
             MaximizeBox = true;
-            MinimumSize = new Size(640, 520);
+            MinimumSize = new Size(900, 540);
             BackColor = Teema.Taust;
 
-            // ---- Pealkiri + edenemine ----
+            // ---- Pealkiri + edenemine + pere ----
             var yla = new Panel { Dock = DockStyle.Top, Height = 92, BackColor = Teema.Taust };
-            yla.Controls.Add(new Label { Text = "Ostunimekiri", Location = new Point(18, 12), AutoSize = true, Font = UiStiil.PealkirjaFont, ForeColor = Teema.Tekst, BackColor = Teema.Taust });
+            lblPealkiri = new Label { Text = "Ostunimekiri", Location = new Point(18, 12), AutoSize = true, Font = UiStiil.PealkirjaFont, ForeColor = Teema.Tekst, BackColor = Teema.Taust };
+            yla.Controls.Add(lblPealkiri);
+            var kutsu = UiStiil.LooNupp("+ Kutsu / liitu", (s, e) => AvaPereDialoog(), true);
+            ((RoundedButton)kutsu).Radius = 16;
+            yla.Controls.Add(kutsu);
+            yla.Controls.Add(avatarid);
+            yla.Resize += (s, e) =>
+            {
+                kutsu.Location = new Point(yla.Width - kutsu.Width - 18, 12);
+                avatarid.Location = new Point(kutsu.Left - avatarid.Width - 12, 10);
+            };
             lblArv = new Label { Location = new Point(20, 50), AutoSize = true, ForeColor = Teema.Tekst2, BackColor = Teema.Taust, Font = new Font("Segoe UI Semibold", 9.5F) };
             yla.Controls.Add(lblArv);
             edenemine.Location = new Point(20, 74);
             edenemine.Size = new Size(300, 8);
             yla.Controls.Add(edenemine);
             yla.Resize += (s, e) => edenemine.Width = Math.Max(200, yla.Width - 40);
+
+            // ---- Paremal: pere kood ja viimased tegevused (tume paneel) ----
+            perePaneel = new Panel { Dock = DockStyle.Right, Width = 290, Padding = new Padding(0, 0, 16, 8), BackColor = Teema.Taust, Visible = false };
+            var tume = new RoundedPanel { Dock = DockStyle.Fill, Radius = 24, FillColor = Color.FromArgb(27, 28, 31), BorderColor = Color.FromArgb(27, 28, 31), BackColor = Teema.Taust, Padding = new Padding(18, 16, 18, 16) };
+            var kopeeri = (RoundedButton)UiStiil.LooNupp("Kopeeri kood", (s, e) =>
+            {
+                if (pereKood == null) return;
+                try { Clipboard.SetText(pereKood); Teade.Toast("Pere kood kopeeritud"); } catch { }
+            });
+            kopeeri.Dock = DockStyle.Top;
+            kopeeri.AutoSize = false;
+            kopeeri.Height = 40;
+            kopeeri.Radius = 20;
+            koodiPlaadid.Dock = DockStyle.Top;
+            tegevusteLoend.Dock = DockStyle.Fill;
+            tume.Controls.Add(tegevusteLoend);
+            tume.Controls.Add(new Panel { Dock = DockStyle.Top, Height = 18, BackColor = Color.FromArgb(27, 28, 31) });
+            tume.Controls.Add(kopeeri);
+            tume.Controls.Add(new Panel { Dock = DockStyle.Top, Height = 12, BackColor = Color.FromArgb(27, 28, 31) });
+            tume.Controls.Add(koodiPlaadid);
+            perePaneel.Controls.Add(tume);
 
             // ---- Lisamise rida ----
             var lisa = new Panel { Dock = DockStyle.Top, Height = 58, BackColor = Teema.Taust, Padding = new Padding(16, 6, 16, 6) };
@@ -177,6 +225,29 @@ namespace IKTpv25_1_Toooted
                 if (e.KeyCode == Keys.Space && vork.CurrentRow != null) { Vaheta(vork.CurrentRow.Index); e.Handled = true; }
                 if (e.KeyCode == Keys.Delete) { KustutaValitud(); e.Handled = true; }
             };
+            // Ümar linnuke "Ostetud" veerus
+            vork.CellPainting += (s, e) =>
+            {
+                if (e.RowIndex < 0 || e.ColumnIndex < 0 || vork.Columns[e.ColumnIndex].Name != "Ostetud" || e.Graphics == null) return;
+                e.PaintBackground(e.CellBounds, true);
+                bool on = e.Value is true;
+                var g = e.Graphics;
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                var r = new RectangleF(e.CellBounds.X + (e.CellBounds.Width - 20) / 2f, e.CellBounds.Y + (e.CellBounds.Height - 20) / 2f, 20, 20);
+                if (on)
+                {
+                    using var b = new SolidBrush(Teema.Edu);
+                    g.FillEllipse(b, r);
+                    using var p = new Pen(Color.White, 2f) { StartCap = System.Drawing.Drawing2D.LineCap.Round, EndCap = System.Drawing.Drawing2D.LineCap.Round };
+                    g.DrawLines(p, new[] { new PointF(r.X + 5, r.Y + 10), new PointF(r.X + 8.5f, r.Y + 13.5f), new PointF(r.X + 15, r.Y + 6.5f) });
+                }
+                else
+                {
+                    using var p = new Pen(Teema.Raam, 1.6f);
+                    g.DrawEllipse(p, r);
+                }
+                e.Handled = true;
+            };
             vork.CellFormatting += (s, e) =>
             {
                 if (e.RowIndex < 0 || vork.Rows[e.RowIndex].DataBoundItem is not NimekirjaVaade r) return;
@@ -184,6 +255,11 @@ namespace IKTpv25_1_Toooted
                 {
                     e.CellStyle.Font = labi;
                     e.CellStyle.ForeColor = Teema.TekstNork;
+                }
+                if (e.CellStyle != null && vork.Columns[e.ColumnIndex].Name == "Ostis")
+                {
+                    e.CellStyle.ForeColor = Teema.Edu;
+                    e.CellStyle.Font = vork.Font;
                 }
             };
             var tabeliKaart = UiStiil.LooKaardiPaneel("Nimekiri  (klõps ruudul või tühik = ostetud / ostmata)", vork);
@@ -202,6 +278,7 @@ namespace IKTpv25_1_Toooted
             nupud.Controls.Add(UiStiil.LooNupp("Kustuta ostetud", (s, e) => KustutaOstetud()));
 
             Controls.Add(keskel);
+            Controls.Add(perePaneel);
             Controls.Add(nupud);
             Controls.Add(filter);
             Controls.Add(lisa);
@@ -210,7 +287,11 @@ namespace IKTpv25_1_Toooted
 
             Load += (s, e) => Laadi();
             Shown += (s, e) => txtToode.Focus();
-            FormClosed += (s, e) => labi.Dispose();
+            FormClosed += (s, e) => { labi.Dispose(); elav.Stop(); elav.Dispose(); };
+
+            // "Elav" pere nimekiri: teiste muudatused tulevad iga 5 s järel nähtavale
+            elav.Tick += (s, e) => { if (pereKood != null && !vork.IsCurrentCellInEditMode && ContainsFocus) Laadi(); };
+            elav.Start();
         }
 
         private void Laadi()
@@ -218,9 +299,17 @@ namespace IKTpv25_1_Toooted
             try
             {
                 using var db = new ToodedContext();
+                var pere = Pere.NahtavadKasutajad(db);
+                liikmed = Pere.Liikmed(db);
+                pereKood = Pere.MinuKood(db);
+                var nimed = db.Kasutajad.AsNoTracking().Where(k => pere.Contains(k.Id)).ToDictionary(k => k.Id, Pere.Nimi);
                 var read = db.Ostunimekiri.AsNoTracking()
-                    .Where(r => r.KasutajaId == AktiivneKasutaja.Id)
+                    .Where(r => pere.Contains(r.KasutajaId))
                     .ToList();
+                tegevused = read.Select(r => new Tegevus(r.Lisatud, r.KasutajaId, nimed.GetValueOrDefault(r.KasutajaId, "?"), Keel.F("lisas „{0}“", r.Tekst)))
+                    .Concat(read.Where(r => r.Ostetud && r.OstetudAeg != null).Select(r => new Tegevus(r.OstetudAeg!.Value, r.OstisKasutajaId ?? r.KasutajaId,
+                        nimed.GetValueOrDefault(r.OstisKasutajaId ?? r.KasutajaId, "?"), Keel.F("ostis „{0}“", r.Tekst))))
+                    .OrderByDescending(t => t.Aeg).Take(8).ToList();
                 var ids = read.Where(r => r.ToodeId != null).Select(r => r.ToodeId!.Value).ToList();
                 var tooted = db.Toodetabel.AsNoTracking().Where(t => ids.Contains(t.Id)).ToDictionary(t => t.Id);
 
@@ -238,7 +327,10 @@ namespace IKTpv25_1_Toooted
                             Hind = t != null ? Ostukorv.Eur(t.Hind * r.Kogus) : "",
                             Laos = t == null ? "" : t.Kogus > 0 ? Keel.F("{0} tk", t.Kogus) : Keel.T("Pole laos"),
                             Lisatud = r.Lisatud,
-                            ToodeId = r.ToodeId
+                            Lisas = nimed.GetValueOrDefault(r.KasutajaId, ""),
+                            Ostis = r.Ostetud && r.OstisKasutajaId is int o ? Keel.F("ostis {0}", nimed.GetValueOrDefault(o, "?")) : "",
+                            ToodeId = r.ToodeId,
+                            KasutajaId = r.KasutajaId
                         };
                     })
                     .ToList();
@@ -267,6 +359,25 @@ namespace IKTpv25_1_Toooted
                 ? Keel.T("Nimekiri on tühi – lisa ülal, mida on vaja osta.")
                 : Keel.F("Ostetud {0} / {1}   ·   ostmata {2}", ostetud, koik.Count, koik.Count - ostetud);
             edenemine.Osa = koik.Count == 0 ? 0 : (float)ostetud / koik.Count;
+
+            // Pere: pealkiri, liikmed, kood, viimased tegevused
+            bool peres = pereKood != null;
+            lblPealkiri.Text = Keel.T(peres ? "Pere ostunimekiri" : "Ostunimekiri");
+            if (peres && koik.Count > 0) lblArv.Text = Keel.F("Ostetud {0} / {1} · kõik näevad sama nimekirja", ostetud, koik.Count);
+            perePaneel.Visible = peres;
+            avatarid.Naita(liikmed);
+            koodiPlaadid.Naita(pereKood);
+            tegevusteLoend.Naita(tegevused.Select(t => (t.KasutajaId, t.Nimi, t.Tekst, t.Aeg)).ToList());
+            if (vork.Columns["Lisas"] is DataGridViewColumn ls) { ls.Visible = peres; ls.FillWeight = 50; }
+            if (vork.Columns["Ostis"] is DataGridViewColumn os) { os.Visible = peres; os.FillWeight = 60; }
+        }
+
+        // Pere loomine / liitumine / lahkumine
+        private void AvaPereDialoog()
+        {
+            using var d = new PereDialoog(pereKood != null);
+            d.ShowDialog(this);
+            if (d.Muudetud) Laadi();
         }
 
         private void LisaRida()
@@ -287,7 +398,7 @@ namespace IKTpv25_1_Toooted
         private void Vaheta(int rida)
         {
             if (vork.Rows[rida].DataBoundItem is not NimekirjaVaade v) return;
-            Muuda(new[] { v.Id }, r => { r.Ostetud = !r.Ostetud; r.OstetudAeg = r.Ostetud ? DateTime.Now : null; });
+            Muuda(new[] { v.Id }, r => { r.Ostetud = !r.Ostetud; r.OstetudAeg = r.Ostetud ? DateTime.Now : null; r.OstisKasutajaId = r.Ostetud ? AktiivneKasutaja.Id : null; });
         }
 
         private List<int> ValitudIdd()
@@ -302,7 +413,7 @@ namespace IKTpv25_1_Toooted
         {
             var ids = ValitudIdd();
             if (ids.Count == 0) { Teade.Show("Vali nimekirjast rida."); return; }
-            Muuda(ids, r => { r.Ostetud = ostetud; r.OstetudAeg = ostetud ? DateTime.Now : null; });
+            Muuda(ids, r => { r.Ostetud = ostetud; r.OstetudAeg = ostetud ? DateTime.Now : null; r.OstisKasutajaId = ostetud ? AktiivneKasutaja.Id : null; });
         }
 
         private void Muuda(IEnumerable<int> ids, Action<OstunimekirjaRida> muutus)
@@ -311,7 +422,8 @@ namespace IKTpv25_1_Toooted
             {
                 var list = ids.ToList();
                 using var db = new ToodedContext();
-                foreach (var r in db.Ostunimekiri.Where(r => list.Contains(r.Id) && r.KasutajaId == AktiivneKasutaja.Id))
+                var pere = Pere.NahtavadKasutajad(db);
+                foreach (var r in db.Ostunimekiri.Where(r => list.Contains(r.Id) && pere.Contains(r.KasutajaId)))
                     muutus(r);
                 db.SaveChanges();
                 Ostunimekiri.TeavitaMuutusest();
@@ -324,13 +436,13 @@ namespace IKTpv25_1_Toooted
         {
             var ids = ValitudIdd();
             if (ids.Count == 0) { Teade.Show("Vali nimekirjast rida."); return; }
-            Kustuta(db => db.Ostunimekiri.Where(r => ids.Contains(r.Id) && r.KasutajaId == AktiivneKasutaja.Id));
+            Kustuta(db => { var pere = Pere.NahtavadKasutajad(db); return db.Ostunimekiri.Where(r => ids.Contains(r.Id) && pere.Contains(r.KasutajaId)); });
         }
 
         private void KustutaOstetud()
         {
             if (!koik.Any(r => r.Ostetud)) { Teade.Toast("Ostetud ridu pole", TeateTyyp.Info); return; }
-            Kustuta(db => db.Ostunimekiri.Where(r => r.Ostetud && r.KasutajaId == AktiivneKasutaja.Id));
+            Kustuta(db => { var pere = Pere.NahtavadKasutajad(db); return db.Ostunimekiri.Where(r => r.Ostetud && pere.Contains(r.KasutajaId)); });
         }
 
         private void Kustuta(Func<ToodedContext, IQueryable<OstunimekirjaRida>> paring)

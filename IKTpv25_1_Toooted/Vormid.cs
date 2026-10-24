@@ -5,8 +5,17 @@ using Microsoft.EntityFrameworkCore;
 namespace IKTpv25_1_Toooted
 {
     // Ühine alus dialoogivormidele: teema värvid, ümardatud raamiga väljad
-    public abstract class KujundusVorm : Form
+    public abstract class KujundusVorm : Form, ITagasi
     {
+        private Label? pealkirjaSilt;
+
+        // Kas aknal on nupp "← Tagasi" (sisselogimisel pole kuhugi tagasi minna)
+        protected virtual bool TagasiNupuga => true;
+
+        // Muutmisvormid: kas sulgemisel küsida, kui midagi on muudetud
+        protected bool KysiSulgemisel { get; set; }
+        protected bool Muudetud { get; set; }
+
         protected KujundusVorm(string pealkiri, int laius, int korgus)
         {
             Text = pealkiri;
@@ -25,7 +34,60 @@ namespace IKTpv25_1_Toooted
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);          // Load-sündmused (andmete laadimine) enne
+            if (TagasiNupuga)
+            {
+                UiStiil.LisaTagasiNupp(this, pealkirjaSilt);
+                KeyPreview = true;
+                if (KysiSulgemisel) JalgiMuudatusi(this);
+            }
             Teema.Rakenda(this);     // siis värvime kõik teema järgi
+        }
+
+        // ← Tagasi, Esc, Alt+←, hiire külgnupp: aken sulgub (muudatuste korral küsib enne)
+        public bool MineTagasi()
+        {
+            if (Modal) DialogResult = DialogResult.Cancel;
+            Close();
+            return IsDisposed || !Visible;
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (TagasiNupuga && (keyData == (Keys.Alt | Keys.Left) ||
+                (keyData == Keys.Escape && CancelButton == null && !(ActiveControl is TextBox t && t.TextLength > 0 && !t.ReadOnly))))
+            {
+                MineTagasi();
+                return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+
+        private void JalgiMuudatusi(Control juur)
+        {
+            foreach (Control c in juur.Controls)
+            {
+                switch (c)
+                {
+                    case TextBox t: t.TextChanged += (s, e) => Muudetud = true; break;
+                    case ComboBox cb: cb.SelectedIndexChanged += (s, e) => Muudetud = true; break;
+                    case NumericUpDown n: n.ValueChanged += (s, e) => Muudetud = true; break;
+                }
+                JalgiMuudatusi(c);
+            }
+        }
+
+        // Salvestamata muudatused: küsitakse igal sulgemisviisil (Tagasi, Esc, ✕)
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            if (KysiSulgemisel && Muudetud && DialogResult != DialogResult.OK && e.CloseReason == CloseReason.UserClosing)
+            {
+                if (Teade.Show("Muudatused on salvestamata. Kas sulgen ikkagi?", "Tagasi", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                {
+                    e.Cancel = true;
+                    DialogResult = DialogResult.None;
+                }
+            }
+            base.OnFormClosing(e);
         }
 
         protected Label Silt(string tekst, int x, int y)
@@ -63,6 +125,7 @@ namespace IKTpv25_1_Toooted
                 ForeColor = Teema.Tekst
             };
             Controls.Add(l);
+            pealkirjaSilt ??= l;
             return l;
         }
 
@@ -95,6 +158,8 @@ namespace IKTpv25_1_Toooted
         private readonly Label lblViga;
         private readonly BrandPaneel bränd;
         private readonly LinkLabel teemaLink;
+
+        protected override bool TagasiNupuga => false;
 
         public LoginVorm() : base(Keel.F("Sisselogimine – {0}", Arve.PoeNimi), 740, 450)
         {

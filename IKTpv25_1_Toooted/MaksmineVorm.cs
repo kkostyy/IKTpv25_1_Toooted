@@ -148,6 +148,7 @@ public class MaksmineVorm : Form
     protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
+        UiStiil.LisaTagasiNupp(this);   // ← Tagasi = tühista
         Teema.Rakenda(this);
         txtSaadud.Text = Summa().ToString("0.00", CultureInfo.InvariantCulture);
 
