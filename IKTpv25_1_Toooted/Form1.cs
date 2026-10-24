@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted
 {
-    public partial class Form1 : Form, IVormiHost
+    public partial class Form1 : Form, IVormiHost, IKiirklahvid
     {
         // Uus valitud pildifail (täistee); null = pilti ei muudeta
         private string? uusPiltTee = null;

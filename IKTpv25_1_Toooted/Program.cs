@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted;
 
@@ -17,6 +17,7 @@ internal static class Program
         Keel.Lae();    // eesti / vene / inglise
         Application.AddMessageFilter(new DisainiKlahv());   // Ctrl+Shift+D igas aknas
         Application.AddMessageFilter(new TagasiHiir());     // hiire külgnupp = tagasi
+        KiirklahvideFilter.Lisa();                          // F1 = kõik kiirklahvid, F2… = vaated
         ElementidePuu.Lisa();                               // F12 = elementide puu faili (ainult AKT_SILUMINE=1)
 
         try
@@ -50,6 +51,15 @@ internal static class Program
             _ = db.Kampaaniad.AsNoTracking().FirstOrDefault();
             _ = db.Saavutused.AsNoTracking().FirstOrDefault();
             _ = db.Partiid.AsNoTracking().FirstOrDefault();
+
+            // Rimi kataloog: esimesel käivitamisel (või uue versiooni korral) vanad tooted välja, Rimi tooted sisse
+            if (RimiKataloog.VajabLaadimist(db, out _))
+            {
+                using var aken = new LaadimiseAken();
+                aken.Show();
+                RimiKataloog.Laadi(db, aken.Olek);
+                aken.Close();
+            }
 
             LooAlgkasutajad(db);
             Kampaaniad.Uuenda(db, DateTime.Now);   // alanud/lõppenud kampaaniate hinnad

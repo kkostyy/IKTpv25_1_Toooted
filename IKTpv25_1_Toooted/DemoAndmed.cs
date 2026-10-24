@@ -2,11 +2,15 @@
 
 namespace IKTpv25_1_Toooted;
 
-// Demoandmed esitluseks: 50 toodet, 3 klienti ja 20 ostu viimase 30 päeva jooksul.
-// Kõik on märgitud Demo = true ja need saab ühe nupuga eemaldada.
+// Demoandmed esitluseks: 3 klienti ja 60 ostu viimase 30 päeva jooksul.
+// Kui poes on Rimi kataloog, ostetakse kataloogi tooteid (uusi tooteid ei looda);
+// tühja poe korral lisatakse ka 50 demotoodet. Kõik on märgitud Demo = true ja need saab ühe nupuga eemaldada.
 public static class DemoAndmed
 {
-    public const int TooteArv = 50, OstuArv = 20;
+    public const int TooteArv = 50, OstuArv = 60;
+
+    // Suur kataloog (Rimi) on olemas → demo kasutab selle tooteid
+    public static bool KasutaKataloogi(ToodedContext db) => db.Toodetabel.Count(t => !t.Demo) >= 200;
 
     // (kategooria, nimi, hind, Eesti, märgised, pant, toiteväärtus 100 g kohta: kcal/rasv/süsiv/valk, pakend)
     private static readonly (int Kat, string Nimi, decimal Hind, bool Eesti, string? Margid, decimal Pant, string? Toit, string Pakend)[] Tooted =
@@ -63,7 +67,7 @@ public static class DemoAndmed
         (7, "Friikartulid Farm Frites 1kg", 2.79m, false, "vegan", 0, "140;4;24;2.5", "1 kg"),
     };
 
-    public static bool OnOlemas(ToodedContext db) => db.Toodetabel.Any(t => t.Demo);
+    public static bool OnOlemas(ToodedContext db) => db.Toodetabel.Any(t => t.Demo) || db.Ostud.Any(o => o.Demo);
 
     // Mis luuakse (demo akna plaatide jaoks)
     public static int KliendiArv => 3;
@@ -79,9 +83,10 @@ public static class DemoAndmed
         if (OnOlemas(db)) return Keel.T("Demoandmed on juba olemas.");
         var juhus = new Random(2026);   // sama tulemus igal korral
 
-        // 1) Tooted
+        // 1) Tooted (ainult tühja poe korral)
         var tooted = new List<Toode>();
-        foreach (var d in Tooted)
+        bool kataloog = KasutaKataloogi(db);
+        foreach (var d in Tooted.Where(_ => !kataloog))
         {
             var (uhik, kogus) = Uhik(d.Pakend);
             var t = new Toode
@@ -115,7 +120,10 @@ public static class DemoAndmed
 
         // 3) Ostud: eri päevad ja kellaajad (soojuskaardi jaoks), 2 tagastatud
         var nyyd = DateTime.Now;
-        var koikTooted = db.Toodetabel.AsNoTracking().ToList();
+        // Kataloogist ~300 toiduainet (kategooriad 1–11), et samad tooted korduksid (prognoos, "ostetakse koos")
+        var koikTooted = kataloog
+            ? db.Toodetabel.AsNoTracking().Where(t => t.KategooriaId <= 11 && t.Kogus > 0).ToList().OrderBy(_ => juhus.Next()).Take(300).ToList()
+            : db.Toodetabel.AsNoTracking().ToList();
         for (int i = 0; i < OstuArv; i++)
         {
             var aeg = nyyd.Date.AddDays(-juhus.Next(0, 30)).AddHours(8 + juhus.Next(0, 14)).AddMinutes(juhus.Next(0, 60));

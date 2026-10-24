@@ -7,7 +7,7 @@ namespace IKTpv25_1_Toooted
     //  ülal lilla riba, päis (logo, otsing, kasutaja, ostukorvi nupp), menüüriba (Tooted, Kampaaniad, ...),
     //  vasakul kategooriate ikoonid, keskel avaleht (riiulid "Parimad pakkumised" jne) või tooteruudustik,
     //  paremal "Sinu ostukorv".
-    public partial class PoodVorm : Form, ITagasi, IVormiHost
+    public partial class PoodVorm : Form, ITagasi, IVormiHost, IKiirklahvid
     {
         private enum Vaade { Avaleht, Kategooria, Kampaaniad, Odav, Lemmikud, Otsing, Muu }
 
@@ -36,7 +36,8 @@ namespace IKTpv25_1_Toooted
         private Vaade vaade = Vaade.Avaleht;
         private KulgMenuu kulg = null!;
         private int? valitudKategooria;
-        private int jarjestus;   // 0 nimi, 1 odavam, 2 kallim, 3 soodustus, 4 kilo-/liitrihind
+        private int jarjestus;
+        private const int LeheSuurus = 60;   // 0 nimi, 1 odavam, 2 kallim, 3 soodustus, 4 kilo-/liitrihind
         private Label lblTere = null!;
         private bool vaigista;   // otsingu välja tühjendamine koodist ei käivita otsingut
 
@@ -575,7 +576,8 @@ namespace IKTpv25_1_Toooted
 
             foreach (var k in kategooriad)
             {
-                var tooted = Filtreeri(koikTooted.Where(t => t.KategooriaId == k.Id).OrderBy(t => t.Toodenimetus));
+                var tooted = Filtreeri(koikTooted.Where(t => t.KategooriaId == k.Id && t.Kogus > 0)
+                    .OrderByDescending(t => t.SoodusProtsent ?? 0).ThenBy(t => t.Toodenimetus).Take(Riiul.MaxRiiulil));
                 if (tooted.Count == 0) continue;
                 int id = k.Id;
                 sisu.Controls.Add(new Riiul(k.Kategooria_nimetus, tooted, () => NaitaKategooria(id), Uhenda));
@@ -715,9 +717,34 @@ namespace IKTpv25_1_Toooted
                 .Where(r => r.Count() > 1)
                 .Select(r => r.Min(t => t.UhikuHind!.Value) is var min ? r.Where(t => t.UhikuHind == min) : Enumerable.Empty<Toode>())
                 .SelectMany(r => r).Select(t => t.Id).ToHashSet();
-            foreach (var t in tooted)
-                ruudustik.Controls.Add(Uhenda(new TooteKaart(t) { Margin = new Padding(0, 0, 16, 16), ParimUhikuHind = parimad.Contains(t.Id), NaitaUhikuHinda = jarjestus == 4 }));
+            // Suur kataloog: kaardid lehekülgede kaupa (60), all nupp "Näita rohkem"
+            int naidatud = 0;
+            Control? rohkem = null;
+            void LisaKaardid()
+            {
+                ruudustik.SuspendLayout();
+                foreach (var t in tooted.Skip(naidatud).Take(LeheSuurus))
+                    ruudustik.Controls.Add(Uhenda(new TooteKaart(t) { Margin = new Padding(0, 0, 16, 16), ParimUhikuHind = parimad.Contains(t.Id), NaitaUhikuHinda = jarjestus == 4 }));
+                naidatud = Math.Min(tooted.Count, naidatud + LeheSuurus);
+                ruudustik.ResumeLayout();
+                Teema.Rakenda(ruudustik);
+                if (rohkem != null)
+                {
+                    rohkem.Visible = naidatud < tooted.Count;
+                    rohkem.Text = Keel.F("Näita rohkem ({0} veel)", tooted.Count - naidatud);
+                }
+            }
             sisu.Controls.Add(ruudustik);
+            if (tooted.Count > LeheSuurus)
+            {
+                var nupp = UiStiil.LooSuurNupp(Keel.F("Näita rohkem ({0} veel)", tooted.Count - LeheSuurus), null, false);
+                nupp.Margin = new Padding(0, 4, 0, 24);
+                nupp.Size = new Size(320, 48);
+                nupp.Click += (s, e) => { LisaKaardid(); SobitaLaiused(); };
+                rohkem = nupp;
+            }
+            LisaKaardid();
+            if (rohkem != null) sisu.Controls.Add(rohkem);
 
             if (tooted.Count == 0)
                 sisu.Controls.Add(TyhiTekst(v switch
@@ -1071,6 +1098,8 @@ namespace IKTpv25_1_Toooted
         private readonly RingNupp vasak, parem;
         private int nihe;
 
+        public const int MaxRiiulil = 16;
+
         public Riiul(string pealkiri, List<Toode> tooted, Action naitaKoiki, Func<TooteKaart, TooteKaart> uhenda)
         {
             Height = 470;
@@ -1086,7 +1115,7 @@ namespace IKTpv25_1_Toooted
             aken = new Panel { Location = new Point(0, 56), Height = 400, BackColor = Teema.Taust };
             liugur = new Panel { Location = new Point(0, 0), Height = 400, BackColor = Teema.Taust };
             int x = 0;
-            foreach (var t in tooted)
+            foreach (var t in tooted.Take(MaxRiiulil))   // suur kataloog: riiulil ainult esimesed, ülejäänud "Näita kõiki"
             {
                 var k = uhenda(new TooteKaart(t));
                 k.Location = new Point(x, 4);

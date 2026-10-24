@@ -255,6 +255,33 @@ public static partial class Keel
         L("Palume kinnitada tellimus ja tarneaeg e-postiga.", "Просим подтвердить заказ и срок поставки по электронной почте.", "Please confirm the order and delivery date by e-mail.");
         L("PDF-i loomine ebaõnnestus:", "Не удалось создать PDF:", "Creating the PDF failed:");
         L("Muu tarnija", "Другой поставщик", "Other supplier");
+        L("Näita rohkem ({0} veel)", "Показать ещё (осталось {0})", "Show more ({0} left)");
+        L("Laadin Rimi kataloogi: {0} toodet…", "Загружаю каталог Rimi: {0} товаров…", "Loading the Rimi catalogue: {0} products…");
+        L("Laadin Rimi kataloogi: {0} / {1}", "Загружаю каталог Rimi: {0} / {1}", "Loading the Rimi catalogue: {0} / {1}");
+        L("Kauasäilivad toidukaubad", "Бакалея", "Pantry");
+        L("Valmistoit", "Готовая еда", "Ready meals");
+        L("Vegantooted", "Веганские продукты", "Vegan products");
+        L("Talu toidab", "С фермы", "Farm food");
+        L("Alkohol", "Алкоголь", "Alcohol");
+        L("Lastekaubad", "Детские товары", "Baby and kids");
+        L("Enesehooldustarbed", "Уход за собой", "Personal care");
+        L("Puhastusvahendid", "Чистящие средства", "Cleaning products");
+        L("Kodu- ja vabaajakaubad", "Товары для дома и досуга", "Home and leisure");
+        L("Lemmikloomakaubad", "Товары для животных", "Pet supplies");
+        L("kataloogi tooted", "товары каталога", "catalogue products");
+        L("ostud päris toodetest", "покупки из настоящих товаров", "purchases of real products");
+        L("Kiirklahvid", "Горячие клавиши", "Keyboard shortcuts");
+        L("Kõik kiirklahvid (see aken)", "Все горячие клавиши (это окно)", "All shortcuts (this window)");
+        L("Tagasi eelmisele lehele", "Назад на предыдущую страницу", "Back to the previous page");
+        L("Vaheta disaini (moodne / klassikaline)", "Сменить дизайн (современный / классический)", "Switch design (modern / classic)");
+        L("Kinnita / vali (dialoogides)", "Подтвердить / выбрать (в диалогах)", "Confirm / select (in dialogs)");
+        L("Sulge: Esc, F1 või klõps", "Закрыть: Esc, F1 или клик", "Close: Esc, F1 or click");
+        L("Üldine", "Общие", "General");
+        L("Peaaken", "Главное окно", "Main window");
+        L("E-pood", "Интернет-магазин", "Online shop");
+        L("Otsi toodet", "Искать товар", "Find a product");
+        L("Maksa (vormista ost)", "Оплатить (оформить покупку)", "Pay (check out)");
+        L("Salvesta ostukorv", "Сохранить корзину", "Save basket");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }

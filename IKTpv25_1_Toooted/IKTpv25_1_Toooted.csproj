@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -35,6 +35,10 @@
   <!-- Algtoodete pildid kopeeritakse väljundkausta; Program kopeerib need edasi AppData kausta -->
   <ItemGroup>
     <None Update="Pildid\*.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <!-- Rimi e-poe kataloog (laaditakse andmebaasi esimesel käivitamisel) -->
+    <None Update="Andmed\rimi_kataloog.json.gz">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
