@@ -146,6 +146,20 @@ public class KeelePill : Control
 
 public static class MoodneUi
 {
+    // Lihtne "voolav" paigutus: elemendid reas vasakult paremale, mis ei mahu, läheb uuele reale
+    public static void Voog(Control konteiner, int serv, int vahe)
+    {
+        int x = serv, y = 4, rea = 0, laius = konteiner.ClientSize.Width - serv;
+        foreach (Control c in konteiner.Controls)
+        {
+            if (!c.Visible) continue;
+            if (x > serv && x + c.Width > laius) { x = serv; y += rea + vahe; rea = 0; }
+            c.Location = new Point(x, y);
+            x += c.Width + vahe;
+            rea = Math.Max(rea, c.Height);
+        }
+    }
+
     // Suur "pill" sisestusväli (kõrgus 52, hall taust, fookuses ploomi raam)
     public static RoundedPanel Sisend(out TextBox tekst, int laius, bool parool = false, string vihje = "")
     {

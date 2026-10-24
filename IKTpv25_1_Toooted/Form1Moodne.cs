@@ -98,14 +98,17 @@ namespace IKTpv25_1_Toooted
             lblSisestusPealkiri.Font = new Font("Segoe UI", 15F, FontStyle.Bold);
 
             // Nupud (Uuenda, Lisa, Kustuta, Tooteinfo, pilt, kategooriad) kaardi alla
-            var nupud = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 170, FlowDirection = FlowDirection.LeftToRight, WrapContents = true, BackColor = Teema.Pind, Padding = new Padding(14, 0, 14, 14) };
+            // valge paneel käsitsi "voolava" paigutusega (FlowLayoutPanel jättis tausta joonistamata)
+            var nupud = new RoundedPanel { Dock = DockStyle.Bottom, Height = 150, Radius = 0, FillColor = Teema.Pind, BorderColor = Teema.Pind };
             foreach (var rida in new[] { ridaToode, ridaPilt, ridaKategooria })
                 foreach (Control c in rida.Controls.Cast<Control>().ToList())
                 {
                     rida.Controls.Remove(c);
-                    c.Margin = new Padding(0, 0, 8, 8);
+                    c.MinimumSize = new Size(0, 38);
                     nupud.Controls.Add(c);
                 }
+            bool paigutan = false;
+            nupud.Layout += (s, e) => { if (paigutan) return; paigutan = true; MoodneUi.Voog(nupud, 16, 8); paigutan = false; };
             btnLisa.Text = "+ Lisa uus";
             kaartSisestus.Controls.Add(nupud);
 

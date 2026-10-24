@@ -180,9 +180,16 @@ public static class Teema
         if (juur is Form) juur.Invalidate(true);
     }
 
+    private static readonly System.Reflection.MethodInfo? SeaStiil =
+        typeof(Control).GetMethod("SetStyle", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+
     private static void RakendaUks(Control c)
     {
         Keel.TolgiElement(c);   // tekstid valitud keelde
+
+        // Moodne: tavalised paneelid joonistavad tausta puhvrisse ja suuruse muutusel uuesti (muidu jäi riba joonistamata)
+        if (OnMoodne && c is Panel and not RoundedPanel && c.GetType().Namespace?.StartsWith("System.Windows.Forms") == true)
+            SeaStiil?.Invoke(c, new object[] { ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw, true });
 
         var r = rollid.GetValue(c, k => new Rollid
         {
