@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted
@@ -251,7 +251,7 @@ namespace IKTpv25_1_Toooted
 
         private void Vormista()
         {
-            if (kassa.Vormista()) LaadiTooted();
+            kassa.Vormista(LaadiTooted, this);
         }
     }
 

@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted
 {
@@ -22,8 +22,8 @@ namespace IKTpv25_1_Toooted
         private void SeadistaKassa()
         {
             btnValin.Click += (s, e) => Valin();
-            btnOstan.Click += (s, e) => Vormista();
-            btnMaksta.Click += (s, e) => Vormista();
+            btnOstan.Click += (s, e) => Vormista(null, this);
+            btnMaksta.Click += (s, e) => Vormista(null, this);
             btnSaadaArve.Click += (s, e) => SaadaArve();
             btnPood.Click += (s, e) => AvaPood();
 
@@ -85,17 +85,24 @@ namespace IKTpv25_1_Toooted
         //  Ostan / Maksta: üks aken (klient, boonus, e-post, makse)
         //  Tagastab true, kui ost tehti (avalik, et ka Pood saaks seda kasutada)
         // ---------------------------------------------------------------
-        public bool Vormista()
+        public void Vormista(Action? tehtud = null, IWin32Window? omanik = null)
         {
             if (Ostukorv.Ridad.Count == 0)
             {
                 Teade.Toast("Ostukorv on tühi. Lisa tooteid nupuga \"Valin\" või \"Pood\".", TeateTyyp.Hoiatus);
-                return false;
+                return;
             }
 
-            using var vorm = new MaksmineVorm();
-            IWin32Window omanik = Form.ActiveForm ?? (IWin32Window)this;
-            if (vorm.ShowDialog(omanik) != DialogResult.OK || vorm.Tulemus == null) return false;
+            var vorm = new MaksmineVorm();
+            // moodne: maksmine avaneb samas aknas (poe leht / peaakna sisu)
+            Aken.Ava(omanik ?? Form.ActiveForm ?? (IWin32Window)this, vorm, () =>
+            {
+                if (vorm.DialogResult == DialogResult.OK && vorm.Tulemus != null && PealeMaksmist(vorm)) tehtud?.Invoke();
+            });
+        }
+
+        private bool PealeMaksmist(MaksmineVorm vorm)
+        {
 
             Ost ost = vorm.Tulemus;
             viimaneOst = ost;
@@ -212,6 +219,17 @@ namespace IKTpv25_1_Toooted
         // Kui poes vajutati Ctrl+Shift+D, avatakse kohe teise disaini pood.
         private void AvaPood()
         {
+            // Moodne: pood avaneb peaakna sees (üks aken); disaini vahetusel avatakse uuesti
+            if (Teema.OnMoodne && Teema.OnRimi && Visible && VoibManustada)
+            {
+                var pood = new PoodVorm(this);
+                Aken.Ava(this, pood, () =>
+                {
+                    if (Equals(pood.Tag, "disain") && Teema.OnMoodne) BeginInvoke(new Action(AvaPood));
+                    LaadiTooted();
+                });
+                return;
+            }
             bool uuesti;
             do
             {

@@ -1,4 +1,4 @@
-namespace IKTpv25_1_Toooted;
+﻿namespace IKTpv25_1_Toooted;
 
 // Aken, mis oskab teisi vorme enda sisse paigutada (üks aken kogu programmile, moodne disain)
 public interface IVormiHost
@@ -29,10 +29,10 @@ public static class Aken
     private static IVormiHost? Host(IWin32Window? omanik)
     {
         Control? c = omanik as Control ?? Form.ActiveForm;
-        // manustatud vormi omanik on peaaken (TopLevelControl)
-        var tase = c?.TopLevelControl ?? c;
-        if (tase is IVormiHost h && h.VoibManustada && tase.Visible && !tase.IsDisposed) return h;
-        if (tase is Form f && f.Owner is IVormiHost oh && oh.VoibManustada) return oh;
+        // lähim host vanemate ahelas (pood peaakna sees → pood ise)
+        for (var x = c; x != null; x = x.Parent)
+            if (x is IVormiHost h && h.VoibManustada && x.Visible && !x.IsDisposed) return h;
+        if (c?.FindForm() is Form f && f.Owner is IVormiHost oh && oh.VoibManustada) return oh;
         return null;
     }
 
