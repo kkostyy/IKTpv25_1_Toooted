@@ -47,6 +47,7 @@ namespace IKTpv25_1_Toooted
 
             LooOtsing();
             SeadistaKassa();
+            if (Teema.OnMoodne) RakendaMoodne();   // Ctrl+Shift+M: tume menüü vasakul, KPI-d, paneel paremal
 
             try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch { }
 
@@ -72,6 +73,8 @@ namespace IKTpv25_1_Toooted
         // Teema muutus menüüst Vaade: värvime kõik ümber
         private void VarviUmber()
         {
+            KontrolliMoodneVahetust();
+            if (moodne) BackColor = Teema.Taust;
             NaitaDisain();
             UuendaKeeleTekstid();
             Teema.Rakenda(this);
@@ -90,6 +93,7 @@ namespace IKTpv25_1_Toooted
             kaartSisestus.Visible = tab == tabToode;
             kaartKorv.Visible = tab == tabKassa;
             MargiKulg(tab == tabToode ? "tooted" : "kassa");
+            MoodneVaheleht(tab == tabToode);
         }
 
         private static void LisaFookuseEfekt(RoundedPanel raam, Control sisu)
@@ -153,6 +157,7 @@ namespace IKTpv25_1_Toooted
 
             UuendaOtsinguKategooriad();
             NaitaTooted();   // arvestab otsingut (Form1Otsing.cs)
+            UuendaMoodneKpi();
         }
 
         // Väikese laoseisuga tooted on tabelis punaka taustaga (hoiatus)
