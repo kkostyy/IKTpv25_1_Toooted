@@ -36,7 +36,7 @@ namespace IKTpv25_1_Toooted
         private Vaade vaade = Vaade.Avaleht;
         private KulgMenuu kulg = null!;
         private int? valitudKategooria;
-        private int jarjestus;   // 0 nimi, 1 odavam, 2 kallim, 3 soodustus
+        private int jarjestus;   // 0 nimi, 1 odavam, 2 kallim, 3 soodustus, 4 kilo-/liitrihind
         private Label lblTere = null!;
         private bool vaigista;   // otsingu välja tühjendamine koodist ei käivita otsingut
 
@@ -677,6 +677,8 @@ namespace IKTpv25_1_Toooted
                     1 => q.OrderBy(t => t.Hind),
                     2 => q.OrderByDescending(t => t.Hind),
                     3 => q.OrderByDescending(t => t.SoodusProtsent ?? 0).ThenBy(t => t.Toodenimetus),
+                    // ühikuhinnaga tooted ees (kg ja l eraldi rühmas), siis ülejäänud
+                    4 => q.OrderBy(t => VordlusUhik(t) == null).ThenBy(t => VordlusUhik(t)).ThenBy(t => t.UhikuHind ?? t.Hind),
                     _ => q.OrderBy(t => t.Toodenimetus)
                 };
             var tooted = Filtreeri(q);
@@ -704,7 +706,13 @@ namespace IKTpv25_1_Toooted
                 Margin = new Padding(0),
                 Tag = "ruudustik"
             };
-            foreach (var t in tooted) ruudustik.Controls.Add(Uhenda(new TooteKaart(t) { Margin = new Padding(0, 0, 16, 16) }));
+            // Iga ühiku (kg / l) soodsaim kilo- või liitrihind, kui võrrelda on vähemalt kahte toodet
+            var parimad = tooted.Where(t => VordlusUhik(t) != null).GroupBy(t => VordlusUhik(t)!)
+                .Where(r => r.Count() > 1)
+                .Select(r => r.Min(t => t.UhikuHind!.Value) is var min ? r.Where(t => t.UhikuHind == min) : Enumerable.Empty<Toode>())
+                .SelectMany(r => r).Select(t => t.Id).ToHashSet();
+            foreach (var t in tooted)
+                ruudustik.Controls.Add(Uhenda(new TooteKaart(t) { Margin = new Padding(0, 0, 16, 16), ParimUhikuHind = parimad.Contains(t.Id), NaitaUhikuHinda = jarjestus == 4 }));
             sisu.Controls.Add(ruudustik);
 
             if (tooted.Count == 0)
@@ -718,6 +726,10 @@ namespace IKTpv25_1_Toooted
             LopetaSisu();
         }
 
+        // Ühik, mille järgi hindu võrrelda (kg / l), või null
+        private static string? VordlusUhik(Toode t) =>
+            t.UhikuHind != null && t.Uhik is string u && (u == "kg" || u == "l") ? u : null;
+
         private Control RuudustikuPais(string pealkiri, int arv, bool jarjestusega)
         {
             // Tagasi-nupp on lehe kohal ribal (Navigaator)
@@ -730,8 +742,8 @@ namespace IKTpv25_1_Toooted
 
             if (jarjestusega)
             {
-                var cmb = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 200, Font = new Font("Segoe UI", 9.5F), FlatStyle = FlatStyle.Flat };
-                cmb.Items.AddRange(new object[] { Keel.T("Järjesta: nimi A–Z"), Keel.T("Hind: odavam enne"), Keel.T("Hind: kallim enne"), Keel.T("Suurim soodustus") });
+                var cmb = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 240, Font = new Font("Segoe UI", 9.5F), FlatStyle = FlatStyle.Flat };
+                cmb.Items.AddRange(new object[] { Keel.T("Järjesta: nimi A–Z"), Keel.T("Hind: odavam enne"), Keel.T("Hind: kallim enne"), Keel.T("Suurim soodustus"), Keel.T("Kilo-/liitrihind: odavam enne") });
                 cmb.SelectedIndex = jarjestus;
                 cmb.SelectedIndexChanged += (s, e) =>
                 {
@@ -1405,6 +1417,8 @@ namespace IKTpv25_1_Toooted
         public event Action<Toode>? Lisa;
         public event Action<Toode>? Vahenda;
         public event Action<Toode>? Ava;
+        public bool ParimUhikuHind { get; set; }   // soodsaim €/kg või €/l selles nimekirjas
+        public bool NaitaUhikuHinda { get; set; }  // järjestus ühikuhinna järgi: ühikuhind enne panti
 
         private bool hover;
         private Point hiir;
@@ -1602,15 +1616,18 @@ namespace IKTpv25_1_Toooted
                     TextRenderer.DrawText(g, ot, fo, Rectangle.Round(okiip), Teema.Teine, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix);
                 }
             }
-            string? alumine = Toode.Pant > 0
+            bool uhikuga = Toode.UhikuHind != null && Toode.Uhik is string uu && uu != "tk";
+            string? alumine = Toode.Pant > 0 && !(uhikuga && (NaitaUhikuHinda || ParimUhikuHind))
                 ? "+ " + Keel.F("Pakendi tagatisraha {0}", Ostukorv.Eur(Toode.Pant))
                 : Toode.UhikuHind is decimal uh && Toode.Uhik is string u && u != "tk"
                 ? $"{Ikoonid.Hind(uh)}/{u}"
                 : Toode.Pakend;
             if (alumine != null)
             {
-                using var v = new Font("Segoe UI", 9F);
-                TextRenderer.DrawText(g, alumine.Replace("€", " €"), v, new Point(x, hinnaY + 42), Teema.TekstNork);
+                bool parim = ParimUhikuHind && uhikuga && !alumine.StartsWith("+");
+                using var v = new Font("Segoe UI", 9F, parim ? FontStyle.Bold : FontStyle.Regular);
+                if (parim) alumine += " · " + Keel.T("soodsaim");
+                TextRenderer.DrawText(g, alumine.Replace("€", " €"), v, new Point(x, hinnaY + 42), parim ? Teema.Edu : Teema.TekstNork);
             }
 
             // Lemmiku tärn
