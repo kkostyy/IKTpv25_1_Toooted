@@ -17,6 +17,7 @@ internal static class Program
         Keel.Lae();    // eesti / vene / inglise
         Application.AddMessageFilter(new DisainiKlahv());   // Ctrl+Shift+D igas aknas
         Application.AddMessageFilter(new TagasiHiir());     // hiire külgnupp = tagasi
+        ElementidePuu.Lisa();                               // F12 = elementide puu faili (ainult AKT_SILUMINE=1)
 
         try
         {
