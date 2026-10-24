@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 
@@ -208,7 +208,9 @@ namespace IKTpv25_1_Toooted
             var kood = new VootkoodiKaart(AktiivneKasutaja.Kaardinumber ?? "") { Bounds = new Rectangle(720, 16, 264, 180) };
             Controls.Add(kood);
             Controls.Add(new VarviPlaat("Boonus", Ostukorv.Eur(AktiivneKasutaja.Boonus), Color.FromArgb(226, 6, 19)) { Bounds = new Rectangle(720, 208, 126, 90) });
-            Controls.Add(new VarviPlaat("Tase", $"{Keel.T(tase.Nimi)} · {(tase.Protsent * 100).ToString("0.#", new System.Globalization.CultureInfo("et-EE"))} %", Color.FromArgb(160, 35, 110)) { Bounds = new Rectangle(858, 208, 126, 90) });
+            var tasePlaat = new VarviPlaat("Tase", $"{Keel.T(tase.Nimi)} · {(tase.Protsent * 100).ToString("0.#", new System.Globalization.CultureInfo("et-EE"))} %", Color.FromArgb(160, 35, 110)) { Bounds = new Rectangle(858, 208, 126, 90), Cursor = Cursors.Hand };
+            tasePlaat.Click += (s, e) => KaardiTasemedVorm.Ava(this);
+            Controls.Add(tasePlaat);
 
             var paremAll = new RoundedPanel { Bounds = new Rectangle(720, 310, 264, 394), Radius = 14, FillColor = Teema.Pind, BorderColor = Teema.Pind, BackColor = Teema.Taust };
             paremAll.Controls.Add(new Label { Text = "Viimased ostud", Location = new Point(18, 16), AutoSize = true, Font = new Font("Segoe UI", 12F, FontStyle.Bold), ForeColor = Teema.Tekst, BackColor = Teema.Pind });

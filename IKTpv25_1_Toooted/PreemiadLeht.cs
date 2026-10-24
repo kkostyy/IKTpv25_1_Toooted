@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 
 namespace IKTpv25_1_Toooted;
 
@@ -125,6 +125,8 @@ public class PreemiadLeht : Leht
 
         var vasak = new RoundedPanel { Dock = DockStyle.Fill, Radius = 24, FillColor = Color.FromArgb(27, 28, 31), BorderColor = Color.FromArgb(27, 28, 31), BackColor = Teema.Taust, Padding = new Padding(18), Margin = new Padding(0, 0, 12, 0) };
         vasak.Controls.Add(taseVeerg);
+        taseVeerg.Cursor = Cursors.Hand;   // klõps = kõik tasemed (lõuend N11)
+        taseVeerg.Click += (s, e) => KaardiTasemedVorm.Ava(FindForm());
         tabel.Controls.Add(vasak, 0, 0);
 
         keskSisu = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, WrapContents = false, AutoScroll = true, BackColor = Teema.Taust, Margin = new Padding(0, 0, 12, 0) };
@@ -163,6 +165,13 @@ public class PreemiadLeht : Leht
 
             keskSisu.SuspendLayout();
             foreach (Control c in keskSisu.Controls.Cast<Control>().ToList()) c.Dispose();
+            if (Teema.OnMoodne)
+            {
+                LaadiMoodne(valjakutsed, kleebised, komplekt);
+                keskSisu.ResumeLayout();
+                foreach (Control c in keskSisu.Controls) c.Width = Math.Max(300, keskSisu.ClientSize.Width - 8);
+                return;
+            }
             keskSisu.Controls.Add(Pealkiri2("Nädala väljakutsed"));
             for (int i = 0; i < valjakutsed.Count; i++)
                 keskSisu.Controls.Add(new ValjakutseKaart(valjakutsed[i], i * 150) { Margin = new Padding(0, 0, 0, 10) });
@@ -172,6 +181,33 @@ public class PreemiadLeht : Leht
             foreach (Control c in keskSisu.Controls) c.Width = Math.Max(300, keskSisu.ClientSize.Width - 8);
         }
         catch (Exception ex) { Teade.Show("Preemiate laadimine ebaõnnestus:\n" + ex.Message); }
+    }
+
+    // Moodne (lõuend N6): väljakutsed ja kleepsualbum valgetel ümaratel kaartidel
+    private void LaadiMoodne(List<Valjakutse> valjakutsed, List<Kleeps> kleebised, bool komplekt)
+    {
+        int paevi = 7 - ((int)DateTime.Now.DayOfWeek + 6) % 7;
+        var vorgustik = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = Math.Max(1, valjakutsed.Count), RowCount = 1, BackColor = Teema.Pind };
+        for (int i = 0; i < vorgustik.ColumnCount; i++) vorgustik.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f / vorgustik.ColumnCount));
+        for (int i = 0; i < valjakutsed.Count; i++)
+            vorgustik.Controls.Add(new ValjakutseKaart(valjakutsed[i], 150 + i * 120) { Dock = DockStyle.Fill, Margin = new Padding(i == 0 ? 0 : 6, 0, i == valjakutsed.Count - 1 ? 0 : 6, 0) }, i, 0);
+        keskSisu.Controls.Add(Sektsioon("Nädala väljakutsed", Keel.F("Uued esmaspäeval · {0} päeva jäänud", paevi), Teema.TekstNork, vorgustik, 176));
+
+        var album = new KleepsuAlbum(kleebised, komplekt) { Dock = DockStyle.Fill };
+        keskSisu.Controls.Add(Sektsioon("Kleepsualbum", $"{kleebised.Count(k => k.Saadud)} / {kleebised.Count}", Teema.Teine, album, album.Height));
+    }
+
+    private static RoundedPanel Sektsioon(string pealkiri, string paremal, Color paremVarv, Control sisu, int sisuKorgus)
+    {
+        var kaart = new RoundedPanel { Radius = 15, FillColor = Teema.Pind, BorderColor = Teema.Pind, BackColor = Teema.Taust, Padding = new Padding(22, 16, 22, 18), Margin = new Padding(0, 0, 0, 14), Height = sisuKorgus + 16 + 44 + 18 };
+        var pais = new Panel { Dock = DockStyle.Top, Height = 44, BackColor = Teema.Pind };
+        pais.Controls.Add(new Label { Text = Keel.T(pealkiri), AutoSize = true, Location = new Point(0, 2), Font = new Font("Segoe UI", 15F, FontStyle.Bold), ForeColor = Teema.Tekst, BackColor = Teema.Pind });
+        var p = new Label { Text = paremal, AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = paremVarv, BackColor = Teema.Pind, Anchor = AnchorStyles.Top | AnchorStyles.Right };
+        pais.Controls.Add(p);
+        pais.Resize += (s, e) => p.Location = new Point(pais.Width - p.PreferredWidth - 2, 10);
+        kaart.Controls.Add(sisu);
+        kaart.Controls.Add(pais);
+        return kaart;
     }
 
     private static Label Pealkiri2(string tekst) => new()
@@ -298,11 +334,42 @@ public class ValjakutseKaart : Control
         Animatsioon.Kaivita(this, 900, x => { t = Animatsioon.Sujuv(x); Invalidate(); }, null, viivitus);
     }
 
+    // Moodne: püstine kaart – ikoon + pealkiri, olek, paks riba, edenemine ja preemia kiip; tehtud = roheline
+    private void JoonistaMoodne(Graphics g)
+    {
+        bool valmis = v.Valmis;
+        var r = new RectangleF(0.5f, 0.5f, Width - 2, Height - 2);
+        using (var tee = Ymardus.Tee(r, 24)) using (var b = new SolidBrush(valmis ? Teema.Edu : Teema.Paneel2)) g.FillPath(b, tee);
+        Color tekst = valmis ? Color.White : Teema.Tekst, nork = valmis ? Color.FromArgb(217, 255, 255, 255) : Teema.Tekst2;
+        var ik = new RectangleF(16, 16, 40, 40);
+        using (var b = new SolidBrush(valmis ? Color.FromArgb(51, 255, 255, 255) : Teema.Pind)) g.FillEllipse(b, ik);
+        Ikoonid.JoonistaEmoji(g, v.Ikoon, Rectangle.Round(ik), valmis ? Color.White : Teema.Teine, 13f);
+        using var fb = new Font("Segoe UI", 10.5F, FontStyle.Bold);
+        using var f = new Font("Segoe UI", 9F);
+        using var fk = new Font("Segoe UI", 8.5F, FontStyle.Bold);
+        TextRenderer.DrawText(g, Keel.T(v.Tekst), fb, new Rectangle(66, 16, Width - 74, 40), tekst, TextFormatFlags.VerticalCenter | TextFormatFlags.WordBreak | TextFormatFlags.NoPrefix);
+        TextRenderer.DrawText(g, valmis ? Keel.T("Tehtud! ✓") : Keel.F("{0} / {1} tehtud", v.Tehtud, v.Vaja), f, new Point(16, 68), nork);
+        var rada = new RectangleF(16, 96, Width - 32, 10);
+        using (var tee = Ymardus.Tee(rada, 5)) using (var b = new SolidBrush(valmis ? Color.FromArgb(64, 255, 255, 255) : Color.FromArgb(221, 226, 229))) g.FillPath(b, tee);
+        float w = rada.Width * Math.Min(1f, v.Tehtud / (float)v.Vaja) * (float)t;
+        if (w > 3)
+            using (var tee = Ymardus.Tee(new RectangleF(rada.X, rada.Y, w, rada.Height), 5))
+            using (var b = new SolidBrush(valmis ? Color.White : Teema.Teine))
+                g.FillPath(b, tee);
+        TextRenderer.DrawText(g, valmis ? Keel.T("Tehtud! ✓") : $"{v.Tehtud} / {v.Vaja}", fb, new Point(16, 120), tekst);
+        string kiipTekst = "+" + Ostukorv.Eur(v.Boonus) + (valmis ? " " + Keel.T("saadud") : "");
+        int kw = TextRenderer.MeasureText(kiipTekst, fk).Width + 20;
+        var kiip = new RectangleF(Width - 16 - kw, 116, kw, 26);
+        using (var tee = Ymardus.Tee(kiip, 13)) using (var b = new SolidBrush(valmis ? Color.White : Color.FromArgb(226, 6, 19))) g.FillPath(b, tee);
+        TextRenderer.DrawText(g, kiipTekst, fk, Rectangle.Round(kiip), valmis ? Teema.Edu : Color.White, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+    }
+
     protected override void OnPaint(PaintEventArgs e)
     {
         var g = e.Graphics;
         g.Clear(Parent?.BackColor ?? Teema.Taust);
         g.SmoothingMode = SmoothingMode.AntiAlias;
+        if (Teema.OnMoodne) { JoonistaMoodne(g); return; }
         bool valmis = v.Valmis;
         var r = new RectangleF(0.5f, 0.5f, Width - 2, Height - 2);
         using (var tee = Ymardus.Tee(r, 20))
@@ -351,7 +418,7 @@ public class KleepsuAlbum : Control
         this.kleebised = kleebised;
         this.komplekt = komplekt;
         SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
-        Height = komplekt ? 330 : 280;
+        Height = Teema.OnMoodne ? (komplekt ? 50 : 0) + 2 * 158 : komplekt ? 330 : 280;
         int ms = 400 + kleebised.Count * 90;
         Animatsioon.Kaivita(this, ms, x => { t = x * ms; Invalidate(); });
     }
@@ -364,7 +431,7 @@ public class KleepsuAlbum : Control
 
     private RectangleF Koht(int i)
     {
-        float w = (Width - 2) / 4f, h = 130;
+        float w = (Width - 2) / 4f, h = Teema.OnMoodne ? 158 : 130;
         return new RectangleF(i % 4 * w, (komplekt ? 50 : 0) + i / 4 * h, w, h);
     }
 
@@ -404,10 +471,19 @@ public class KleepsuAlbum : Control
             var k = kleebised[i];
             var koht = Koht(i);
             double s = Math.Clamp((t - i * 90) / 400.0, 0, 1);
+            if (Teema.OnMoodne)
+            {
+                // ruut: saadud = roosa, lukus = helehall; all nimi ja vihje
+                var ruut = RectangleF.Inflate(koht, -6, -6);
+                using (var tee = Ymardus.Tee(ruut, 22)) using (var b = new SolidBrush(k.Saadud ? Color.FromArgb(246, 230, 239) : Color.FromArgb(246, 248, 249))) g.FillPath(b, tee);
+                using var fh = new Font("Segoe UI", 7.5F);
+                TextRenderer.DrawText(g, Keel.T(k.Kirjeldus), fh, Rectangle.Round(new RectangleF(ruut.X + 6, koht.Y + 118, ruut.Width - 12, 30)), Teema.TekstNork,
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.WordBreak | TextFormatFlags.EndEllipsis);
+            }
             if (s <= 0) continue;
-            float suurus = 76 * (float)Animatsioon.Pop(s) * (hiir == i ? 1.1f : 1f);
+            float suurus = (Teema.OnMoodne ? 70 : 76) * (float)Animatsioon.Pop(s) * (hiir == i ? 1.1f : 1f);
             float nurk = (float)(-30 * (1 - s)) + (hiir == i ? -6 : 0);
-            var c = new PointF(koht.X + koht.Width / 2, koht.Y + 48);
+            var c = new PointF(koht.X + koht.Width / 2, koht.Y + (Teema.OnMoodne ? 52 : 48));
             var olek = g.Save();
             g.TranslateTransform(c.X, c.Y);
             g.RotateTransform(nurk);
@@ -431,7 +507,7 @@ public class KleepsuAlbum : Control
                 TextRenderer.DrawText(g, "🔒", fi, Rectangle.Round(r), Teema.TekstNork, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
             }
             g.Restore(olek);
-            TextRenderer.DrawText(g, Keel.T(k.Nimi), f, Rectangle.Round(new RectangleF(koht.X, koht.Y + 92, koht.Width, 20)), k.Saadud ? Teema.Tekst : Teema.TekstNork,
+            TextRenderer.DrawText(g, Keel.T(k.Nimi), f, Rectangle.Round(new RectangleF(koht.X, koht.Y + (Teema.OnMoodne ? 96 : 92), koht.Width, 20)), k.Saadud ? Teema.Tekst : Teema.TekstNork,
                 TextFormatFlags.HorizontalCenter | TextFormatFlags.EndEllipsis);
         }
     }
