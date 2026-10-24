@@ -306,8 +306,9 @@ namespace IKTpv25_1_Toooted
             parool.Location = new Point(x, 300);
             parool.Padding = new Padding(20, 15, 52, 0);
             kaart.Controls.Add(parool);
-            var silm = new Label { Text = "\uE7B3", Font = new Font("Segoe MDL2 Assets", 12F), Size = new Size(40, 40), TextAlign = ContentAlignment.MiddleCenter, Location = new Point(w - 48, 6), ForeColor = Teema.Tekst2, BackColor = Teema.Paneel2, Cursor = Cursors.Hand };
+            var silm = new Label { Size = new Size(40, 40), Location = new Point(w - 48, 6), ForeColor = Teema.Tekst2, BackColor = Teema.Paneel2, Cursor = Cursors.Hand };
             silm.Click += (s, e) => txtParool.UseSystemPasswordChar = !txtParool.UseSystemPasswordChar;
+            silm.Paint += (s, e) => Ikoonid.Joonista(e.Graphics, "\uE7B3", silm.ClientRectangle, silm.ForeColor, 12f);
             parool.Controls.Add(silm);
             silm.BringToFront();
             txtParool.Enter += (s, e) => silm.BackColor = Teema.Pind;

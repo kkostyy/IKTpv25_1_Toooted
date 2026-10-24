@@ -1,10 +1,11 @@
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace IKTpv25_1_Toooted;
 
-// Ikoonid Windowsi ikoonifondist (Segoe MDL2 Assets, Windows 10/11) ja
-// kategooriate ikoonid emoji-fondist (joonistatakse ühevärviliselt, nagu e-poe menüüs)
-public static class Ikoonid
+// Ikoonid joonistatakse programmi sees vektoritena (IkoonidVektor.cs), et need näeksid
+// igas arvutis ühesugused välja; koodipunktid on samad mis Segoe MDL2 Assets fondis.
+// Kategooriate ikoonid tulevad emoji-fondist (joonistatakse ühevärviliselt, nagu e-poe menüüs)
+public static partial class Ikoonid
 {
     public const string Ostukorv = "";
     public const string Prygikast = "";
@@ -19,6 +20,7 @@ public static class Ikoonid
 
     public static void Joonista(Graphics g, string glyph, Rectangle r, Color varv, float suurus = 12f)
     {
+        if (JoonistaVektor(g, glyph, r, varv, suurus)) return;
         using var f = new Font("Segoe MDL2 Assets", suurus);
         TextRenderer.DrawText(g, glyph, f, r, varv,
             TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix);
