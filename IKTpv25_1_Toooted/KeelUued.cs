@@ -152,6 +152,9 @@ public static partial class Keel
         L("Kasuta boonust maksmisel", "Использовать бонус при оплате", "Use bonus at checkout"); L("Foto lisatud kaardile", "Фото добавлено на карту", "Photo added to the card");
         L("Maksmisel märgi „Kasuta boonust“ – boonus läheb allahindluseks.", "При оплате отметьте «Использовать бонус» – бонус пойдёт в скидку.", "At checkout tick “Use bonus” – the bonus becomes a discount.");
         L("Ajatelg · {0:dd.MM} – {1:dd.MM}", "Шкала · {0:dd.MM} – {1:dd.MM}", "Timeline · {0:dd.MM} – {1:dd.MM}"); L("Mustand", "Черновик", "Draft");
+        L("Valik jääb meelde ja kehtib kogu poes", "Выбор запоминается и действует во всём магазине", "Your choice is remembered across the shop"); L("Kuidas?", "Как?", "How?");
+        L("Kuidas allergeenid leitakse", "Как находятся аллергены", "How allergens are found");
+        L("1. SUURTÄHED koostises = allergeen (EL reegel): PIIM, NISU, RUKIS, MUNA…\n2. „Võib sisaldada …“ lisainfos → hoiatus. Range režiimis peidetakse.\n3. Admin saab märgised ka käsitsi panna (Toote andmed → Märgised).\n4. Puu- ja köögiviljad sobivad vaikimisi kõigile dieetidele.", "1. ЗАГЛАВНЫЕ буквы в составе = аллерген (правило ЕС): PIIM, NISU, RUKIS, MUNA…\n2. «Может содержать …» в доп. информации → предупреждение. В строгом режиме скрывается.\n3. Админ может поставить метки вручную (Данные товара → Метки).\n4. Фрукты и овощи по умолчанию подходят всем диетам.", "1. CAPITALS in the ingredients = allergen (EU rule): PIIM, NISU, RUKIS, MUNA…\n2. “May contain …” in the extra info → warning. Hidden in strict mode.\n3. The admin can also set labels by hand (Product data → Labels).\n4. Fruit and vegetables suit every diet by default.");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }
