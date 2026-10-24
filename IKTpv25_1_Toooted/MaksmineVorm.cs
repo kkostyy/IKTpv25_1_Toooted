@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted;
@@ -16,6 +16,7 @@ public partial class MaksmineVorm : Form
     private readonly RadioButton rbPoest, rbKojuvedu;
     private readonly Label lblTarne;
     private readonly Edenemine tarneRiba = new();
+    private readonly TarneAjaValija tarneAeg = new();
     private readonly Label lblKlient, lblVahesumma, lblSoodustus, lblMaksta, lblTagasi;
     private readonly CheckBox chkBoonus;
     private readonly RadioButton rbSularaha, rbKaart;
@@ -36,7 +37,7 @@ public partial class MaksmineVorm : Form
         ShowInTaskbar = false;
         Font = UiStiil.Põhifont;
         BackColor = Teema.Taust;
-        ClientSize = new Size(620, 772);
+        ClientSize = new Size(620, 884);
 
         // ================= 1. Ostukorv =================
         var korv = Kaart("Ostukorv", 16, 16, 588, 134);
@@ -81,21 +82,26 @@ public partial class MaksmineVorm : Form
         klient.Controls.Add(raamEmail);
 
         // ================= 3. Kättesaamine =================
-        var tarne = Kaart("Kättesaamine", 16, 380, 588, 118);
+        var tarne = Kaart("Kättesaamine", 16, 380, 588, 230);
         rbPoest = new RadioButton { Text = "Poest kaasa (tasuta)", Location = new Point(16, 34), AutoSize = true, Checked = true, BackColor = Teema.Pind, ForeColor = Teema.Tekst, Font = new Font("Segoe UI", 10F) };
         rbKojuvedu = new RadioButton { Location = new Point(220, 34), AutoSize = true, BackColor = Teema.Pind, ForeColor = Teema.Tekst, Font = new Font("Segoe UI", 10F) };
         rbKojuvedu.Text = Keel.F("Kojuvedu {0} (tasuta alates {1})", Ostukorv.Eur(Tarne.Hind), Ostukorv.Eur(Tarne.TasutaAlates));
-        rbKojuvedu.CheckedChanged += (s, e) => { txtAadress!.Enabled = rbKojuvedu.Checked; Arvuta(); };
+        rbKojuvedu.CheckedChanged += (s, e) => { txtAadress!.Enabled = rbKojuvedu.Checked; tarneAeg.Enabled = rbKojuvedu.Checked; Arvuta(); };
         var raamAadress = UiStiil.LooSisend(out txtAadress, 400, false, "Tänav 1-2, Tallinn, 10111");
         raamAadress.Location = new Point(14, 66);
         txtAadress.Enabled = false;
         lblTarne = new Label { Location = new Point(424, 64), Size = new Size(152, 20), TextAlign = ContentAlignment.MiddleRight, BackColor = Teema.Pind, Font = new Font("Segoe UI Semibold", 9F) };
         tarneRiba.Location = new Point(428, 90);
         tarneRiba.Size = new Size(146, 6);
-        tarne.Controls.AddRange(new Control[] { rbPoest, rbKojuvedu, raamAadress, lblTarne, tarneRiba });
+        // Kojuveo päev ja kellaaeg (2-tunnised aknad)
+        var aegSilt = Silt("Kojuveo aeg", 14, 106);
+        tarneAeg.Bounds = new Rectangle(14, 124, 560, 104);
+        tarneAeg.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        tarneAeg.Enabled = false;
+        tarne.Controls.AddRange(new Control[] { rbPoest, rbKojuvedu, raamAadress, lblTarne, tarneRiba, aegSilt, tarneAeg });
 
         // ================= 4. Makse =================
-        var makse = Kaart("Makse", 16, 510, 588, 170);
+        var makse = Kaart("Makse", 16, 622, 588, 170);
         rbSularaha = new RadioButton { Text = "Sularaha", Location = new Point(16, 36), AutoSize = true, Checked = true, BackColor = Teema.Pind, ForeColor = Teema.Tekst, Font = new Font("Segoe UI", 10F) };
         rbKaart = new RadioButton { Text = "Pangakaart", Location = new Point(130, 36), AutoSize = true, BackColor = Teema.Pind, ForeColor = Teema.Tekst, Font = new Font("Segoe UI", 10F) };
         rbSularaha.CheckedChanged += (s, e) => MakseviisMuutus();
@@ -150,6 +156,12 @@ public partial class MaksmineVorm : Form
     {
         base.OnLoad(e);
         if (Ostukorv.UuendaHinnad()) Arvuta();   // hind kehtib vormistamise hetkel
+        try
+        {
+            using var db = new ToodedContext();
+            tarneAeg.Laadi(DateTime.Now, Tarne.Hoivatud(db, DateTime.Now));
+        }
+        catch { tarneAeg.Laadi(DateTime.Now, new Dictionary<DateTime, int>()); }
         if (Teema.OnMoodne) MoodneStiil.Rakenda(this);
         if (!Teema.OnMoodne) UiStiil.LisaTagasiNupp(this);   // ← Tagasi = tühista (moodsas disainis kaardil endal)
         Teema.Rakenda(this);
@@ -359,6 +371,11 @@ public partial class MaksmineVorm : Form
             txtAadress.Focus();
             return;
         }
+        if (rbKojuvedu.Checked && tarneAeg.Valitud == null)
+        {
+            Teade.Show("Vali kojuveo päev ja kellaaeg.", "Kättesaamine", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
 
         // Hind fikseeritakse maksmise hetkel (nt korv kell 19:55, makse 20:01 → õhtune soodustus)
         if (Ostukorv.UuendaHinnad())
@@ -403,6 +420,7 @@ public partial class MaksmineVorm : Form
                 Tarneviis = rbKojuvedu.Checked ? Tarne.Kojuvedu : Tarne.Kaasa,
                 TarneHind = tarneHind,
                 Aadress = rbKojuvedu.Checked ? aadress : null,
+                TarneAeg = rbKojuvedu.Checked ? tarneAeg.Valitud : null,
                 Klient = klient
             };
 

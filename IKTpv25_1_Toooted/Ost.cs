@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted;
 
@@ -24,6 +24,7 @@ public class Ost
     public string? Tarneviis { get; set; }                          // "Kaasa" (poest) / "Kojuvedu"
     [Precision(10, 2)] public decimal TarneHind { get; set; }       // 0 = tasuta
     public string? Aadress { get; set; }                            // kojuveo aadress
+    public DateTime? TarneAeg { get; set; }                         // kojuveo ajaakna algus (aken = Tarne.AknaTunde)
 
     public int? KlientId { get; set; }                              // ? = klient ei ole kohustuslik
     public Klient? Klient { get; set; }

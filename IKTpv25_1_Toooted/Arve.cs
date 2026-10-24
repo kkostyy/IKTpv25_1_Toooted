@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Net;
@@ -123,6 +123,7 @@ public static class Arve
             t.Joon();
             t.Rida(Keel.T("KOJUVEO AADRESS:"));
             t.Toode(ost.Aadress!, "");
+            if (ost.TarneAeg is DateTime ta) t.Toode(Keel.T("Tarneaeg:") + " " + Tarne.AknaTekst(ta, ost.Aeg), "");
         }
         if (!makstud)
         {
@@ -320,7 +321,10 @@ public static class Arve
         Rida(Keel.T("Kuupäev"), ost.Aeg.ToString("dd.MM.yyyy HH:mm"));
         Rida(Keel.T("Tooteid"), ost.Read.Sum(r => r.Kogus).ToString());
         if (ost.Tarneviis == Tarne.Kojuvedu)
+        {
             Rida(Keel.T("Kojuvedu"), (ost.TarneHind == 0 ? Keel.T("TASUTA") : Ostukorv.Eur(ost.TarneHind)) + (ost.Aadress != null ? " · " + ost.Aadress : ""));
+            if (ost.TarneAeg is DateTime ta) Rida(Keel.T("Tarneaeg:"), Tarne.AknaTekst(ta, ost.Aeg));
+        }
         else
             Rida(Keel.T("Kättesaamine"), Keel.T("Poest kaasa"));
         if (ost.Soodustus > 0) Rida(Keel.T("Boonusega makstud"), "−" + Ostukorv.Eur(ost.Soodustus));
