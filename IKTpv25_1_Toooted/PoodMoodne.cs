@@ -61,6 +61,7 @@ namespace IKTpv25_1_Toooted
             tabid.Lisa("Tooted", Vaade.Avaleht, NaitaAvaleht);
             tabid.Lisa("Kampaaniad", Vaade.Kampaaniad, () => NaitaRuudustik(Vaade.Kampaaniad));
             tabid.Lisa("Tõesti odav!", Vaade.Odav, () => NaitaRuudustik(Vaade.Odav));
+            tabid.Lisa("Ilma raiskamiseta", Vaade.Raiskamine, () => NaitaRuudustik(Vaade.Raiskamine));
             tabid.Lisa("Lemmikud", Vaade.Lemmikud, () => NaitaRuudustik(Vaade.Lemmikud));
             var keel = new KeelePill { BackColor = Teema.Taust };
             yla.Controls.AddRange(new Control[] { otsing, tabid, keel });

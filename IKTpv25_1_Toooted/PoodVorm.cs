@@ -9,7 +9,7 @@ namespace IKTpv25_1_Toooted
     //  paremal "Sinu ostukorv".
     public partial class PoodVorm : Form, ITagasi, IVormiHost, IKiirklahvid
     {
-        private enum Vaade { Avaleht, Kategooria, Kampaaniad, Odav, Lemmikud, Otsing, Muu }
+        private enum Vaade { Avaleht, Kategooria, Kampaaniad, Odav, Lemmikud, Otsing, Muu, Raiskamine }
 
         private readonly Form1 kassa;
         private readonly Panel sisuAla;                 // praegune leht (Navigaator)
@@ -158,6 +158,7 @@ namespace IKTpv25_1_Toooted
             NavLink(nav, "\uECA5", "Tooted", NaitaAvaleht, Vaade.Avaleht);
             NavLink(nav, "", "Kampaaniad", () => NaitaRuudustik(Vaade.Kampaaniad), Vaade.Kampaaniad);
             NavLink(nav, "🔥", "Tõesti odav!", () => NaitaRuudustik(Vaade.Odav), Vaade.Odav);
+            NavLink(nav, "🌱", "Ilma raiskamiseta", () => NaitaRuudustik(Vaade.Raiskamine), Vaade.Raiskamine);
             NavLink(nav, "", "Minu lemmikud", () => NaitaRuudustik(Vaade.Lemmikud), Vaade.Lemmikud);
             nav.Paint += (s, e) =>
             {
@@ -642,6 +643,7 @@ namespace IKTpv25_1_Toooted
                 Vaade.Kategooria => kategooriad.FirstOrDefault(k => k.Id == kat)?.Kategooria_nimetus ?? "Tooted",
                 Vaade.Kampaaniad => "Kampaaniad",
                 Vaade.Odav => "Tõesti odav!",
+                Vaade.Raiskamine => "Ilma raiskamiseta",
                 Vaade.Lemmikud => "Minu lemmikud",
                 _ => Keel.F("Otsing: „{0}“", otsi)
             };
@@ -672,12 +674,14 @@ namespace IKTpv25_1_Toooted
                 Vaade.Kampaaniad => koikTooted.Where(t => t.SoodusProtsent != null),
                 Vaade.Odav => koikTooted.Where(t => t.Kogus > 0).OrderBy(t => t.Hind).Take(12),
                 Vaade.Lemmikud => koikTooted.Where(t => Lemmikud.On(t.Id)),
+                Vaade.Raiskamine => koikTooted.Where(t => t.Kogus > 0 && Aegumine.Allahinnatud.ContainsKey(t.Id))
+                    .OrderBy(t => Aegumine.Allahinnatud[t.Id]).ThenBy(t => t.Toodenimetus),
                 _ => koikTooted.Where(t => t.Toodenimetus.Contains(otsi, StringComparison.CurrentCultureIgnoreCase)
                                         || (t.Kaubamark ?? "").Contains(otsi, StringComparison.CurrentCultureIgnoreCase)
                                         || (t.Kategooria?.Kategooria_nimetus ?? "").Contains(otsi, StringComparison.CurrentCultureIgnoreCase))
             };
 
-            if (v != Vaade.Odav)
+            if (v != Vaade.Odav && v != Vaade.Raiskamine)
                 q = jarjestus switch
                 {
                     1 => q.OrderBy(t => t.Hind),
@@ -694,6 +698,7 @@ namespace IKTpv25_1_Toooted
                 Vaade.Kategooria => Keel.T(kategooriad.FirstOrDefault(k => k.Id == valitudKategooria)?.Kategooria_nimetus ?? "Tooted"),
                 Vaade.Kampaaniad => Keel.T("Kampaaniad"),
                 Vaade.Odav => Keel.T("Tõesti odav!"),
+                Vaade.Raiskamine => Keel.T("Ilma raiskamiseta"),
                 Vaade.Lemmikud => Keel.T("Minu lemmikud"),
                 _ => Keel.F("Otsingu tulemused: „{0}“", otsi)
             };
@@ -701,7 +706,8 @@ namespace IKTpv25_1_Toooted
             TyhjendaSisu();
             if (v == Vaade.Kategooria && valitudKategooria == OhtuSoodustus.S.KategooriaId && OhtuSoodustus.S.Sees)
                 sisu.Controls.Add(new OhtuBanner());
-            sisu.Controls.Add(RuudustikuPais(pealkiri, tooted.Count, v != Vaade.Odav));
+            if (v == Vaade.Raiskamine) sisu.Controls.Add(new RaiskamiseBanner(tooted.Count, tooted.Sum(t => t.Hind * Aegumine.Protsent / 100m)) { Tag = "laius" });
+            sisu.Controls.Add(RuudustikuPais(pealkiri, tooted.Count, v != Vaade.Odav && v != Vaade.Raiskamine));
 
             var ruudustik = new FlowLayoutPanel
             {
@@ -751,6 +757,7 @@ namespace IKTpv25_1_Toooted
                 {
                     Vaade.Lemmikud => "Lemmikuid pole veel. Märgi toode tärniga ☆, et see siia lisada.",
                     Vaade.Kampaaniad => "Praegu kampaaniatooteid pole.",
+                    Vaade.Raiskamine => "Praegu ei aegu ühtegi toodet – kõik on värske! Vaata hiljem uuesti.",
                     Vaade.Otsing => "Midagi ei leitud. Proovi teist otsingusõna.",
                     _ => "Selles kategoorias pole veel tooteid."
                 }));

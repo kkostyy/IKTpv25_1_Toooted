@@ -69,6 +69,9 @@ public static class DemoAndmed
 
     public static bool OnOlemas(ToodedContext db) => db.Toodetabel.Any(t => t.Demo) || db.Ostud.Any(o => o.Demo);
 
+    // Demopartiide tunnus (Partii-l pole Demo välja): lisamise aeg 01.01.2000
+    private static readonly DateTime DemoPartii = new(2000, 1, 1);
+
     // Mis luuakse (demo akna plaatide jaoks)
     public static int KliendiArv => 3;
     public static int PandiArv => Tooted.Count(t => t.Pant > 0);
@@ -158,6 +161,16 @@ public static class DemoAndmed
             samm?.Invoke(0.55 + 0.45 * (i + 1) / OstuArv);
         }
         db.SaveChanges();
+
+        // 4) "Ilma raiskamiseta" vitriini jaoks: 10 toidukaupa, mille partii aegub täna või homme (−30 %)
+        var aeguvad = db.Toodetabel.AsNoTracking().Where(t => (t.KategooriaId == 1 || t.KategooriaId == 2 || t.KategooriaId == 4 || t.KategooriaId == 9) && t.Kogus > 0)
+            .Select(t => t.Id).ToList().OrderBy(_ => juhus.Next()).Take(10).ToList();
+        foreach (int id in aeguvad)
+        {
+            var p = Aegumine.LisaPartii(db, id, juhus.Next(2, 9), DateTime.Today.AddDays(juhus.Next(0, 2)));
+            p.Lisatud = DemoPartii;
+        }
+        db.SaveChanges();
         return Keel.F("Lisati {0} toodet, {1} klienti ja {2} ostu.", tooted.Count, kliendid.Count, OstuArv);
     }
 
@@ -168,6 +181,11 @@ public static class DemoAndmed
         db.SaveChanges();
         var kliendid = db.Kliendid.Where(k => k.Demo).ToList();
         db.Kliendid.RemoveRange(kliendid);
+        var partiid = db.Partiid.Where(p => p.Lisatud == DemoPartii).ToList();
+        db.Partiid.RemoveRange(partiid);
+        db.SaveChanges();
+        Aegumine.SobitaLaoseis(db, partiid.Select(p => p.ToodeId).Distinct());
+        Aegumine.Uuenda(db, DateTime.Now);
         var tooted = db.Toodetabel.Where(t => t.Demo).ToList();
         db.Toodetabel.RemoveRange(tooted);
         db.SaveChanges();

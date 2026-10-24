@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted;
 
@@ -12,6 +12,12 @@ public static class Aegumine
     // toote Id → varaseima allahinnatud partii aegumise kuupäev (Hinnad loeb siit)
     private static Dictionary<int, DateTime> allahinnatud = new();
     private static DateTime viimati = DateTime.MinValue;
+
+    // Kõik praegu allahinnatud tooted (toote Id → aegumise kuupäev) – "Ilma raiskamiseta" vitriin
+    public static IReadOnlyDictionary<int, DateTime> Allahinnatud
+    {
+        get { if (DateTime.Now - viimati > TimeSpan.FromHours(1)) Uuenda(); return allahinnatud; }
+    }
 
     public static DateTime? AllahindlusKuni(int toodeId)
     {
