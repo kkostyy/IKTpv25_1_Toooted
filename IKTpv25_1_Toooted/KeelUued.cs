@@ -345,6 +345,9 @@ public static partial class Keel
         L("ostukorvi analüüsiks", "для анализа корзин", "for basket analysis");
         L("Tooted (Rimi kataloog või {0} demotoodet)", "Товары (каталог Rimi или {0} демо-товаров)", "Products (Rimi catalogue or {0} demo products)");
         L("Üks nupp lisab 3 klienti ja 60 ostu viimase 30 päeva jooksul (tühja poe korral ka 50 toodet), et programm ei näeks esitlusel tühi välja. Demoandmed on märgitud ja neid saab hiljem korraga eemaldada.", "Одна кнопка добавляет 3 клиентов и 60 покупок за последние 30 дней (в пустой магазин – ещё 50 товаров), чтобы программа не выглядела пустой на презентации. Демо-данные помечены и их можно удалить одной кнопкой.", "One button adds 3 customers and 60 purchases over the last 30 days (plus 50 products if the shop is empty) so the program doesn't look empty in a demo. Demo data is tagged and can be removed in one go.");
+        L("Rimi kataloog laaditud", "Каталог Rimi загружен", "Rimi catalogue loaded");
+        L("Laadin Rimi tooteid taustal…", "Загружаю товары Rimi в фоне…", "Loading Rimi products in the background…");
+        L("{0} / {1} toodet · võid samal ajal tööd teha", "{0} / {1} товаров · можно продолжать работу", "{0} / {1} products · you can keep working");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }

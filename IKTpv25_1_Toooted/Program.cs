@@ -52,14 +52,12 @@ internal static class Program
             _ = db.Saavutused.AsNoTracking().FirstOrDefault();
             _ = db.Partiid.AsNoTracking().FirstOrDefault();
 
-            // Rimi kataloog: esimesel käivitamisel (või uue versiooni korral) vanad tooted välja, Rimi tooted sisse
-            if (RimiKataloog.VajabLaadimist(db, out _))
-            {
-                using var aken = new LaadimiseAken();
-                aken.Show();
-                RimiKataloog.Laadi(db, aken.Olek);
-                aken.Close();
-            }
+            // WAL: programm saab lugeda, kui taustal kirjutatakse (Rimi kataloogi laadimine)
+            try { db.Database.ExecuteSqlRaw("PRAGMA journal_mode=WAL;"); } catch { }
+
+            // Rimi kataloog: esimesel käivitamisel (või uue versiooni korral) vanad tooted välja, Rimi tooted
+            // lisanduvad taustal – aken avaneb kohe (edenemine peaakna nurgas, pood värskendab ennast ise)
+            if (RimiKataloog.VajabLaadimist(db, out _)) { RimiKataloog.AlustaTaustal(); KataloogiEdenemine.Alusta(); }
 
             LooAlgkasutajad(db);
             Kampaaniad.Uuenda(db, DateTime.Now);   // alanud/lõppenud kampaaniate hinnad
