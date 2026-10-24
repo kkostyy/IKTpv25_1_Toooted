@@ -77,11 +77,11 @@ namespace IKTpv25_1_Toooted
             // ---------------- Turvalisus ----------------
             Plokk("TURVALISUS", 368);
             var parool = Nupp("Muuda parooli...", x, 394);
-            parool.Click += (s, e) => { using var v = new ParooliMuutmineVorm(); v.ShowDialog(this); };
+            parool.Click += (s, e) => Aken.Ava(this, new ParooliMuutmineVorm());
             if (AktiivneKasutaja.OnOmanik)
             {
                 var email = Nupp("E-posti seaded (saatja)...", x + 170, 394);
-                email.Click += (s, e) => { using var v = new EmailSeadedVorm(); v.ShowDialog(this); };
+                email.Click += (s, e) => Aken.Ava(this, new EmailSeadedVorm());
             }
 
             // ---------------- Välimus ----------------
@@ -406,8 +406,8 @@ namespace IKTpv25_1_Toooted
 
         private void Uus()
         {
-            using var vorm = new RegistreerimineVorm(lubaOmanik: true);
-            if (vorm.ShowDialog(this) == DialogResult.OK) Laadi();
+            var vorm = new RegistreerimineVorm(lubaOmanik: true);
+            Aken.Ava(this, vorm, () => { if (vorm.DialogResult == DialogResult.OK) Laadi(); });
         }
 
         private void Salvesta()

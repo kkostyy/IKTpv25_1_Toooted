@@ -62,12 +62,13 @@ namespace IKTpv25_1_Toooted
         private void MuudaTooteinfot()
         {
             if (ValitudId() is not int id) return;
-            using var vorm = new TooteInfoVorm(id);
-            if (vorm.ShowDialog(this) == DialogResult.OK)
+            var vorm = new TooteInfoVorm(id);
+            Aken.Ava(this, vorm, () =>
             {
+                if (vorm.DialogResult != DialogResult.OK) return;
                 Teade.Toast("Tooteinfo salvestatud");
                 LaadiTooted();
-            }
+            });
         }
 
         // Teema muutus menüüst Vaade: värvime kõik ümber

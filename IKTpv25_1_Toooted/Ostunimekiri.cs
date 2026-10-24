@@ -462,9 +462,8 @@ namespace IKTpv25_1_Toooted
         // Pere loomine / liitumine / lahkumine
         private void AvaPereDialoog()
         {
-            using var d = new PereDialoog(pereKood != null);
-            d.ShowDialog(this);
-            if (d.Muudetud) Laadi();
+            var d = new PereDialoog(pereKood != null);
+            Aken.Ava(this, d, () => { if (d.Muudetud) Laadi(); });
         }
 
         private void LisaRida()

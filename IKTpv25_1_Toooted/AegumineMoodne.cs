@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted;
@@ -46,7 +46,7 @@ public partial class AegumineVorm
         pais.Controls.Add(tagasi);
         pais.Controls.Add(new Label { Text = Keel.T("Partiid ja säilivusaeg"), Location = new Point(tagasi.Right + 14, 0), AutoSize = true, Font = new Font("Segoe UI", 18F, FontStyle.Bold), ForeColor = Teema.Tekst, BackColor = valge });
         pais.Controls.Add(new Label { Text = Keel.F("Täna {0:dd.MM.yyyy}", DateTime.Today), Location = new Point(tagasi.Right + 16, 34), AutoSize = true, ForeColor = Teema.TekstNork, BackColor = valge });
-        var uus = UiStiil.LooNupp("+ Uus partii", (s, e) => { using var d = new UusPartiiVorm(); if (d.ShowDialog(this) == DialogResult.OK) LaadiMoodne(); }, true);
+        var uus = UiStiil.LooNupp("+ Uus partii", (s, e) => { var d = new UusPartiiVorm(); Aken.Ava(this, d, () => { if (d.DialogResult == DialogResult.OK) LaadiMoodne(); }); }, true);
         var maha = (RoundedButton)UiStiil.LooNupp("Kanna valitud maha", (s, e) => KannaMahaMoodne());
         maha.Ohtlik = true;
         foreach (var b in new[] { uus, maha }) { b.AutoSize = false; b.Height = 44; b.Width = TextRenderer.MeasureText(Keel.T(b.Text), b.Font).Width + 40; b.Anchor = AnchorStyles.Top | AnchorStyles.Right; pais.Controls.Add(b); }

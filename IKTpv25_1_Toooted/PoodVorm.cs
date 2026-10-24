@@ -903,12 +903,12 @@ namespace IKTpv25_1_Toooted
                 Teade.Toast("Sinu ostukorv on tühi.", TeateTyyp.Info);
                 return;
             }
-            if (kassa.Vormista())
+            kassa.Vormista(() =>
             {
                 LaadiTooted();   // laoseis muutus
                 MargiAegunuks();
                 Varskenda();
-            }
+            }, this);
         }
 
         private void SalvestaKorv()
