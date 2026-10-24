@@ -39,7 +39,7 @@ namespace IKTpv25_1_Toooted
             // ---- Ülariba: otsing, vahelehed, keel ----
             var yla = new Panel { Dock = DockStyle.Top, Height = 72, BackColor = Teema.Taust, Padding = new Padding(0, 0, 0, 16) };
             var otsing = new RoundedPanel { Location = new Point(0, 0), Size = new Size(330, 56), Radius = 14, FillColor = Teema.Pind, BorderColor = Teema.Pind, BackColor = Teema.Taust, Padding = new Padding(58, 17, 16, 0) };
-            var luup = new Label { Text = Ikoonid.Otsi, Font = new Font("Segoe MDL2 Assets", 12F), Size = new Size(40, 40), Location = new Point(8, 8), TextAlign = ContentAlignment.MiddleCenter, ForeColor = Color.White, BackColor = Teema.Pind, Cursor = Cursors.Hand };
+            var luup = new Label { Size = new Size(40, 40), Location = new Point(8, 8), TextAlign = ContentAlignment.MiddleCenter, ForeColor = Color.White, BackColor = Teema.Pind, Cursor = Cursors.Hand };
             luup.Paint += (s, e) =>
             {
                 e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;

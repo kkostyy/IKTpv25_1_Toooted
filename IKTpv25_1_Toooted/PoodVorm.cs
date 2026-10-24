@@ -107,13 +107,11 @@ namespace IKTpv25_1_Toooted
             {
                 Dock = DockStyle.Right,
                 Width = 44,
-                Text = Ikoonid.Otsi,
-                Font = new Font("Segoe MDL2 Assets", 14F),
-                TextAlign = ContentAlignment.TopCenter,
                 ForeColor = Teema.Teine,
                 BackColor = Teema.Paneel2,
                 Cursor = Cursors.Hand
             };
+            luup.Paint += (s, e) => Ikoonid.Joonista(e.Graphics, Ikoonid.Otsi, new Rectangle(0, 0, luup.Width, 30), luup.ForeColor, 14f);
             luup.Click += (s, e) => Otsi();
             otsing.Controls.Add(txtOtsi);
             otsing.Controls.Add(luup);
