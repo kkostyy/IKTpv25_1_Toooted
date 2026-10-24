@@ -45,6 +45,13 @@ public static partial class Ikoonid
         if (n.Contains("valmis")) return "🍲";
         if (n.Contains("laps")) return "🧸";
         if (n.Contains("lemmik")) return "🐾";
+        if (n.Contains("alkohol")) return "🍷";
+        if (n.Contains("laste")) return "🧸";
+        if (n.Contains("enesehoold")) return "🧴";
+        if (n.Contains("puhastus")) return "🧽";
+        if (n.Contains("kauasäil")) return "🥫";
+        if (n.Contains("talu")) return "🚜";
+        if (n.Contains("kodu")) return "🏠";
         return "🛍";
     }
 

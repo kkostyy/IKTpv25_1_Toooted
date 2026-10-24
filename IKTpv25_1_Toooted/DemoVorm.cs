@@ -3,6 +3,12 @@
 // Demoandmed (omanik): kaks loendurit (tooted, ostud), edenemisriba, lisa / eemalda
 public class DemoVorm : KujundusVorm
 {
+    private static bool Kataloog()
+    {
+        try { using var db = new ToodedContext(); return DemoAndmed.KasutaKataloogi(db); }
+        catch { return false; }
+    }
+
     private readonly Loendur tooteid = new("toodet"), oste = new("ostu");
     private readonly Edenemine riba = new() { Visible = false };
     private readonly Label lblOlek;
@@ -57,7 +63,9 @@ public class DemoVorm : KujundusVorm
 
         var plaadid = new (string N, string T, string S, Color Taust, Color Tekst)[]
         {
-            (DemoAndmed.TooteArv.ToString(), "toodet", Keel.F("kõik {0} kategooriat", DemoAndmed.KategooriaArv), Color.FromArgb(226, 6, 19), Color.White),
+            Kataloog()
+                ? ("Rimi", "kataloogi tooted", "ostud päris toodetest", Color.FromArgb(226, 6, 19), Color.White)
+                : (DemoAndmed.TooteArv.ToString(), "toodet", Keel.F("kõik {0} kategooriat", DemoAndmed.KategooriaArv), Color.FromArgb(226, 6, 19), Color.White),
             (DemoAndmed.OstuArv.ToString(), "ostu", "viimased 30 päeva", Color.FromArgb(27, 28, 31), Color.White),
             (DemoAndmed.KliendiArv.ToString(), "klienti", "kaartide ja boonusega", Teema.Paneel2, Teema.Tekst),
             (DemoAndmed.ToiduArv.ToString(), "toitumisteabega", "toiteväärtuse jaoks", Color.FromArgb(246, 230, 239), Color.FromArgb(160, 35, 110)),
