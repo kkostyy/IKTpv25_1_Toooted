@@ -189,6 +189,9 @@ public static partial class Keel
         L("Partii", "Партия", "Batch"); L("Säilib kuni", "Годен до", "Best before"); L("Hind", "Цена", "Price"); L("Olek", "Статус", "Status"); L("Partii nr {0}", "Партия № {0}", "Batch no. {0}");
         L("Varsti", "Скоро", "Soon"); L("Värske", "Свежее", "Fresh"); L("Soodustusega partiisid praegu pole.", "Партий со скидкой сейчас нет.", "No discounted batches right now.");
         L("−{0} % · parim enne {1:dd.MM}", "−{0} % · лучше до {1:dd.MM}", "−{0} % · best before {1:dd.MM}"); L("Säilib: {0} · {1} tk", "Срок: {0} · {1} шт", "Keeps: {0} · {1} pcs");
+        L("Kehtib iga päev {0:hh\\:mm} kuni poe sulgemiseni (00:00).", "Действует каждый день с {0:hh\\:mm} до закрытия магазина (00:00).", "Valid every day from {0:hh\\:mm} until closing (00:00).");
+        L("Ei liitu kampaania ega säilivusaja soodustusega – rakendub suurim.", "Не суммируется с акцией и уценкой по сроку – действует наибольшая.", "Does not stack with campaigns or expiry discounts – the largest applies.");
+        L("Hind arvutatakse kassas ostu hetkel, mitte korvi lisamisel.", "Цена считается на кассе в момент покупки, а не при добавлении в корзину.", "The price is calculated at checkout, not when added to the basket."); L("TŠEKIL", "В ЧЕКЕ", "ON THE RECEIPT");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }

@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 
 namespace IKTpv25_1_Toooted;
 
@@ -104,8 +104,36 @@ public class OhtuSeadedVorm : KujundusVorm
         Silt("Kategooria", 20, 156);
         cmbKat = new ComboBox { Location = new Point(20, 176), Width = 400, DropDownStyle = ComboBoxStyle.DropDownList };
         Controls.Add(cmbKat);
-        Controls.Add(new Label { Text = "Ei liitu kampaania ega säilivusaja soodustusega – kehtib suurim. Hind arvutatakse maksmise hetkel.", Location = new Point(20, 210), Size = new Size(400, 36), ForeColor = Teema.TekstNork });
+        var selgitus = new Label { Text = "Ei liitu kampaania ega säilivusaja soodustusega – kehtib suurim. Hind arvutatakse maksmise hetkel.", Location = new Point(20, 210), Size = new Size(400, 36), ForeColor = Teema.TekstNork };
+        Controls.Add(selgitus);
         var salvesta = Nupp("Salvesta", 20, 270, true);
+        if (Teema.OnMoodne)
+        {
+            // lõuend N12: reeglid hallil kastil ja näidis, kuidas rida tšekil välja näeb
+            ClientSize = new Size(440, 560);
+            selgitus.Visible = false;
+            var kast = new RoundedPanel { Bounds = new Rectangle(20, 214, 400, 118), Radius = 10, FillColor = Color.FromArgb(246, 248, 249), BorderColor = Color.FromArgb(246, 248, 249), Padding = new Padding(14, 10, 14, 10) };
+            kast.Controls.Add(new Label
+            {
+                Text = "• " + Keel.F("Kehtib iga päev {0:hh\\:mm} kuni poe sulgemiseni (00:00).", s.Algus) + "\n• " + Keel.T("Ei liitu kampaania ega säilivusaja soodustusega – rakendub suurim.") + "\n• " + Keel.T("Hind arvutatakse kassas ostu hetkel, mitte korvi lisamisel."),
+                Dock = DockStyle.Fill, ForeColor = Teema.Tekst2, BackColor = kast.FillColor, Font = new Font("Segoe UI", 9F)
+            });
+            Controls.Add(kast);
+            Controls.Add(new Label { Text = Keel.T("TŠEKIL"), Location = new Point(20, 346), AutoSize = true, Font = new Font("Segoe UI", 8F, FontStyle.Bold), ForeColor = Teema.TekstNork });
+            var tume = Color.FromArgb(27, 28, 31);
+            var tsekk = new RoundedPanel { Bounds = new Rectangle(20, 368, 400, 70), Radius = 8, FillColor = tume, BorderColor = tume, Padding = new Padding(14, 10, 14, 8) };
+            decimal naideHind = 1.69m, pool = Math.Round(naideHind * s.Protsent / 100m, 2);
+            var tsekiFont = new Font("Consolas", 9.5F);
+            tsekk.Controls.Add(new Label { Text = $"{Keel.F("Õhtune soodustus −{0} %", s.Protsent)}", Dock = DockStyle.Top, Height = 22, Font = tsekiFont, ForeColor = Color.FromArgb(245, 212, 106), BackColor = tume, Padding = new Padding(12, 0, 0, 0) });
+            var r1 = new Label { Text = "1 x Rukkileib Rehe", Dock = DockStyle.Top, Height = 22, Font = tsekiFont, ForeColor = Color.White, BackColor = tume };
+            tsekk.Controls.Add(r1);
+            var summad = new Label { Text = $"{naideHind:0.00}\n-{pool:0.00}", Dock = DockStyle.Right, Width = 70, TextAlign = ContentAlignment.TopRight, Font = tsekiFont, ForeColor = Color.White, BackColor = tume };
+            tsekk.Controls.Add(summad);
+            summad.SendToBack();   // dokitakse esimesena: kogu kõrgus paremal
+            Controls.Add(tsekk);
+            salvesta.Location = new Point(20, 470);
+            salvesta.Size = new Size(400, 52);
+        }
         salvesta.Click += (sd, e) => Salvesta();
         Load += (sd, e) =>
         {
