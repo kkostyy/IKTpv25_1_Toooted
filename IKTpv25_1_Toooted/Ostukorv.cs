@@ -10,8 +10,12 @@ public class KorvRida
     public int Kogus { get; set; }
     public int Laos { get; set; }             // laoseis lisamise hetkel (rohkem ei saa)
     public string? Pilt { get; set; }         // pildi failinimi (pisipildi jaoks)
+    public decimal Pant { get; set; }         // pakendi tagatisraha tüki kohta (ei kuulu soodustuse ega boonuse alla)
+    public decimal TavaHind { get; set; }     // hind ilma soodustuseta (tšekil "soodustus")
+    public string? Soodus { get; set; }       // soodustuse põhjus, nt "Õhtune soodustus −50 %"
 
     public decimal Summa => Hind * Kogus;
+    public decimal PantKokku => Pant * Kogus;
 
     public override string ToString() =>
         $"{Nimi} – {Kogus} tk × {Ostukorv.Eur(Hind)} = {Ostukorv.Eur(Summa)}";
@@ -22,7 +26,9 @@ public static class Ostukorv
 {
     public static List<KorvRida> Ridad { get; } = new();
 
-    public static decimal Kokku => Ridad.Sum(r => r.Summa);
+    public static decimal Kokku => Ridad.Sum(r => r.Summa);          // tooted (ilma pandita)
+    public static decimal PantKokku => Ridad.Sum(r => r.PantKokku);  // pakendi tagatisraha
+    public static int PandiTk => Ridad.Where(r => r.Pant > 0).Sum(r => r.Kogus);
 
     // Käivitub iga muudatuse järel, et vormid saaksid korvi uuesti näidata
     public static event Action? Muutus;
@@ -37,7 +43,21 @@ public static class Ostukorv
 
     public static int KorvisKogus(int tooteId) => Ridad.FirstOrDefault(r => r.Id == tooteId)?.Kogus ?? 0;
 
-    public static string? Lisa(int id, string nimi, decimal hind, int laos, int kogus = 1, string? pilt = null)
+    // Toode korvi praeguse lõpphinnaga (kampaania, õhtune soodustus, säilivusaeg, üllatus) ja pandiga
+    public static string? LisaToode(Toode t, int kogus = 1)
+    {
+        if (t.Kogus <= 0) return Keel.F("„{0}“ on otsas.", t.Toodenimetus);
+        var h = Hinnad.Lopphind(t);
+        string? viga = Lisa(t.Id, t.Toodenimetus, h.Hind, t.Kogus, kogus, t.Pilt, t.Pant);
+        if (viga == null && Ridad.FirstOrDefault(r => r.Id == t.Id) is KorvRida rida)
+        {
+            rida.TavaHind = h.TavaHind;
+            rida.Soodus = h.Soodus ? h.Allikas : null;
+        }
+        return viga;
+    }
+
+    public static string? Lisa(int id, string nimi, decimal hind, int laos, int kogus = 1, string? pilt = null, decimal pant = 0)
     {
         var olemas = Ridad.FirstOrDefault(r => r.Id == id);
         int korvis = olemas?.Kogus ?? 0;
@@ -50,11 +70,12 @@ public static class Ostukorv
             olemas.Kogus += kogus;
             olemas.Hind = hind;
             olemas.Laos = laos;
+            olemas.Pant = pant;
             if (pilt != null) olemas.Pilt = pilt;
         }
         else
         {
-            Ridad.Add(new KorvRida { Id = id, Nimi = nimi, Hind = hind, Kogus = kogus, Laos = laos, Pilt = pilt });
+            Ridad.Add(new KorvRida { Id = id, Nimi = nimi, Hind = hind, Kogus = kogus, Laos = laos, Pilt = pilt, Pant = pant, TavaHind = hind });
         }
 
         Muutus?.Invoke();
@@ -63,7 +84,7 @@ public static class Ostukorv
 
     // Suurendab rea kogust ühe võrra (kui laos on)
     public static string? Suurenda(KorvRida rida) =>
-        Lisa(rida.Id, rida.Nimi, rida.Hind, rida.Laos, 1, rida.Pilt);
+        Lisa(rida.Id, rida.Nimi, rida.Hind, rida.Laos, 1, rida.Pilt, rida.Pant);
 
     // Vähendab kogust ühe võrra; viimase tüki puhul eemaldab rea
     public static void Vahenda(KorvRida rida)

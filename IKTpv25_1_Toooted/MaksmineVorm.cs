@@ -267,7 +267,7 @@ public class MaksmineVorm : Form
 
     private decimal TarneHind() => rbKojuvedu != null && rbKojuvedu.Checked ? Tarne.Arvuta(Ostukorv.Kokku) : 0;
 
-    private decimal Summa() => Ostukorv.Kokku - Soodustus() + TarneHind();
+    private decimal Summa() => Ostukorv.Kokku - Soodustus() + Ostukorv.PantKokku + TarneHind();
 
     private bool LoeSaadud(out decimal saadud) =>
         decimal.TryParse(txtSaadud.Text.Trim().Replace(',', '.'), NumberStyles.AllowDecimalPoint,
@@ -289,6 +289,7 @@ public class MaksmineVorm : Form
         decimal soodustus = Soodustus();
         decimal summa = Summa();
         lblVahesumma.Text = Keel.F("Vahesumma: {0}", Ostukorv.Eur(Ostukorv.Kokku)) +
+            (Ostukorv.PantKokku > 0 ? "   ·   " + Keel.F("Pakendi tagatisraha ({0} tk) {1}", Ostukorv.PandiTk, Ostukorv.Eur(Ostukorv.PantKokku)) : "") +
             (rbKojuvedu.Checked ? "   ·   " + Keel.F("Tarne: {0}", TarneHind() == 0 ? Keel.T("TASUTA") : Ostukorv.Eur(TarneHind())) : "");
 
         // Kui palju on veel puudu tasuta tarneni
@@ -380,7 +381,7 @@ public class MaksmineVorm : Form
             var ost = new Ost
             {
                 Aeg = DateTime.Now,
-                Vahesumma = Ostukorv.Kokku,
+                Vahesumma = Ostukorv.Kokku + Ostukorv.PantKokku,
                 Soodustus = soodustus,
                 Summa = summa,
                 Kasutaja = AktiivneKasutaja.OnOstja ? "e-pood" : AktiivneKasutaja.Nimi,
@@ -409,13 +410,18 @@ public class MaksmineVorm : Form
                 toode.Kogus -= r.Kogus;
                 if (toode.Kogus < Form1.VaikeLaoseis) VaheseLaoga.Add($"{toode.Toodenimetus}: {toode.Kogus} tk");
 
-                ost.Read.Add(new OstuRida { ToodeId = r.Id, Toodenimetus = r.Nimi, Kogus = r.Kogus, Hind = r.Hind });
+                ost.Read.Add(new OstuRida
+                {
+                    ToodeId = r.Id, Toodenimetus = r.Nimi, Kogus = r.Kogus, Hind = r.Hind, Pant = r.Pant,
+                    TavaHind = r.TavaHind > r.Hind ? r.TavaHind : null,
+                    Soodus = r.TavaHind > r.Hind ? r.Soodus : null
+                });
             }
 
             if (klient != null)
             {
                 decimal protsent = Preemiad.LeiaTase(db, klient.Id).Protsent;   // Pronks 1 %, Hõbe 1,5 %, Kuld 2 %
-                ost.BoonusLisatud = Tarne.Boonus(ost.Summa - ost.TarneHind, protsent);
+                ost.BoonusLisatud = Tarne.Boonus(ost.Summa - ost.TarneHind - Ostukorv.PantKokku, protsent);   // pant boonust ei anna
                 klient.Boonus = klient.Boonus - soodustus + ost.BoonusLisatud;
                 if (string.IsNullOrEmpty(klient.Email) && ost.Email != null) klient.Email = ost.Email;   // jätame meelde
             }

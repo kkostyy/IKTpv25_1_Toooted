@@ -21,7 +21,8 @@ namespace IKTpv25_1_Toooted
         private FlowLayoutPanel sisu = new();          // praeguse poe lehe sisu
         private readonly Panel rail;
         private readonly TextBox txtOtsi;
-        private readonly Label lblKokku, lblPakkimine, lblTasuta;
+        private readonly Label lblKokku, lblPakkimine, lblTasuta, lblPant;
+        private readonly Panel pandiRida;
         private readonly Edenemine tarneRiba = new();
         private readonly RoundedButton btnMaksma;
         private readonly KorviNupp korviNupp;
@@ -202,6 +203,8 @@ namespace IKTpv25_1_Toooted
             tarneRiba.Height = 8;
             tasutaRida.Controls.Add(tarneRiba);
             tasutaRida.Controls.Add(lblTasuta);
+            pandiRida = Rida("Pakendi tagatisraha", out lblPant, new Font("Segoe UI", 10F), Teema.Tekst2, 26);
+            pandiRida.Visible = false;
             var rida2 = Rida("Kokku", out lblKokku, new Font("Segoe UI Semibold", 14F), Teema.Tekst, 40);
 
             btnMaksma = UiStiil.LooSuurNupp("Maksma", (s, e) => Vormista());
@@ -235,6 +238,7 @@ namespace IKTpv25_1_Toooted
             jalus.Controls.Add(btnMaksma);
             jalus.Controls.Add(vahe);
             jalus.Controls.Add(rida2);
+            jalus.Controls.Add(pandiRida);
             jalus.Controls.Add(tasutaRida);
             jalus.Controls.Add(rida1);
 
@@ -452,7 +456,10 @@ namespace IKTpv25_1_Toooted
                 : Keel.F("✓ Tasuta kojuvedu (ostukorv üle {0})", Ostukorv.Eur(Tarne.TasutaAlates));
             lblTasuta.ForeColor = puudu > 0 ? Teema.Tekst2 : Teema.Edu;
             tarneRiba.Osa = (float)(Ostukorv.Kokku / Tarne.TasutaAlates);
-            lblKokku.Text = Ostukorv.Eur(Ostukorv.Kokku + tarne);
+            // Pant: eraldi rida, kuulub kokkusummasse (tasuta tarne piir arvestab ainult tooteid)
+            pandiRida.Visible = Ostukorv.PantKokku > 0;
+            lblPant.Text = Keel.F("{0} tk · {1}", Ostukorv.PandiTk, Ostukorv.Eur(Ostukorv.PantKokku));
+            lblKokku.Text = Ostukorv.Eur(Ostukorv.Kokku + Ostukorv.PantKokku + tarne);
             bool tyhi = Ostukorv.Ridad.Count == 0;
             btnMaksma.Enabled = !tyhi;
             lnkSalvesta.Enabled = lnkTyhjenda.Enabled = lnkToit.Enabled = !tyhi;
@@ -816,7 +823,7 @@ namespace IKTpv25_1_Toooted
                 Teade.Toast(Keel.F("„{0}“ on otsas.", t.Toodenimetus), TeateTyyp.Hoiatus);
                 return;
             }
-            string? viga = Ostukorv.Lisa(t.Id, t.Toodenimetus, t.Hind, t.Kogus, 1, t.Pilt);
+            string? viga = Ostukorv.LisaToode(t);
             if (viga != null) Teade.Toast(viga, TeateTyyp.Hoiatus);
         }
 
@@ -893,7 +900,7 @@ namespace IKTpv25_1_Toooted
                 int vaba = t.Kogus - Ostukorv.KorvisKogus(t.Id);
                 int kogus = Math.Min(r.Kogus, vaba);
                 if (kogus <= 0) { puudu++; continue; }
-                if (Ostukorv.Lisa(t.Id, t.Toodenimetus, t.Hind, t.Kogus, kogus, t.Pilt) == null) lisatud++;
+                if (Ostukorv.LisaToode(t, kogus) == null) lisatud++;
                 if (kogus < r.Kogus) puudu++;
             }
             Teade.Toast(Keel.F("„{0}“: lisati {1} toodet", k.Nimi, lisatud) + (puudu > 0 ? Keel.F(", {0} pole laos piisavalt", puudu) : ""),
@@ -1394,7 +1401,9 @@ namespace IKTpv25_1_Toooted
                 using var vana = new Font("Segoe UI Semibold", 9.5F, FontStyle.Strikeout);
                 TextRenderer.DrawText(g, Ikoonid.Hind(Toode.VanaHind!.Value), vana, new Point(x + laius + 4, hinnaY + 21), Teema.Tekst2);
             }
-            string? alumine = Toode.UhikuHind is decimal uh && Toode.Uhik is string u && u != "tk"
+            string? alumine = Toode.Pant > 0
+                ? "+ " + Keel.F("Pakendi tagatisraha {0}", Ostukorv.Eur(Toode.Pant))
+                : Toode.UhikuHind is decimal uh && Toode.Uhik is string u && u != "tk"
                 ? $"{Ikoonid.Hind(uh)}/{u}"
                 : Toode.Pakend;
             if (alumine != null)

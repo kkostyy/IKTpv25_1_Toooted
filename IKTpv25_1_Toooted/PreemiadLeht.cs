@@ -495,8 +495,7 @@ public class YllatusPaneel : Control
     {
         if (tana is not { } y) return;
         var t = y.Toode;
-        decimal hind = Hinnad.Lopphind(t, DateTime.Now).Hind;
-        string? viga = t.Kogus <= 0 ? Keel.F("„{0}“ on otsas.", t.Toodenimetus) : Ostukorv.Lisa(t.Id, t.Toodenimetus, hind, t.Kogus, 1, t.Pilt);
+        string? viga = Ostukorv.LisaToode(t);
         Teade.Toast(viga ?? Keel.F("{0} lisati korvi", t.Toodenimetus), viga == null ? TeateTyyp.Edu : TeateTyyp.Hoiatus);
     }
 

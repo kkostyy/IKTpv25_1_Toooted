@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+
 namespace IKTpv25_1_Toooted
 {
     // Kassa vaheleht: Valin -> Ostan/Maksta (üks aken: klient, boonus, e-post, makse) -> tšekk e-postile.
@@ -55,7 +57,7 @@ namespace IKTpv25_1_Toooted
 
         private void UuendaKokku()
         {
-            txtKokku.Text = Ostukorv.Eur(Ostukorv.Kokku);
+            txtKokku.Text = Ostukorv.Eur(Ostukorv.Kokku + Ostukorv.PantKokku);   // koos pandiga
         }
 
         // ---------------------------------------------------------------
@@ -71,7 +73,10 @@ namespace IKTpv25_1_Toooted
             int laos = Convert.ToInt32(rida.Cells["Kogus"].Value);
             string? pilt = Convert.ToString(rida.Cells["Pilt"].Value);
 
-            string? viga = Ostukorv.Lisa(id, nimi, hind, laos, 1, pilt);
+            // Toode andmebaasist: lõpphind (soodustused) ja pakendi tagatisraha
+            Toode? toode;
+            using (var db = new ToodedContext()) toode = db.Toodetabel.AsNoTracking().FirstOrDefault(t => t.Id == id);
+            string? viga = toode != null ? Ostukorv.LisaToode(toode) : Ostukorv.Lisa(id, nimi, hind, laos, 1, pilt);
             if (viga != null) Teade.Toast(viga, TeateTyyp.Hoiatus);
             else Teade.Toast(Keel.F("{0} lisati korvi", nimi), TeateTyyp.Edu, 1500);
         }
