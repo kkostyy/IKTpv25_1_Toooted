@@ -45,6 +45,20 @@ public static partial class Keel
         L("Energia", "Энергия", "Energy"); L("Rasvad", "Жиры", "Fat"); L("millest küllastunud", "из них насыщенные", "of which saturates");
         L("Süsivesikud", "Углеводы", "Carbohydrates"); L("millest suhkrud", "из них сахара", "of which sugars"); L("Valgud", "Белки", "Protein"); L("Sool", "Соль", "Salt");
         L("KUST KALORID TULEVAD", "ОТКУДА КАЛОРИИ", "WHERE CALORIES COME FROM"); L("Andmeid pole", "Нет данных", "No data"); L("OSTUKORV", "КОРЗИНА", "BASKET");
+        // --- Pere ostunimekiri ---
+        L("Pere ostunimekiri", "Семейный список покупок", "Family shopping list"); L("+ Kutsu / liitu", "+ Пригласить / вступить", "+ Invite / join");
+        L("Ostetud {0} / {1} · kõik näevad sama nimekirja", "Куплено {0} / {1} · все видят один список", "Bought {0} / {1} · everyone sees the same list");
+        L("Kopeeri kood", "Копировать код", "Copy code"); L("Pere kood kopeeritud", "Код семьи скопирован", "Family code copied"); L("PERE KOOD", "КОД СЕМЬИ", "FAMILY CODE");
+        L("VIIMASED TEGEVUSED", "ПОСЛЕДНИЕ ДЕЙСТВИЯ", "RECENT ACTIVITY"); L("Tegevusi pole veel", "Действий пока нет", "No activity yet");
+        L("lisas „{0}“", "добавил(а) «{0}»", "added “{0}”"); L("ostis „{0}“", "купил(а) «{0}»", "bought “{0}”"); L("ostis {0}", "купил(а) {0}", "bought by {0}");
+        L("Lisas", "Добавил", "Added by"); L("Ostis", "Купил", "Bought by"); L("Liitu perega", "Вступить в семью", "Join a family"); L("Liitu", "Вступить", "Join");
+        L("Sisesta pereliikmelt saadud 7-märgiline kood. Kõik pereliikmed näevad sama ostunimekirja (samas programmis).", "Введите 7-значный код от члена семьи. Все члены семьи видят один список покупок (в этой программе).", "Enter the 7-character code from a family member. Everyone in the family sees the same shopping list (in this app).");
+        L("loo uus pere", "создать новую семью", "create a new family"); L("lahku perest", "выйти из семьи", "leave the family");
+        L("Kas lahkud perest? Sinu ostunimekiri jääb alles.", "Выйти из семьи? Ваш список покупок сохранится.", "Leave the family? Your shopping list stays.");
+        L("Pere", "Семья", "Family"); L("Liitusid perega – nimekiri on nüüd ühine", "Вы вступили в семью – список теперь общий", "You joined the family – the list is now shared");
+        L("Uus pere loodud. Kood {0} on kopeeritud – saada see pereliikmetele.", "Семья создана. Код {0} скопирован – отправьте его членам семьи.", "New family created. Code {0} is copied – send it to family members.");
+        L("Pere kood on {0} märki.", "Код семьи – {0} символов.", "The family code has {0} characters.");
+        L("Sellise koodiga peret ei leitud.", "Семья с таким кодом не найдена.", "No family with this code was found.");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }
