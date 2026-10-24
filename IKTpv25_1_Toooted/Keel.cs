@@ -8,7 +8,7 @@ public enum KeeleKood { ET, RU, EN }
 // Programmi keel: eesti (vaikimisi), vene, inglise.
 // Kood on kirjutatud eesti keeles; Keel.T("eesti tekst") annab valitud keele teksti.
 // Vormide sildid, nupud, menüüd ja tabelite päised tõlgitakse automaatselt (Teema.Rakenda kaudu).
-public static class Keel
+public static partial class Keel
 {
     public static KeeleKood Praegu { get; private set; } = KeeleKood.ET;
 
@@ -513,5 +513,7 @@ public static class Keel
         L("Tagasiraha:", "Сдача:", "Change:"); L("Boonust lisandus:", "Начислено бонусов:", "Bonus added:");
         L("Staatus: MAKSTUD", "Статус: ОПЛАЧЕНО", "Status: PAID"); L("Staatus: MAKSMATA", "Статус: НЕ ОПЛАЧЕНО", "Status: UNPAID");
         L("Aitäh ostu eest!", "Спасибо за покупку!", "Thank you for shopping!"); L("Tšekk nr {0} – {1}", "Чек № {0} – {1}", "Receipt no. {0} – {1}");
+
+        LisaUuedTolked();   // uute funktsioonide tõlked (KeelUued.cs)
     }
 }

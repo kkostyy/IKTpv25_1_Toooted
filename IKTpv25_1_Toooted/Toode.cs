@@ -35,6 +35,17 @@ public class Toode
     // Toitumisalane teave: iga rida "nimetus;väärtus", alamrida algab "-"-ga
     public string? Toitevaartus { get; set; }
 
+    // Dieedimärgised (admin): "laktoosivaba;gluteenivaba;vegan;pahklivaba"
+    public string? Margised { get; set; }
+
+    [Precision(10, 2)]
+    public decimal Pant { get; set; }               // pakendi tagatisraha (pudel/purk 0,10 €)
+
+    [Precision(10, 2)]
+    public decimal? Ostuhind { get; set; }          // sisseostuhind marginaali jaoks
+
+    public bool Demo { get; set; }                  // demoandmed (saab korraga kustutada)
+
     // Arvutatud (andmebaasi ei salvestata)
     public decimal? UhikuHind => UhikuKogus is decimal k && k > 0 ? Math.Round(Hind / k, 2) : null;
     public int? SoodusProtsent => VanaHind is decimal v && v > Hind ? (int)Math.Round((1 - Hind / v) * 100) : null;

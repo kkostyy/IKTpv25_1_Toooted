@@ -28,6 +28,8 @@ public class Ost
     public int? KlientId { get; set; }                              // ? = klient ei ole kohustuslik
     public Klient? Klient { get; set; }
 
+    public bool Demo { get; set; }
+
     public List<OstuRida> Read { get; set; } = new();
 }
 
@@ -46,5 +48,13 @@ public class OstuRida
     [Precision(10, 2)]
     public decimal Hind { get; set; }
 
+    [Precision(10, 2)]
+    public decimal? TavaHind { get; set; }                          // hind enne soodustust (kui oli)
+    public string? Soodus { get; set; }                             // soodustuse põhjus tšekil, nt "Õhtune soodustus −50 %"
+
+    [Precision(10, 2)]
+    public decimal Pant { get; set; }                               // tagatisraha tüki kohta ostu hetkel
+
     public decimal Summa => Hind * Kogus;
+    public decimal PantKokku => Pant * Kogus;
 }

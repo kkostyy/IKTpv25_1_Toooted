@@ -32,6 +32,7 @@ namespace IKTpv25_1_Toooted
 
         public SeadedVorm() : base("Seaded", 580, 752)
         {
+            KysiSulgemisel = true;
             Pealkiri(Keel.F("Seaded – {0}", AktiivneKasutaja.Nimi));
             AktiivneKasutaja.Uuenda();
             const int x = 20, w = 520;
@@ -230,6 +231,7 @@ namespace IKTpv25_1_Toooted
                 db.SaveChanges();
                 AktiivneKasutaja.Sea(k);
                 Teade.Toast("Seaded salvestatud");
+                Muudetud = false;
                 Teema.TeavitaMuutusest();   // tervitused (nimi) uuendatakse
                 lblViga.Text = "";
             }

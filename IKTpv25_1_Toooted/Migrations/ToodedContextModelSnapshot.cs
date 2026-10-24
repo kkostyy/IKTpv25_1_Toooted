@@ -17,6 +17,45 @@ namespace IKTpv25_1_Toooted.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.6");
 
+            modelBuilder.Entity("IKTpv25_1_Toooted.Kampaania", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("Algus")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Automaatne")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("Lopp")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Nimi")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Rakendatud")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SoodusProtsent")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal?>("TavaHind")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ToodeId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ToodeId");
+
+                    b.ToTable("Kampaaniad");
+                });
+
             modelBuilder.Entity("IKTpv25_1_Toooted.Kasutaja", b =>
                 {
                     b.Property<int>("Id")
@@ -43,6 +82,9 @@ namespace IKTpv25_1_Toooted.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("PereKood")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Roll")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -56,6 +98,8 @@ namespace IKTpv25_1_Toooted.Migrations
                         .IsUnique();
 
                     b.HasIndex("KlientId");
+
+                    b.HasIndex("PereKood");
 
                     b.ToTable("Kasutajad");
                 });
@@ -125,6 +169,9 @@ namespace IKTpv25_1_Toooted.Migrations
                         .HasPrecision(10, 2)
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("Demo")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Email")
                         .HasColumnType("TEXT");
 
@@ -159,6 +206,9 @@ namespace IKTpv25_1_Toooted.Migrations
                     b.Property<decimal>("BoonusLisatud")
                         .HasPrecision(10, 2)
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("Demo")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Email")
                         .HasColumnType("TEXT");
@@ -225,6 +275,17 @@ namespace IKTpv25_1_Toooted.Migrations
                     b.Property<int>("OstId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<decimal>("Pant")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Soodus")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("TavaHind")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("TEXT");
+
                     b.Property<int?>("ToodeId")
                         .HasColumnType("INTEGER");
 
@@ -262,6 +323,9 @@ namespace IKTpv25_1_Toooted.Migrations
                     b.Property<DateTime?>("OstetudAeg")
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("OstisKasutajaId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Tekst")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -278,10 +342,72 @@ namespace IKTpv25_1_Toooted.Migrations
                     b.ToTable("Ostunimekiri", (string)null);
                 });
 
+            modelBuilder.Entity("IKTpv25_1_Toooted.Partii", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("Aegub")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Kogus")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("Lisatud")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("MahaKantud")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("MahaKantudAeg")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ToodeId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ToodeId");
+
+                    b.ToTable("Partiid");
+                });
+
+            modelBuilder.Entity("IKTpv25_1_Toooted.Saavutus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("Aeg")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Boonus")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("KlientId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Kood")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KlientId", "Kood")
+                        .IsUnique();
+
+                    b.ToTable("Saavutused");
+                });
+
             modelBuilder.Entity("IKTpv25_1_Toooted.Toode", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("Demo")
                         .HasColumnType("INTEGER");
 
                     b.Property<decimal>("Hind")
@@ -306,7 +432,18 @@ namespace IKTpv25_1_Toooted.Migrations
                     b.Property<string>("Lisainfo")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Margised")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("Ostuhind")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Pakend")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Pant")
+                        .HasPrecision(10, 2)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Paritolumaa")
@@ -346,6 +483,7 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 1,
+                            Demo = false,
                             Hind = 2.99m,
                             KategooriaId = 1,
                             Kaubamark = "Valio",
@@ -354,6 +492,7 @@ namespace IKTpv25_1_Toooted.Migrations
                             Koostisosad = "Pastöriseeritud PIIM, sool, piimhappebakterid, laap, värvaine annatto.",
                             Lisainfo = "Laktoosivaba (laktoosi alla 0,01 g/100 g).\nMin säilitustemperatuur: 2° C\nMax säilitustemperatuur: 6° C",
                             Pakend = "0.5 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "atleet.png",
                             Toitevaartus = "energiasisaldus;1490 kJ / 360 kcal\nrasvad;27 g\n-millest küllastunud rasvhapped;17 g\nsüsivesikud;0 g\n-millest suhkrud;0 g\nvalgud;28 g\nsool;1.3 g",
@@ -366,6 +505,7 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 2,
+                            Demo = false,
                             Hind = 2.89m,
                             KategooriaId = 1,
                             Kaubamark = "Kulli Farm",
@@ -374,6 +514,7 @@ namespace IKTpv25_1_Toooted.Migrations
                             Koostisosad = "Kanamunad.",
                             Lisainfo = "Min säilitustemperatuur: 5° C\nMax säilitustemperatuur: 18° C",
                             Pakend = "10 tk",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "munad.png",
                             Toitevaartus = "energiasisaldus;600 kJ / 144 kcal\nrasvad;10 g\n-millest küllastunud rasvhapped;2.8 g\nsüsivesikud;0.6 g\n-millest suhkrud;0.6 g\nvalgud;12.5 g\nsool;0.3 g",
@@ -385,6 +526,7 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 3,
+                            Demo = false,
                             Hind = 1.39m,
                             KategooriaId = 1,
                             Kaubamark = "Alma",
@@ -393,6 +535,7 @@ namespace IKTpv25_1_Toooted.Migrations
                             Koostisosad = "Kodujuust (PIIM, sool, piimhappebakterid), murakamoos (suhkur, murakad, vesi, paksendaja pektiin).",
                             Lisainfo = "Min säilitustemperatuur: 2° C\nMax säilitustemperatuur: 6° C",
                             Pakend = "0.2 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "kodujuust.png",
                             Toitevaartus = "energiasisaldus;540 kJ / 129 kcal\nrasvad;3.5 g\n-millest küllastunud rasvhapped;2.2 g\nsüsivesikud;12 g\n-millest suhkrud;11 g\nvalgud;11 g\nsool;0.5 g",
@@ -405,6 +548,7 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 4,
+                            Demo = false,
                             Hind = 2.19m,
                             KategooriaId = 1,
                             Kaubamark = "Farmi",
@@ -413,6 +557,7 @@ namespace IKTpv25_1_Toooted.Migrations
                             Koostisosad = "Pastöriseeritud täisPIIM (rasvasisaldus 3,8-4,2%).",
                             Lisainfo = "Pärast avamist tarvitada 4 päeva jooksul.\nMin säilitustemperatuur: 2° C\nMax säilitustemperatuur: 6° C",
                             Pakend = "2 l",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "taispiim.png",
                             Toitevaartus = "energiasisaldus;270 kJ / 65 kcal\nrasvad;3.9 g\n-millest küllastunud rasvhapped;2.5 g\nsüsivesikud;4.7 g\n-millest suhkrud;4.7 g\nvalgud;3.2 g\nsool;0.1 g",
@@ -424,6 +569,7 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 5,
+                            Demo = false,
                             Hind = 1.69m,
                             KategooriaId = 2,
                             Kaubamark = "Eesti Pagar",
@@ -432,6 +578,7 @@ namespace IKTpv25_1_Toooted.Migrations
                             Koostisosad = "RUKKIjahu, vesi, rukkilinnased, suhkur, sool, köömned.",
                             Lisainfo = "Võib sisaldada NISU jälgi.\nMin säilitustemperatuur: 2° C\nMax säilitustemperatuur: 30° C",
                             Pakend = "0.45 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "rehe.png",
                             Toitevaartus = "energiasisaldus;960 kJ / 228 kcal\nrasvad;1.2 g\n-millest küllastunud rasvhapped;0.2 g\nsüsivesikud;45 g\n-millest suhkrud;6 g\nvalgud;6 g\nsool;1.1 g",
@@ -443,6 +590,7 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 6,
+                            Demo = false,
                             Hind = 1.25m,
                             KategooriaId = 2,
                             Kaubamark = "Eesti Pagar",
@@ -451,6 +599,7 @@ namespace IKTpv25_1_Toooted.Migrations
                             Koostisosad = "NISUjahu, vesi, rapsiõli, suhkur, sool 1,2%, antioksüdant: E300",
                             Lisainfo = "võib sisaldada piima jääke\nMin säilitustemperatuur: 2° C\nMax säilitustemperatuur: 30° C",
                             Pakend = "0.5 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "perenaise.png",
                             Toitevaartus = "energiasisaldus;1141 kJ / 270 kcal\nrasvad;2.9 g\n-millest küllastunud rasvhapped;0.1 g\nsüsivesikud;51.8 g\n-millest suhkrud;2.6 g\nvalgud;7.7 g\nsool;1.2 g",
@@ -462,11 +611,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 7,
+                            Demo = false,
                             Hind = 2.79m,
                             KategooriaId = 1,
                             Kaubamark = "Piimameister Otto",
                             Kogus = 32,
                             Pakend = "0.4 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_4012516_PCE_EE",
                             Toodenimetus = "Toorjuust laktoosivaba Piimameister Otto 400g",
@@ -477,11 +628,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 8,
+                            Demo = false,
                             Hind = 2.99m,
                             KategooriaId = 1,
                             Kaubamark = "Kodutalu",
                             Kogus = 40,
                             Pakend = "10 tk",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_978403_PCE_EE",
                             Toodenimetus = "Vabapidamisel kanade munad Kodutalu 10tk",
@@ -491,11 +644,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 9,
+                            Demo = false,
                             Hind = 1.39m,
                             KategooriaId = 1,
                             Kaubamark = "Alma",
                             Kogus = 70,
                             Pakend = "1.5 l",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_200280_PCE_EE",
                             Toodenimetus = "Piim Alma 2,5% 1,5l",
@@ -505,11 +660,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 10,
+                            Demo = false,
                             Hind = 1.89m,
                             KategooriaId = 1,
                             Kaubamark = "Alma",
                             Kogus = 36,
                             Pakend = "0.5 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_200279_PCE_EE",
                             Toodenimetus = "Hapukoor Alma 20% 500g",
@@ -519,11 +676,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 11,
+                            Demo = false,
                             Hind = 1.49m,
                             KategooriaId = 1,
                             Kaubamark = "Farmi",
                             Kogus = 28,
                             Pakend = "0.4 l",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_962520_PCE_EE",
                             Toodenimetus = "Köögikoor Farmi 15% 400ml",
@@ -533,11 +692,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 12,
+                            Demo = false,
                             Hind = 2.39m,
                             KategooriaId = 1,
                             Kaubamark = "Estover",
                             Kogus = 22,
                             Pakend = "0.2 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_266460_PCE_EE",
                             Toodenimetus = "Riivjuust Eesti Estover 25,2% 200g",
@@ -547,11 +708,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 13,
+                            Demo = false,
                             Hind = 2.49m,
                             KategooriaId = 1,
                             Kaubamark = "Saaremaa",
                             Kogus = 30,
                             Pakend = "0.2 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_291032_PCE_EE",
                             Toodenimetus = "Või MO Saaremaa 82% 200g",
@@ -561,11 +724,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 14,
+                            Demo = false,
                             Hind = 3.79m,
                             KategooriaId = 1,
                             Kaubamark = "Pik-Nik",
                             Kogus = 18,
                             Pakend = "0.28 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_249144_PCE_EE",
                             Toodenimetus = "Juustupulgad Pik-Nik 40% 280g",
@@ -576,11 +741,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 15,
+                            Demo = false,
                             Hind = 1.29m,
                             KategooriaId = 1,
                             Kaubamark = "Valio",
                             Kogus = 45,
                             Pakend = "1 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_200277_PCE_EE",
                             Toodenimetus = "Keefir Valio Gefilus 1kg",
@@ -590,11 +757,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 16,
+                            Demo = false,
                             Hind = 0.99m,
                             KategooriaId = 1,
                             Kaubamark = "Farmi",
                             Kogus = 26,
                             Pakend = "0.4 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_272890_PCE_EE",
                             Toodenimetus = "Koorene jogurt must kirss Farmi 400g",
@@ -605,11 +774,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 17,
+                            Demo = false,
                             Hind = 1.29m,
                             KategooriaId = 1,
                             Kaubamark = "Tere",
                             Kogus = 7,
                             Pakend = "0.35 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_952654_PCE_EE",
                             Toodenimetus = "Kreeka jogurt maitsestamata Tere 350g",
@@ -620,11 +791,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 18,
+                            Demo = false,
                             Hind = 1.99m,
                             KategooriaId = 1,
                             Kaubamark = "Alma",
                             Kogus = 24,
                             Pakend = "0.4 l",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_205760_PCE_EE",
                             Toodenimetus = "Vahukoor Alma 35% 400ml",
@@ -635,11 +808,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 19,
+                            Demo = false,
                             Hind = 0.49m,
                             KategooriaId = 1,
                             Kaubamark = "Alma",
                             Kogus = 90,
                             Pakend = "0.04 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_4012328_PCE_EE",
                             Toodenimetus = "Kohuke mustsõstra-laimi kakaogl. Alma 40g",
@@ -649,11 +824,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 20,
+                            Demo = false,
                             Hind = 0.98m,
                             KategooriaId = 2,
                             Kaubamark = "Leibur",
                             Kogus = 40,
                             Pakend = "0.33 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_205052_PCE_EE",
                             Toodenimetus = "Leib rukkipala Leibur 330g",
@@ -663,11 +840,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 21,
+                            Demo = false,
                             Hind = 1.19m,
                             KategooriaId = 2,
                             Kaubamark = "Eesti Pagar",
                             Kogus = 35,
                             Pakend = "0.5 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_274018_PCE_EE",
                             Toodenimetus = "Röstsai Tosta Eesti Pagar 500g",
@@ -677,11 +856,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 22,
+                            Demo = false,
                             Hind = 1.75m,
                             KategooriaId = 2,
                             Kaubamark = "Leibur",
                             Kogus = 20,
                             Pakend = "0.47 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_290851_PCE_EE",
                             Toodenimetus = "Röst Mitmevilja Leibur 470g",
@@ -691,11 +872,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 23,
+                            Demo = false,
                             Hind = 1.05m,
                             KategooriaId = 2,
                             Kaubamark = "Eesti Pagar",
                             Kogus = 25,
                             Pakend = "0.3 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_966927_PCE_EE",
                             Toodenimetus = "Koorikleib Kodukandi Eesti Pagar 300g",
@@ -705,11 +888,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 24,
+                            Demo = false,
                             Hind = 1.1m,
                             KategooriaId = 2,
                             Kaubamark = "Eesti Pagar",
                             Kogus = 30,
                             Pakend = "0.6 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_975422_PCE_EE",
                             Toodenimetus = "Leib Peremehe pärmivaba Eesti Pagar 600g",
@@ -720,11 +905,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 25,
+                            Demo = false,
                             Hind = 1.19m,
                             KategooriaId = 2,
                             Kaubamark = "Leibur",
                             Kogus = 4,
                             Pakend = "0.39 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_279166_PCE_EE",
                             Toodenimetus = "Ruks Leibur 390g",
@@ -734,11 +921,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 26,
+                            Demo = false,
                             Hind = 1.09m,
                             KategooriaId = 2,
                             Kaubamark = "Eesti Pagar",
                             Kogus = 28,
                             Pakend = "0.3 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_298347_PCE_EE",
                             Toodenimetus = "Rukkisepik Eesti Pagar 300g",
@@ -748,11 +937,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 27,
+                            Demo = false,
                             Hind = 1.15m,
                             KategooriaId = 2,
                             Kaubamark = "Eesti Pagar",
                             Kogus = 22,
                             Pakend = "0.39 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_286883_PCE_EE",
                             Toodenimetus = "Rukkiröst Tosta Eesti Pagar 390g",
@@ -763,11 +954,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 28,
+                            Demo = false,
                             Hind = 1.39m,
                             KategooriaId = 2,
                             Kaubamark = "Fazer",
                             Kogus = 18,
                             Pakend = "0.5 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_4008650_PCE_EE",
                             Toodenimetus = "Must Tume leib juuretisega Fazer 500g",
@@ -777,11 +970,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 29,
+                            Demo = false,
                             Hind = 1.67m,
                             KategooriaId = 2,
                             Kaubamark = "Fazer",
                             Kogus = 16,
                             Pakend = "0.35 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_920924_PCE_EE",
                             Toodenimetus = "Keefirisai kaltsiumiga Fazer 350g",
@@ -791,10 +986,12 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 30,
+                            Demo = false,
                             Hind = 1.49m,
                             KategooriaId = 3,
                             Kogus = 25,
                             Pakend = "1 kg",
+                            Pant = 0m,
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_968932_KGM_EE",
                             Toodenimetus = "Jaapani kõrvits praadimiseks, kg",
                             Uhik = "kg",
@@ -804,10 +1001,12 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 31,
+                            Demo = false,
                             Hind = 1.29m,
                             KategooriaId = 3,
                             Kogus = 80,
                             Pakend = "1 kg",
+                            Pant = 0m,
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_270939_KGM_EE",
                             Toodenimetus = "Banaan Cavendish 1kl, kg",
                             Uhik = "kg",
@@ -816,10 +1015,12 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 32,
+                            Demo = false,
                             Hind = 2.69m,
                             KategooriaId = 3,
                             Kogus = 30,
                             Pakend = "1 kg",
+                            Pant = 0m,
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_269167_KGM_EE",
                             Toodenimetus = "Paprika punane 1kl, kg",
                             Uhik = "kg",
@@ -828,11 +1029,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 33,
+                            Demo = false,
                             Hind = 4.49m,
                             KategooriaId = 3,
                             Kaubamark = "Luunja",
                             Kogus = 20,
                             Pakend = "1 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_275290_KGM_EE",
                             Toodenimetus = "Kurk Luunja kg",
@@ -842,10 +1045,12 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 34,
+                            Demo = false,
                             Hind = 0.46m,
                             KategooriaId = 3,
                             Kogus = 60,
                             Pakend = "1 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_276076_KGM_EE",
                             Toodenimetus = "Porgand pestud, kg Eesti",
@@ -855,10 +1060,12 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 35,
+                            Demo = false,
                             Hind = 2.09m,
                             KategooriaId = 3,
                             Kogus = 35,
                             Pakend = "1 kg",
+                            Pant = 0m,
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_969226_KGM_EE",
                             Toodenimetus = "Sidrun Eureka 1kl kg",
                             Uhik = "kg",
@@ -867,10 +1074,12 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 36,
+                            Demo = false,
                             Hind = 2.29m,
                             KategooriaId = 3,
                             Kogus = 0,
                             Pakend = "0.25 kg",
+                            Pant = 0m,
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_296781_PCE_EE",
                             Toodenimetus = "Ploomtomat punane mini 1kl, 250g",
                             Uhik = "kg",
@@ -879,10 +1088,12 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 37,
+                            Demo = false,
                             Hind = 1.49m,
                             KategooriaId = 3,
                             Kogus = 24,
                             Pakend = "1 kg",
+                            Pant = 0m,
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_269179_KGM_EE",
                             Toodenimetus = "Viinamari hele s.-ta Sultan 1kl kg",
                             Uhik = "kg",
@@ -892,10 +1103,12 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 38,
+                            Demo = false,
                             Hind = 1.59m,
                             KategooriaId = 3,
                             Kogus = 15,
                             Pakend = "0.1 kg",
+                            Pant = 0m,
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_947057_PCE_EE",
                             Toodenimetus = "Beebispinat VEG 1kl, 100g",
                             Uhik = "kg",
@@ -904,10 +1117,12 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 39,
+                            Demo = false,
                             Hind = 2.99m,
                             KategooriaId = 3,
                             Kogus = 40,
                             Pakend = "1 kg",
+                            Pant = 0m,
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_211248_KGM_EE",
                             Toodenimetus = "Mandariin Nadorcott 1kl kg",
                             Uhik = "kg",
@@ -916,11 +1131,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 40,
+                            Demo = false,
                             Hind = 3.59m,
                             KategooriaId = 4,
                             Kaubamark = "Rannarootsi",
                             Kogus = 30,
                             Pakend = "0.5 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_941450_PCE_EE",
                             Toodenimetus = "Verivorstid maasuitsusingiga Rannarootsi 500g",
@@ -930,11 +1147,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 41,
+                            Demo = false,
                             Hind = 3.09m,
                             KategooriaId = 4,
                             Kaubamark = "Rakvere",
                             Kogus = 26,
                             Pakend = "0.35 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_4009220_PCE_EE",
                             Toodenimetus = "Verivorstid peened Rakvere 350g",
@@ -944,11 +1163,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 42,
+                            Demo = false,
                             Hind = 3.99m,
                             KategooriaId = 4,
                             Kaubamark = "Rakvere",
                             Kogus = 20,
                             Pakend = "0.5 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_270141_PCE_EE",
                             Toodenimetus = "Verivorst peekoniga Pühade Rakvere 500g",
@@ -958,11 +1179,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 43,
+                            Demo = false,
                             Hind = 3.19m,
                             KategooriaId = 4,
                             Kaubamark = "Rannarootsi",
                             Kogus = 18,
                             Pakend = "0.5 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_4005458_PCE_EE",
                             Toodenimetus = "Tanguvorstid suitsupeekoniga Rannarootsi 500g",
@@ -972,11 +1195,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 44,
+                            Demo = false,
                             Hind = 3.29m,
                             KategooriaId = 4,
                             Kaubamark = "Oskar",
                             Kogus = 6,
                             Pakend = "0.5 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_270147_PCE_EE",
                             Toodenimetus = "Verivorst E-vaba Pöialpoiss Oskar 500g",
@@ -986,11 +1211,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 45,
+                            Demo = false,
                             Hind = 10.99m,
                             KategooriaId = 4,
                             Kaubamark = "Rannarootsi",
                             Kogus = 12,
                             Pakend = "0.9 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_4012753_PCE_EE",
                             Toodenimetus = "Grillribi röst. küüslaugu eelküpsetatud Rannarootsi 900g",
@@ -1000,11 +1227,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 46,
+                            Demo = false,
                             Hind = 1.95m,
                             KategooriaId = 5,
                             Kaubamark = "Aura",
                             Kogus = 40,
                             Pakend = "1 l",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_173914_PCE_EE",
                             Toodenimetus = "Alkoholivaba glögi õuna-mustsõstra Aura 1l",
@@ -1014,11 +1243,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 47,
+                            Demo = false,
                             Hind = 1.19m,
                             KategooriaId = 5,
                             Kaubamark = "Vitamineral",
                             Kogus = 48,
                             Pakend = "0.5 l",
+                            Pant = 0.10m,
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1376489_PCE_EE",
                             Toodenimetus = "Vitamiinivesi Vitamineral Pro Hydration 0,5l",
                             Uhik = "l",
@@ -1027,11 +1258,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 48,
+                            Demo = false,
                             Hind = 5.49m,
                             KategooriaId = 5,
                             Kaubamark = "Teekanne",
                             Kogus = 14,
                             Pakend = "0.0725 kg",
+                            Pant = 0m,
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1025270_PCE_EE",
                             Toodenimetus = "Tee assortii Magic Winter Teekanne 72,5g",
                             Uhik = "kg",
@@ -1040,11 +1273,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 49,
+                            Demo = false,
                             Hind = 2.19m,
                             KategooriaId = 5,
                             Kaubamark = "Living Things",
                             Kogus = 24,
                             Pakend = "0.33 l",
+                            Pant = 0.10m,
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1377211_PCE_EE",
                             Toodenimetus = "Karastusjook Cherry & Lime Living Things 0,33l",
                             Uhik = "l",
@@ -1053,11 +1288,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 50,
+                            Demo = false,
                             Hind = 2.19m,
                             KategooriaId = 5,
                             Kaubamark = "Living Things",
                             Kogus = 24,
                             Pakend = "0.33 l",
+                            Pant = 0.10m,
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1377207_PCE_EE",
                             Toodenimetus = "Karastusjook Rasp & Pomegr. Living Things 0,33l",
                             Uhik = "l",
@@ -1066,11 +1303,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 51,
+                            Demo = false,
                             Hind = 7.49m,
                             KategooriaId = 5,
                             Kaubamark = "Blossa",
                             Kogus = 10,
                             Pakend = "0.75 l",
+                            Pant = 0m,
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1377222_PCE_EE",
                             Toodenimetus = "Glögi Pumpkin Spice 0,5% Blossa 0,75l",
                             Uhik = "l",
@@ -1079,11 +1318,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 52,
+                            Demo = false,
                             Hind = 0.59m,
                             KategooriaId = 5,
                             Kaubamark = "Saaremaa",
                             Kogus = 96,
                             Pakend = "0.5 l",
+                            Pant = 0.10m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1353600_PCE_EE",
                             Toodenimetus = "Vesi sidrunimaitseline, gas. Saaremaa 0,5l",
@@ -1093,11 +1334,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 53,
+                            Demo = false,
                             Hind = 0.89m,
                             KategooriaId = 5,
                             Kaubamark = "Saaremaa",
                             Kogus = 60,
                             Pakend = "1.5 l",
+                            Pant = 0.10m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1353601_PCE_EE",
                             Toodenimetus = "Vesi sidrunimaitseline, gas. Saaremaa 1,5l",
@@ -1107,11 +1350,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 54,
+                            Demo = false,
                             Hind = 14.99m,
                             KategooriaId = 5,
                             Kaubamark = "L'Or",
                             Kogus = 8,
                             Pakend = "0.125 kg",
+                            Pant = 0m,
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1025236_PCE_EE",
                             Toodenimetus = "Kohvi advendikalender L'Or 24x5,2g",
                             Uhik = "kg",
@@ -1120,11 +1365,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 55,
+                            Demo = false,
                             Hind = 3.29m,
                             KategooriaId = 6,
                             Kaubamark = "Gullon",
                             Kogus = 30,
                             Pakend = "0.4 kg",
+                            Pant = 0m,
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_168879_PCE_EE",
                             Toodenimetus = "Küpsised Digestive suhkruvabad Gullon 400g",
                             Uhik = "kg",
@@ -1133,11 +1380,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 56,
+                            Demo = false,
                             Hind = 2.99m,
                             KategooriaId = 6,
                             Kaubamark = "Gullon",
                             Kogus = 25,
                             Pakend = "0.125 kg",
+                            Pant = 0m,
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_168225_PCE_EE",
                             Toodenimetus = "Küpsised šokolaadi tükkidega Gullon 125g",
                             Uhik = "kg",
@@ -1146,11 +1395,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 57,
+                            Demo = false,
                             Hind = 10.99m,
                             KategooriaId = 6,
                             Kaubamark = "Fazer",
                             Kogus = 15,
                             Pakend = "0.43 kg",
+                            Pant = 0m,
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1024530_PCE_EE",
                             Toodenimetus = "Pralineekompvekid Favourites Fazer 430g",
                             Uhik = "kg",
@@ -1159,11 +1410,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 58,
+                            Demo = false,
                             Hind = 4.99m,
                             KategooriaId = 6,
                             Kaubamark = "Lindt",
                             Kogus = 20,
                             Pakend = "0.04 kg",
+                            Pant = 0m,
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1010603_PCE_EE",
                             Toodenimetus = "Piimašokolaad Lindt Teddy 40g",
                             Uhik = "kg",
@@ -1172,11 +1425,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 59,
+                            Demo = false,
                             Hind = 11.99m,
                             KategooriaId = 6,
                             Kaubamark = "Ferrero",
                             Kogus = 12,
                             Pakend = "0.125 kg",
+                            Pant = 0m,
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1010761_PCE_EE",
                             Toodenimetus = "Šokolaadikommid Grand Ferrero Rocher 125g",
                             Uhik = "kg",
@@ -1185,11 +1440,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 60,
+                            Demo = false,
                             Hind = 1.29m,
                             KategooriaId = 6,
                             Kaubamark = "Maltesers",
                             Kogus = 50,
                             Pakend = "0.029 kg",
+                            Pant = 0m,
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1015234_PCE_EE",
                             Toodenimetus = "Šokolaadi jõulumaius Maltesers 29g",
                             Uhik = "kg",
@@ -1198,11 +1455,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 61,
+                            Demo = false,
                             Hind = 1.99m,
                             KategooriaId = 6,
                             Kaubamark = "Milka",
                             Kogus = 40,
                             Pakend = "0.045 kg",
+                            Pant = 0m,
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1010441_PCE_EE",
                             Toodenimetus = "Piimašokolaad Milka Santa 45g",
                             Uhik = "kg",
@@ -1211,11 +1470,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 62,
+                            Demo = false,
                             Hind = 2.49m,
                             KategooriaId = 6,
                             Kaubamark = "Lacmi",
                             Kogus = 30,
                             Pakend = "0.09 kg",
+                            Pant = 0m,
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_1022015_PCE_EE",
                             Toodenimetus = "Piimašokolaad sarapuupähklitega Lacmi 90g",
                             Uhik = "kg",
@@ -1224,11 +1485,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 63,
+                            Demo = false,
                             Hind = 15.99m,
                             KategooriaId = 6,
                             Kaubamark = "Haribo",
                             Kogus = 9,
                             Pakend = "0.3 kg",
+                            Pant = 0m,
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_196075_PCE_EE",
                             Toodenimetus = "Advendikalender Haribo 300g",
                             Uhik = "kg",
@@ -1237,11 +1500,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 64,
+                            Demo = false,
                             Hind = 1.19m,
                             KategooriaId = 7,
                             Kaubamark = "Vanilla Ninja",
                             Kogus = 60,
                             Pakend = "0.08 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_206273_PCE_EE",
                             Toodenimetus = "Jäätis vanilli šokolaadiglasuuriga Vanilla Ninja 80g",
@@ -1251,11 +1516,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 65,
+                            Demo = false,
                             Hind = 1.19m,
                             KategooriaId = 7,
                             Kaubamark = "Vanilla Ninja",
                             Kogus = 55,
                             Pakend = "0.08 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_910463_PCE_EE",
                             Toodenimetus = "Jäätis šokolaadi šokolaadiglasuuriga Vanilla Ninja 80g",
@@ -1265,11 +1532,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 66,
+                            Demo = false,
                             Hind = 4.29m,
                             KategooriaId = 7,
                             Kaubamark = "Uvic",
                             Kogus = 22,
                             Pakend = "0.7 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_273639_PCE_EE",
                             Toodenimetus = "Pelmeenid Hiina Uvic 700g",
@@ -1280,11 +1549,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 67,
+                            Demo = false,
                             Hind = 4.59m,
                             KategooriaId = 7,
                             Kaubamark = "Rakvere",
                             Kogus = 18,
                             Pakend = "0.9 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_908407_PCE_EE",
                             Toodenimetus = "Pelmeenid Rakvere 900g",
@@ -1294,11 +1565,13 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 68,
+                            Demo = false,
                             Hind = 2.89m,
                             KategooriaId = 7,
                             Kaubamark = "Eesti Pagar",
                             Kogus = 14,
                             Pakend = "0.32 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_296476_PCE_EE",
                             Toodenimetus = "Kaneelisaiake Eesti Pagar 8x40g",
@@ -1308,17 +1581,30 @@ namespace IKTpv25_1_Toooted.Migrations
                         new
                         {
                             Id = 69,
+                            Demo = false,
                             Hind = 2.99m,
                             KategooriaId = 7,
                             Kaubamark = "Härmavili",
                             Kogus = 20,
                             Pakend = "0.75 kg",
+                            Pant = 0m,
                             Paritolumaa = "Eesti",
                             Pilt = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_202677_PCE_EE",
                             Toodenimetus = "Friikartul Kullakesed sakiline Härmavili 750g",
                             Uhik = "kg",
                             UhikuKogus = 0.75m
                         });
+                });
+
+            modelBuilder.Entity("IKTpv25_1_Toooted.Kampaania", b =>
+                {
+                    b.HasOne("IKTpv25_1_Toooted.Toode", "Toode")
+                        .WithMany()
+                        .HasForeignKey("ToodeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Toode");
                 });
 
             modelBuilder.Entity("IKTpv25_1_Toooted.Kasutaja", b =>
@@ -1369,6 +1655,28 @@ namespace IKTpv25_1_Toooted.Migrations
                         .WithMany()
                         .HasForeignKey("ToodeId")
                         .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("IKTpv25_1_Toooted.Partii", b =>
+                {
+                    b.HasOne("IKTpv25_1_Toooted.Toode", "Toode")
+                        .WithMany()
+                        .HasForeignKey("ToodeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Toode");
+                });
+
+            modelBuilder.Entity("IKTpv25_1_Toooted.Saavutus", b =>
+                {
+                    b.HasOne("IKTpv25_1_Toooted.Klient", "Klient")
+                        .WithMany()
+                        .HasForeignKey("KlientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Klient");
                 });
 
             modelBuilder.Entity("IKTpv25_1_Toooted.Toode", b =>

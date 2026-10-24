@@ -9,14 +9,16 @@ public class TooteInfoVorm : KujundusVorm
     private readonly TextBox txtKaubamark, txtTootja, txtParitolu, txtPakend, txtUhikuKogus, txtVanaHind;
     private readonly ComboBox cmbUhik;
     private readonly TextBox txtKirjeldus, txtKoostis, txtLisainfo, txtToitevaartus;
+    private readonly List<(CheckBox Kast, DieediMark Mark)> margid = new();
 
     private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
-    public TooteInfoVorm(int tooteId) : base("Tooteinfo", 720, 700)
+    public TooteInfoVorm(int tooteId) : base("Tooteinfo", 720, 780)
     {
+        KysiSulgemisel = true;
         id = tooteId;
         FormBorderStyle = FormBorderStyle.Sizable;
-        MinimumSize = new Size(720, 600);
+        MinimumSize = new Size(720, 680);
         var pealkiri = Pealkiri("Tooteinfo");
 
         // Lühikesed väljad kahes veerus
@@ -35,12 +37,23 @@ public class TooteInfoVorm : KujundusVorm
         txtKirjeldus = Mitmerealine("Toote kirjeldus", 236, 54);
         txtKoostis = Mitmerealine("Koostisosad", 318, 54);
         txtLisainfo = Mitmerealine("Lisainfo (iga info eraldi real)", 400, 54);
-        txtToitevaartus = Mitmerealine("Toitumisalane teave – iga rida „nimetus;väärtus“, alamrida algab „-“-ga (nt „-millest suhkrud;2.6 g“)", 482, 120);
+        txtToitevaartus = Mitmerealine("Toitumisalane teave – iga rida „nimetus;väärtus“, alamrida algab „-“-ga (nt „-millest suhkrud;2.6 g“)", 482, 100);
 
-        var salvesta = Nupp("Salvesta", 20, 650, true);
+        // Dieedimärgised: admini märge on poe dieedifiltris tähtsam kui koostise analüüs
+        Silt("Märgised", 20, 616);
+        int mx = 100;
+        foreach (var (nimi, mark) in new[] { ("Laktoosivaba", DieediMark.Laktoosivaba), ("Gluteenivaba", DieediMark.Gluteenivaba), ("Vegan", DieediMark.Vegan), ("Pähklivaba", DieediMark.Pahklivaba) })
+        {
+            var ch = new CheckBox { Text = nimi, Location = new Point(mx, 614), AutoSize = true, ForeColor = Teema.Tekst2 };
+            Controls.Add(ch);
+            margid.Add((ch, mark));
+            mx += 130;
+        }
+
+        var salvesta = Nupp("Salvesta", 20, 730, true);
         salvesta.Click += (s, e) => Salvesta();
         AcceptButton = null;   // Enter on mitmerealistes väljades reavahetus
-        var tuhista = Nupp("Tühista", 120, 650);
+        var tuhista = Nupp("Tühista", 120, 730);
         tuhista.DialogResult = DialogResult.Cancel;
         CancelButton = tuhista;
 
@@ -96,6 +109,8 @@ public class TooteInfoVorm : KujundusVorm
         txtKoostis.Text = Read(t.Koostisosad);
         txtLisainfo.Text = Read(t.Lisainfo);
         txtToitevaartus.Text = Read(t.Toitevaartus);
+        var m = Dieet.LoeMargid(t.Margised);
+        foreach (var (kast, mark) in margid) kast.Checked = m.HasFlag(mark);
     }
 
     // TextBox vajab reavahetuseks \r\n, andmebaasis hoiame \n
@@ -139,6 +154,8 @@ public class TooteInfoVorm : KujundusVorm
             t.Koostisosad = Puhas(txtKoostis.Text);
             t.Lisainfo = Puhas(txtLisainfo.Text);
             t.Toitevaartus = Puhas(txtToitevaartus.Text);
+            var m = margid.Where(x => x.Kast.Checked).Aggregate(DieediMark.Puudub, (a, x) => a | x.Mark);
+            t.Margised = m == DieediMark.Puudub ? null : Dieet.KirjutaMargid(m);
             db.SaveChanges();
 
             DialogResult = DialogResult.OK;

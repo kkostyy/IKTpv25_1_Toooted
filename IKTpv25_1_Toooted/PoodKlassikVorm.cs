@@ -114,6 +114,7 @@ namespace IKTpv25_1_Toooted
 
         protected override void OnLoad(EventArgs e)
         {
+            UiStiil.LisaTagasiNupp(this);   // ← Tagasi = sulge pood
             Teema.Rakenda(this);
             base.OnLoad(e);
         }
