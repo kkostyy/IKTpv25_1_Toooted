@@ -10,7 +10,9 @@
         public static Color Joon => Teema.Joon;
 
         public static readonly Font Põhifont = new Font("Segoe UI", 9F);
-        public static readonly Font PealkirjaFont = new Font("Segoe UI Semibold", 15F);
+        private static readonly Font tavaPealkiri = new Font("Segoe UI Semibold", 15F);
+        private static readonly Font moodnePealkiri = new Font("Segoe UI", 19F, FontStyle.Bold);
+        public static Font PealkirjaFont => Teema.OnMoodne ? moodnePealkiri : tavaPealkiri;   // moodne: suur ja paks
         public static readonly Font AlapealkiriFont = new Font("Segoe UI", 8.5F, FontStyle.Bold);
 
         public static FlowLayoutPanel LooTopPaneel()
@@ -79,13 +81,14 @@
         // Ümardatud raamiga sisestusväli (nagu peavormil): raam läheb fookuses aktsentvärvi
         public static RoundedPanel LooSisend(out TextBox tekst, int laius, bool parool = false, string vihje = "")
         {
+            bool m = Teema.OnMoodne;   // moodne: hall täidetud "pill" ilma raamita
             var raam = new RoundedPanel
             {
-                Size = new Size(laius, 34),
+                Size = new Size(laius, m ? 38 : 34),
                 Radius = 8,
-                Padding = new Padding(10, 8, 10, 0),
-                BorderColor = Teema.Raam,
-                FillColor = Teema.Pind,
+                Padding = m ? new Padding(16, 10, 14, 0) : new Padding(10, 8, 10, 0),
+                BorderColor = m ? Teema.Paneel2 : Teema.Raam,
+                FillColor = m ? Teema.Paneel2 : Teema.Pind,
                 Margin = new Padding(0, 0, 0, 4)
             };
             var t = new TextBox
@@ -94,7 +97,7 @@
                 Dock = DockStyle.Fill,
                 UseSystemPasswordChar = parool,
                 PlaceholderText = vihje,
-                BackColor = Teema.Pind,
+                BackColor = m ? Teema.Paneel2 : Teema.Pind,
                 ForeColor = Teema.Tekst,
                 Font = new Font("Segoe UI", 10F)
             };
@@ -106,27 +109,28 @@
 
         public static void LisaFookus(RoundedPanel raam, Control sisu)
         {
-            sisu.Enter += (s, e) => { raam.BorderColor = Teema.Aktsent; raam.Invalidate(); };
-            sisu.Leave += (s, e) => { raam.BorderColor = Teema.Raam; raam.Invalidate(); };
+            sisu.Enter += (s, e) => { raam.BorderColor = Teema.OnMoodne ? Teema.Teine : Teema.Aktsent; raam.Invalidate(); };
+            sisu.Leave += (s, e) => { raam.BorderColor = Teema.OnMoodne ? raam.FillColor : Teema.Raam; raam.Invalidate(); };
             raam.Click += (s, e) => sisu.Focus();
         }
 
         // Kaart: ümardatud valge paneel, ülal väike pealkiri, sees sisu (täidab ülejäänud ruumi)
         public static RoundedPanel LooKaardiPaneel(string pealkiri, Control sisu)
         {
-            var kaart = new RoundedPanel { Padding = new Padding(14, 10, 14, 14), Radius = 12 };
+            bool m = Teema.OnMoodne;   // moodne: tavaline paks pealkiri, mitte väikesed suurtähed
+            var kaart = new RoundedPanel { Padding = m ? new Padding(20, 14, 20, 18) : new Padding(14, 10, 14, 14), Radius = 12 };
             var silt = new Label
             {
-                Text = pealkiri.ToUpper(),
+                Text = m ? pealkiri : pealkiri.ToUpper(),
                 Dock = DockStyle.Top,
-                Height = 26,
-                Font = AlapealkiriFont,
-                ForeColor = Teema.TekstNork,
+                Height = m ? 34 : 26,
+                Font = m ? new Font("Segoe UI", 12.5F, FontStyle.Bold) : AlapealkiriFont,
+                ForeColor = m ? Teema.Tekst : Teema.TekstNork,
                 BackColor = Teema.Pind
             };
             sisu.Dock = DockStyle.Fill;
             kaart.Controls.Add(sisu);
-            kaart.Controls.Add(silt);
+            if (pealkiri.Length > 0) kaart.Controls.Add(silt);
             return kaart;
         }
 

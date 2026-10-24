@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted;
@@ -12,6 +12,8 @@ public class KampaaniadVorm : KujundusVorm
     private readonly KampaaniaTelg telg = new() { Dock = DockStyle.Top, Height = 200 };
     private readonly DataGridView vork;
     private readonly FlowLayoutPanel filtrid;
+    private readonly MoodneFilter? moodneFilter;   // moodne: vahelehed valgel "pillil" (lõuend N2)
+    private readonly Label? lblOlek;
     private readonly TextBox txtNimi;
     private readonly ComboBox cmbToode;
     private readonly TrackBar riba;
@@ -37,6 +39,16 @@ public class KampaaniadVorm : KujundusVorm
         yla.Controls.Add(new Label { Text = "Kampaaniad", Location = new Point(18, 14), AutoSize = true, Font = UiStiil.PealkirjaFont, ForeColor = Teema.Tekst, BackColor = Teema.Taust });
         filtrid = new FlowLayoutPanel { Location = new Point(200, 16), AutoSize = true, WrapContents = false, BackColor = Teema.Taust };
         yla.Controls.Add(filtrid);
+        if (Teema.OnMoodne)
+        {
+            yla.Height = 76;
+            filtrid.Visible = false;
+            moodneFilter = new MoodneFilter { Anchor = AnchorStyles.Top | AnchorStyles.Right, Top = 14 };
+            moodneFilter.Valitud += i => { filter = i switch { 1 => KampaaniaOlek.Kaib, 2 => KampaaniaOlek.Tulekul, 3 => KampaaniaOlek.Loppenud, _ => null }; Laadi(); };
+            moodneFilter.Resize += (s, e) => moodneFilter.Left = yla.Width - moodneFilter.Width - 16;
+            yla.Resize += (s, e) => moodneFilter.Left = yla.Width - moodneFilter.Width - 16;
+            yla.Controls.Add(moodneFilter);
+        }
 
         // ---- Paremal: uus / muudetav kampaania ----
         var parem = new Panel { Dock = DockStyle.Right, Width = 380, Padding = new Padding(0, 0, 16, 16), BackColor = Teema.Taust };
@@ -44,6 +56,14 @@ public class KampaaniadVorm : KujundusVorm
         int x = 4, w = 330, y = 0;
         lblVorm = new Label { Text = "Uus kampaania", Location = new Point(x, y), AutoSize = true, Font = new Font("Segoe UI Semibold", 13F), ForeColor = Teema.Tekst, BackColor = Teema.Pind };
         vorm.Controls.Add(lblVorm);
+        if (Teema.OnMoodne)
+        {
+            lblVorm.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+            lblOlek = new Label { AutoSize = false, Size = new Size(84, 26), TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 8.5F, FontStyle.Bold), ForeColor = Color.FromArgb(160, 35, 110), BackColor = Color.FromArgb(246, 230, 239) };
+            using (var t = Ymardus.Tee(new RectangleF(0, 0, lblOlek.Width, lblOlek.Height), 13)) lblOlek.Region = new Region(t);   // ümar kiip
+            lblOlek.Location = new Point(x + w - 84 - 70, y + 6);
+            vorm.Controls.Add(lblOlek);
+        }
         var uus = new IkoonTekst(Ikoonid.Pluss, "Uus", Teema.Teine, new Font("Segoe UI Semibold", 9.5F)) { BackColor = Teema.Pind };
         uus.Location = new Point(x + w - uus.Width, y + 4);
         uus.Click += (s, e) => Tyhjenda();
@@ -115,7 +135,7 @@ public class KampaaniadVorm : KujundusVorm
         vorm.Controls.Add(btnLopeta);
         vorm.Controls.Add(btnKustuta);
 
-        var vormiKaart = UiStiil.LooKaardiPaneel("Haldus", vorm);
+        var vormiKaart = UiStiil.LooKaardiPaneel(Teema.OnMoodne ? "" : "Haldus", vorm);
         vormiKaart.Dock = DockStyle.Fill;
         parem.Controls.Add(vormiKaart);
 
@@ -144,10 +164,15 @@ public class KampaaniadVorm : KujundusVorm
         vork.Columns["Olek"]!.FillWeight = 22;
         vork.CellClick += (s, e) => { if (e.RowIndex >= 0 && vork.Rows[e.RowIndex].Tag is int id) Vali(id); };
         vork.CellPainting += OlekuKiip;
+        if (Teema.OnMoodne)
+        {
+            vork.RowTemplate.Height = 62;
+            vork.CellPainting += MoodneRakk;
+        }
 
         var tabeliKaart = UiStiil.LooKaardiPaneel("Kõik kampaaniad", vork);
         tabeliKaart.Dock = DockStyle.Fill;
-        var telgKaart = UiStiil.LooKaardiPaneel("Ajatelg · 4 nädalat", telg);
+        var telgKaart = UiStiil.LooKaardiPaneel(Teema.OnMoodne ? Keel.F("Ajatelg · {0:dd.MM} – {1:dd.MM}", TelgAlgus, TelgAlgus.AddDays(27)) : "Ajatelg · 4 nädalat", telg);
         telgKaart.Dock = DockStyle.Top;
         telgKaart.Height = 236;
         var keskel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(16, 0, 16, 16), BackColor = Teema.Taust };
@@ -167,6 +192,49 @@ public class KampaaniadVorm : KujundusVorm
     }
 
     private bool vilgu = true;
+
+    private static DateTime TelgAlgus
+    {
+        get { var n = DateTime.Now; return n.Date.AddDays(-(((int)n.DayOfWeek + 6) % 7) - 7); }
+    }
+
+    // Moodne tabel: nimi paksult + toode hallilt, protsent punaselt, uus hind + vana läbi kriipsutatult
+    private void MoodneRakk(object? sender, DataGridViewCellPaintingEventArgs e)
+    {
+        if (e.RowIndex < 0 || e.Graphics == null) return;
+        string nimi = vork.Columns[e.ColumnIndex].Name;
+        if (nimi is not ("Nimi" or "Protsent" or "Hind")) return;
+        e.PaintBackground(e.CellBounds, true);
+        var g = e.Graphics;
+        var r = e.CellBounds;
+        bool valitud = (e.State & DataGridViewElementStates.Selected) != 0;
+        Color tekst = valitud ? (e.CellStyle?.SelectionForeColor ?? Teema.Tekst) : Teema.Tekst;
+        Color nork = valitud ? tekst : Teema.TekstNork;
+        string v = e.Value?.ToString() ?? "";
+        using var fb = new Font("Segoe UI", 10F, FontStyle.Bold);
+        using var f = new Font("Segoe UI", 8.5F);
+        const TextFormatFlags L = TextFormatFlags.NoPrefix | TextFormatFlags.EndEllipsis | TextFormatFlags.VerticalCenter;
+        switch (nimi)
+        {
+            case "Nimi":
+                var osad = v.Split('\n');
+                TextRenderer.DrawText(g, osad[0], fb, new Rectangle(r.X + 6, r.Y + 8, r.Width - 10, 22), tekst, L);
+                if (osad.Length > 1) TextRenderer.DrawText(g, osad[1], f, new Rectangle(r.X + 6, r.Y + 30, r.Width - 10, 20), nork, L);
+                break;
+            case "Protsent":
+                using (var fp = new Font("Segoe UI", 11F, FontStyle.Bold))
+                    TextRenderer.DrawText(g, v, fp, new Rectangle(r.X + 6, r.Y, r.Width - 8, r.Height), valitud ? tekst : Color.FromArgb(226, 6, 19), L);
+                break;
+            case "Hind":
+                var h = v.Split('/');
+                TextRenderer.DrawText(g, h[0].Trim(), fb, new Rectangle(r.X + 6, r.Y + 8, r.Width - 10, 22), tekst, L);
+                if (h.Length > 1)
+                    using (var fs = new Font("Segoe UI", 8.5F, FontStyle.Strikeout))
+                        TextRenderer.DrawText(g, h[1].Trim(), fs, new Rectangle(r.X + 6, r.Y + 30, r.Width - 10, 20), nork, L);
+                break;
+        }
+        e.Handled = true;
+    }
 
     private static Label VormiSilt(string tekst, int x, int y) =>
         new() { Text = tekst, Location = new Point(x, y), AutoSize = true, ForeColor = Teema.Tekst2, BackColor = Teema.Pind };
@@ -230,6 +298,13 @@ public class KampaaniadVorm : KujundusVorm
         Pill("Tulekul", KampaaniaOlek.Tulekul);
         Pill("Lõppenud", KampaaniaOlek.Loppenud);
         filtrid.ResumeLayout();
+        moodneFilter?.Sea(new[]
+        {
+            ("Kõik", koik.Count),
+            ("Käib", koik.Count(k => Kampaaniad.Olek(k, nyyd) == KampaaniaOlek.Kaib)),
+            ("Tulekul", koik.Count(k => Kampaaniad.Olek(k, nyyd) == KampaaniaOlek.Tulekul)),
+            ("Lõppenud", koik.Count(k => Kampaaniad.Olek(k, nyyd) == KampaaniaOlek.Loppenud))
+        }, filter switch { KampaaniaOlek.Kaib => 1, KampaaniaOlek.Tulekul => 2, KampaaniaOlek.Loppenud => 3, _ => 0 });
 
         var naha = koik.Where(k => filter == null || Kampaaniad.Olek(k, nyyd) == filter).ToList();
         telg.Naita(naha, nyyd);
@@ -285,6 +360,7 @@ public class KampaaniadVorm : KujundusVorm
     {
         muudetav = null;
         lblVorm.Text = Keel.T("Uus kampaania");
+        if (lblOlek != null) lblOlek.Text = Keel.T("Mustand");
         txtNimi.Text = "";
         cmbToode.SelectedIndex = -1;
         cmbToode.Text = "";
@@ -303,6 +379,7 @@ public class KampaaniadVorm : KujundusVorm
         if (k == null) return;
         muudetav = id;
         lblVorm.Text = Keel.T("Muuda kampaaniat");
+        if (lblOlek != null) lblOlek.Text = Keel.T(Kampaaniad.OlekuNimi(Kampaaniad.Olek(k, DateTime.Now)));
         txtNimi.Text = k.Nimi;
         cmbToode.SelectedItem = cmbToode.Items.Cast<TooteValik>().FirstOrDefault(v => v.Toode.Id == k.ToodeId);
         riba.Value = Math.Clamp(k.SoodusProtsent, riba.Minimum, riba.Maximum);

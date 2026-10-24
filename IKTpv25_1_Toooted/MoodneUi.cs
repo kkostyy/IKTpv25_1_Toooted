@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 
 namespace IKTpv25_1_Toooted;
 
@@ -222,6 +222,7 @@ public static class MoodneStiil
         foreach (Control c in juur.Controls)
         {
             if (c is CheckBox cb && cb.Tag as string != "moodne") Lyliti(cb);
+            else if (c is ComboBox co && co.Tag as string != "moodne") { co.Tag = "moodne"; co.FlatStyle = FlatStyle.Flat; co.BackColor = Teema.Paneel2; }
             else if (c is RadioButton rb && rb.Tag as string != "moodne") Pill(rb);
             Rakenda(c);
         }
@@ -306,3 +307,88 @@ public static class MoodneStiil
         return kaart;
     }
 }
+
+// Filtri vahelehed valgel "pillil": valitud = tume, kõrval arvumärk (valitud = punane)
+public class MoodneFilter : Control
+{
+    private readonly List<(string Nimi, int Arv)> osad = new();
+    private readonly List<RectangleF> kohad = new();
+    private int valitud, hover = -1;
+    public event Action<int>? Valitud;
+
+    public MoodneFilter()
+    {
+        SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
+        Height = 48;
+        Font = new Font("Segoe UI", 9.5F);
+        Cursor = Cursors.Hand;
+    }
+
+    public void Sea(IEnumerable<(string Nimi, int Arv)> uued, int valik)
+    {
+        osad.Clear();
+        osad.AddRange(uued);
+        valitud = valik;
+        kohad.Clear();
+        using var fb = new Font(Font, FontStyle.Bold);
+        float x = 4;
+        foreach (var (nimi, arv) in osad)
+        {
+            float w = TextRenderer.MeasureText(Keel.T(nimi), fb).Width + 28 + (arv >= 0 ? TextRenderer.MeasureText(arv.ToString(), fb).Width + 18 : 0);
+            kohad.Add(new RectangleF(x, 4, w, Height - 8));
+            x += w + 4;
+        }
+        Width = (int)x + 4;
+        Invalidate();
+    }
+
+    protected override void OnMouseMove(MouseEventArgs e)
+    {
+        int h = kohad.FindIndex(r => r.Contains(e.Location));
+        if (h != hover) { hover = h; Invalidate(); }
+        base.OnMouseMove(e);
+    }
+
+    protected override void OnMouseLeave(EventArgs e) { hover = -1; Invalidate(); base.OnMouseLeave(e); }
+
+    protected override void OnMouseClick(MouseEventArgs e)
+    {
+        int i = kohad.FindIndex(r => r.Contains(e.Location));
+        if (i >= 0) { valitud = i; Invalidate(); Valitud?.Invoke(i); }
+        base.OnMouseClick(e);
+    }
+
+    protected override void OnPaint(PaintEventArgs e)
+    {
+        var g = e.Graphics;
+        g.Clear(Parent?.BackColor ?? Teema.Taust);
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        using (var tee = Ymardus.Tee(new RectangleF(0, 0, Width - 1, Height - 1), (Height - 1) / 2f))
+        using (var b = new SolidBrush(Teema.Pind))
+            g.FillPath(b, tee);
+        using var fb = new Font(Font, FontStyle.Bold);
+        for (int i = 0; i < osad.Count; i++)
+        {
+            var r = kohad[i];
+            bool v = i == valitud;
+            if (v || i == hover)
+                using (var tee = Ymardus.Tee(r, r.Height / 2))
+                using (var b = new SolidBrush(v ? Teema.Tekst : Teema.Paneel2))
+                    g.FillPath(b, tee);
+            var f = v ? fb : Font;
+            string t = Keel.T(osad[i].Nimi);
+            int tw = TextRenderer.MeasureText(t, fb).Width;
+            TextRenderer.DrawText(g, t, f, new Rectangle((int)r.X + 14, (int)r.Y, tw + 4, (int)r.Height), v ? Teema.Pind : Teema.Tekst, TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix);
+            if (osad[i].Arv < 0) continue;
+            string a = osad[i].Arv.ToString();
+            int aw = Math.Max(20, TextRenderer.MeasureText(a, fb).Width + 8);
+            var m = new RectangleF(r.X + 14 + tw + 6, r.Y + (r.Height - 20) / 2, aw, 20);
+            using (var tee = Ymardus.Tee(m, 10))
+            using (var b = new SolidBrush(v ? Color.FromArgb(226, 6, 19) : Teema.Paneel2))
+                g.FillPath(b, tee);
+            using var fa = new Font("Segoe UI", 8F, FontStyle.Bold);
+            TextRenderer.DrawText(g, a, fa, Rectangle.Round(m), v ? Color.White : Teema.Tekst2, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+        }
+    }
+}
+
