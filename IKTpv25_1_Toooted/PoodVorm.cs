@@ -262,6 +262,22 @@ namespace IKTpv25_1_Toooted
             navRiba.Controls.AddRange(new Control[] { tagasiNupp, leivapuru, vihje });
             navRiba.Resize += (s, e) => vihje.Location = new Point(navRiba.Width - vihje.Width - 24, 26);
             tagasiNupp.SizeChanged += (s, e) => leivapuru.Left = tagasiNupp.Right + 16;
+            if (Teema.OnMoodne)
+            {
+                // lõuend N1: valge "pill" riba – Tagasi, leivapuru ja klahvivihje hallil kiibil
+                navRiba.Height = 80;
+                navRiba.Padding = new Padding(16, 8, 16, 8);
+                var pill = new RoundedPanel { Dock = DockStyle.Fill, Radius = 32, FillColor = Teema.Pind, BorderColor = Teema.Pind, BackColor = Teema.Taust };
+                navRiba.Controls.Clear();
+                vihje.Visible = false;   // asendub KlahviVihje-ga
+                var klahvid = new KlahviVihje { Anchor = AnchorStyles.Top | AnchorStyles.Right };
+                tagasiNupp.Location = new Point(8, 8);
+                leivapuru.BackColor = Teema.Pind;
+                leivapuru.Location = new Point(tagasiNupp.Right + 16, 16);
+                pill.Controls.AddRange(new Control[] { tagasiNupp, leivapuru, klahvid });
+                pill.Resize += (s, e) => klahvid.Location = new Point(pill.Width - klahvid.Width - 14, (pill.Height - klahvid.Height) / 2);
+                navRiba.Controls.Add(pill);
+            }
             keskmine.Controls.Add(sisuAla);
             keskmine.Controls.Add(dieet);
             keskmine.Controls.Add(navRiba);
@@ -816,10 +832,10 @@ namespace IKTpv25_1_Toooted
             for (int i = 0; i < lehed.Lehed.Count; i++)
             {
                 if (i > 0)
-                    leivapuru.Controls.Add(new Label { Text = "›", AutoSize = true, Font = f, ForeColor = Teema.TekstNork, BackColor = Teema.Taust, Margin = new Padding(6, 4, 6, 0) });
+                    leivapuru.Controls.Add(new Label { Text = "›", AutoSize = true, Font = f, ForeColor = Teema.TekstNork, BackColor = leivapuru.BackColor, Margin = new Padding(6, 4, 6, 0) });
                 int indeks = i;
                 bool viimane = i == lehed.Lehed.Count - 1;
-                var osa = new IkoonTekst("", lehed.Lehed[i].Pealkiri, viimane ? Teema.Tekst : Teema.Teine, f) { Margin = new Padding(0, 2, 0, 0), Valitud = viimane && i > 0 };
+                var osa = new IkoonTekst("", lehed.Lehed[i].Pealkiri, viimane ? Teema.Tekst : Teema.Teine, f) { Margin = new Padding(0, 2, 0, 0), Valitud = viimane && i > 0, BackColor = leivapuru.BackColor };
                 if (!viimane) osa.Click += (s, e) => lehed.Mine(indeks);
                 else osa.Cursor = Cursors.Default;
                 leivapuru.Controls.Add(osa);
@@ -1146,6 +1162,54 @@ namespace IKTpv25_1_Toooted
     }
 
     // Ikoon + tekst (lingid, menüüriba)
+    // "Esc  Alt+←  tagasi" hallil kiibil (klahvid valgetel nuppudel)
+    public class KlahviVihje : Control
+    {
+        public KlahviVihje()
+        {
+            SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
+            Font = new Font("Segoe UI", 8.5F, FontStyle.Bold);
+            Keel.Muutus += Sobita;
+            Sobita();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing) Keel.Muutus -= Sobita;
+            base.Dispose(disposing);
+        }
+
+        private void Sobita()
+        {
+            using var fk = new Font("Consolas", 8F);
+            Size = new Size(14 + TextRenderer.MeasureText("Esc", fk).Width + 14 + 8 + TextRenderer.MeasureText("Alt+←", fk).Width + 14 + 8 + TextRenderer.MeasureText(Keel.T("tagasi"), Font).Width + 14, 36);
+            Invalidate();
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            var g = e.Graphics;
+            g.Clear(Parent?.BackColor ?? Teema.Pind);
+            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            using (var tee = Ymardus.Tee(new RectangleF(0, 0, Width - 1, Height - 1), 18)) using (var b = new SolidBrush(Teema.Paneel2)) g.FillPath(b, tee);
+            using var fk = new Font("Consolas", 8F);
+            float x = 14;
+            foreach (var k in new[] { "Esc", "Alt+←" })
+            {
+                int w = TextRenderer.MeasureText(k, fk).Width + 10;
+                var r = new RectangleF(x, 8, w, 20);
+                using (var tee = Ymardus.Tee(r, 6))
+                {
+                    using (var b = new SolidBrush(Teema.Pind)) g.FillPath(b, tee);
+                    using (var p = new Pen(Teema.Joon)) g.DrawPath(p, tee);
+                }
+                TextRenderer.DrawText(g, k, fk, Rectangle.Round(r), Teema.Tekst2, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+                x += w + 8;
+            }
+            TextRenderer.DrawText(g, Keel.T("tagasi"), Font, new Rectangle((int)x, 0, Width - (int)x, Height), Teema.Tekst2, TextFormatFlags.VerticalCenter);
+        }
+    }
+
     public class IkoonTekst : Control
     {
         private readonly string ikoon, tekst;
