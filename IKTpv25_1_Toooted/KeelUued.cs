@@ -197,6 +197,8 @@ public static partial class Keel
         L("Disain (Ctrl+Shift+M)", "Дизайн (Ctrl+Shift+M)", "Design (Ctrl+Shift+M)");
         L("„{0}“ – vasteid pole", "«{0}» – ничего не найдено", "“{0}” – no matches");
         L("Näita kõiki tulemusi ({0})", "Показать все результаты ({0})", "Show all results ({0})");
+        L("Kilo-/liitrihind: odavam enne", "Цена за кг/л: сначала дешёвые", "Price per kg/l: low to high");
+        L("soodsaim", "выгоднее", "best value");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }
