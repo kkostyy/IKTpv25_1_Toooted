@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted;
 
@@ -64,6 +64,12 @@ public static class DemoAndmed
     };
 
     public static bool OnOlemas(ToodedContext db) => db.Toodetabel.Any(t => t.Demo);
+
+    // Mis luuakse (demo akna plaatide jaoks)
+    public static int KliendiArv => 3;
+    public static int PandiArv => Tooted.Count(t => t.Pant > 0);
+    public static int ToiduArv => Tooted.Count(t => t.Toit != null);
+    public static int KategooriaArv => Tooted.Select(t => t.Kat).Distinct().Count();
 
     public static (int Tooteid, int Oste) Arvud(ToodedContext db) => (db.Toodetabel.Count(t => t.Demo), db.Ostud.Count(o => o.Demo));
 

@@ -167,6 +167,17 @@ public static partial class Keel
         L("Päeva üllatus", "Сюрприз дня", "Surprise of the day"); L("Läikiv hõbekaart", "Блестящая серебряная карта", "Shiny silver card");
         L("Nädala väljakutsed ja päeva üllatus", "Задания недели и сюрприз дня", "Weekly challenges and surprise of the day");
         L("Hologramm-kaart sädelusega", "Голографическая карта с блёстками", "Hologram card with sparkles"); L("Kõik preemiad", "Все награды", "All rewards");
+        L("Demo-andmed", "Демо-данные", "Demo data"); L("Haldus · ainult omanikule", "Управление · только для владельца", "Admin · owner only");
+        L("Üks klõps täidab poe, et esitlusel ei oleks midagi tühja. Demo-read märgitakse sildiga DEMO ja need saab hiljem ühe nupuga eemaldada.", "Один клик заполняет магазин, чтобы на презентации ничего не было пустым. Демо-строки помечены DEMO, их можно потом удалить одной кнопкой.", "One click fills the shop so nothing is empty in a demo. Demo rows are tagged DEMO and can be removed later with one button.");
+        L("toodet", "товаров", "products"); L("ostu", "покупок", "purchases"); L("klienti", "клиентов", "customers"); L("toitumisteabega", "с пищевой ценностью", "with nutrition info"); L("tagastust", "возврата", "returns"); L("pandipakendit", "залоговых упаковок", "deposit packages");
+        L("kõik {0} kategooriat", "все {0} категорий", "all {0} categories"); L("viimased 30 päeva", "последние 30 дней", "last 30 days"); L("kaartide ja boonusega", "с картами и бонусом", "with cards and bonus");
+        L("toiteväärtuse jaoks", "для пищевой ценности", "for nutrition"); L("ostude ajaloos", "в истории покупок", "in purchase history"); L("joogid 0,10 €", "напитки 0,10 €", "drinks €0.10");
+        L("Loo demo-andmed", "Создать демо-данные", "Create demo data"); L("Eemalda demo", "Удалить демо", "Remove demo");
+        L("LOON ANDMEID…", "СОЗДАЮ ДАННЫЕ…", "CREATING DATA…"); L("MIS LUUAKSE", "ЧТО СОЗДАЁТСЯ", "WHAT IS CREATED");
+        L("Vajuta „Loo demo-andmed“.", "Нажмите «Создать демо-данные».", "Press “Create demo data”."); L("Võtab paar sekundit.", "Займёт пару секунд.", "Takes a couple of seconds.");
+        L("{0} toodet ja toiteväärtus", "{0} товаров и пищевая ценность", "{0} products and nutrition"); L("{1} klienti kliendikaardiga", "{1} клиента с картой клиента", "{1} customers with loyalty card");
+        L("{2} ostu 30 päeva peale", "{2} покупок за 30 дней", "{2} purchases over 30 days"); L("Statistika ja soojuskaart", "Статистика и тепловая карта", "Statistics and heat map");
+        L("Valmis!", "Готово!", "Done!"); L("Pood, ajalugu, statistika ja soojuskaart on täidetud.", "Магазин, история, статистика и тепловая карта заполнены.", "Shop, history, statistics and heat map are filled.");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }
