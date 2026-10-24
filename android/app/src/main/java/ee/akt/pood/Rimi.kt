@@ -12,11 +12,16 @@ import java.util.zip.GZIPInputStream
 // {"versioon":…, "kategooriad":[{id,nimi}], "tooted":[{n,h,v,k,p,b,t,m,pk,u,uk,ki,ko,li,tv,pa,l,oh}]}
 // Loetakse voona (JsonReader), et 18 000 toodet ei peaks korraga mälus olema.
 object Rimi {
+    // (tehtud, kokku) – kutsutakse taustalõimest iga 500 toote järel
+    @Volatile var edenemine: ((Int, Int) -> Unit)? = null
+
     fun laadi(context: Context, db: SQLiteDatabase) {
+        var kokku = 18000
         JsonReader(InputStreamReader(GZIPInputStream(context.assets.open("rimi_kataloog.json.gz")), Charsets.UTF_8)).use { r ->
             r.beginObject()
             while (r.hasNext()) {
                 when (r.nextName()) {
+                    "arv" -> kokku = r.nextInt()
                     "kategooriad" -> {
                         r.beginArray()
                         while (r.hasNext()) {
@@ -61,6 +66,7 @@ object Rimi {
                             }
                             r.endObject()
                             db.insert("tooted", null, v)
+                            if (id % 500 == 0) edenemine?.invoke(id, kokku)
                         }
                         r.endArray()
                     }
