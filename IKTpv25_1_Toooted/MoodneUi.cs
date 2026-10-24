@@ -1,0 +1,208 @@
+using System.Drawing.Drawing2D;
+
+namespace IKTpv25_1_Toooted;
+
+// ===================================================================
+//  Moodsa disaini (Ctrl+Shift+M) ühised osad: tume brändipaneel
+//  hõljuvate kaartidega, keelevalik "pillina", noolega peanupp.
+// ===================================================================
+
+// Tume paneel (raadius 32): AKT logo, kaks hõljuvat kliendikaarti, "Tere tulemast!"
+public class MoodneBrand : Control
+{
+    private double aeg;
+    private readonly string pealkiri, alapealkiri;
+
+    public MoodneBrand(string pealkiri, string alapealkiri)
+    {
+        this.pealkiri = pealkiri;
+        this.alapealkiri = alapealkiri;
+        SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
+        Animatsioon.Tsykkel(this, s => { aeg = s; Invalidate(); }, 40);
+    }
+
+    protected override void OnPaint(PaintEventArgs e)
+    {
+        var g = e.Graphics;
+        g.Clear(Parent?.BackColor ?? Teema.Taust);
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        var r = new RectangleF(0, 0, Width - 1, Height - 1);
+        using (var tee = Ymardus.Tee(r, 32))
+        using (var b = new SolidBrush(Color.FromArgb(27, 28, 31)))
+            g.FillPath(b, tee);
+
+        // logo: punane ring kotiga + "AKT"
+        var ring = new RectangleF(32, 32, 44, 44);
+        using (var b = new SolidBrush(Color.FromArgb(226, 6, 19))) g.FillEllipse(b, ring);
+        using (var p = new Pen(Color.White, 2.2f) { LineJoin = LineJoin.Round, StartCap = LineCap.Round, EndCap = LineCap.Round })
+        {
+            g.DrawPolygon(p, new[] { new PointF(ring.X + 13, ring.Y + 17), new PointF(ring.X + 31, ring.Y + 17), new PointF(ring.X + 30, ring.Y + 33), new PointF(ring.X + 14, ring.Y + 33) });
+            g.DrawArc(p, ring.X + 17, ring.Y + 10, 10, 12, 180, 180);
+        }
+        using (var f = new Font("Segoe UI", 13.5F, FontStyle.Bold))
+            TextRenderer.DrawText(g, "A K T", f, new Point(86, 42), Color.White);
+
+        // hõljuvad kaardid (aeglane kõikumine) + joon, mis "joonistub" ise
+        double joon = Math.Clamp(aeg / 2.4, 0, 1);
+        Kaart(g, 110, 40 + 120, 9 - 3 * Math.Sin(aeg * 0.9), (float)(Math.Sin(aeg * 0.8) * 10),
+            Color.FromArgb(160, 35, 110), Color.FromArgb(110, 20, 80), joon, false);
+        Kaart(g, 30, 120 + 120, -12 + 4 * Math.Sin(aeg * 0.75), (float)(Math.Sin(aeg * 0.9 + 1) * -14),
+            Color.FromArgb(226, 6, 19), Color.FromArgb(226, 6, 19), joon, true);
+
+        using (var f = new Font("Segoe UI", 25F, FontStyle.Bold))
+            TextRenderer.DrawText(g, Keel.T(pealkiri), f, new Point(28, Height - 132), Color.White);
+        using (var f = new Font("Segoe UI", 10.5F))
+            TextRenderer.DrawText(g, Keel.T(alapealkiri), f, new Rectangle(32, Height - 80, Width - 64, 50), Color.FromArgb(185, 189, 196),
+                TextFormatFlags.WordBreak | TextFormatFlags.NoPrefix);
+    }
+
+    private static void Kaart(Graphics g, float x, float y, double nurk, float nihe, Color a, Color b, double joon, bool tekstiga)
+    {
+        var olek = g.Save();
+        g.TranslateTransform(x + 125, y + 79 + nihe);
+        g.RotateTransform((float)nurk);
+        var r = new RectangleF(-125, -79, 250, 158);
+        for (int i = 0; i < 6; i++)
+            using (var vari = new SolidBrush(Color.FromArgb(18, 0, 0, 0)))
+            using (var vt = Ymardus.Tee(RectangleF.Inflate(new RectangleF(r.X, r.Y + 14, r.Width, r.Height), 8 - i, 6 - i), 16))
+                g.FillPath(vari, vt);
+        using (var tee = Ymardus.Tee(r, 16))
+        using (var br = new LinearGradientBrush(r, a, b, 60f))
+        {
+            g.FillPath(br, tee);
+            g.SetClip(tee);
+        }
+        using (var p = new Pen(Color.FromArgb(170, 255, 255, 255), 1.2f))
+        {
+            var algus = new PointF(r.X + 85, r.Bottom + 20);
+            var lopp = new PointF(r.Right + 20, r.Y + 25);
+            g.DrawLine(p, algus, new PointF(algus.X + (lopp.X - algus.X) * (float)joon, algus.Y + (lopp.Y - algus.Y) * (float)joon));
+        }
+        if (tekstiga)
+        {
+            using var f = new Font("Segoe UI", 7F, FontStyle.Bold);
+            TextRenderer.DrawText(g, "AKT     POOD     KLIENT", f, Point.Round(new PointF(r.X + 16, r.Y + 14)), Color.White);
+            using var fn = new Font("Segoe UI", 10F);
+            TextRenderer.DrawText(g, "1 0 0 0 0 1", fn, Point.Round(new PointF(r.X + 16, r.Bottom - 30)), Color.White);
+            using var fb = new Font("Segoe UI", 12F, FontStyle.Bold);
+            TextRenderer.DrawText(g, "0,42 €", fb, Point.Round(new PointF(r.Right - 72, r.Bottom - 32)), Color.White);
+        }
+        g.Restore(olek);
+    }
+}
+
+// Keelevalik: hall "pill", valitud keel tume (ET / RU / EN)
+public class KeelePill : Control
+{
+    private static readonly (KeeleKood Kood, string Tekst)[] Keeled = { (KeeleKood.ET, "ET"), (KeeleKood.RU, "RU"), (KeeleKood.EN, "EN") };
+    private int hiir = -1;
+
+    public KeelePill()
+    {
+        SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
+        Size = new Size(4 + 3 * 46, 38);
+        Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+        Cursor = Cursors.Hand;
+    }
+
+    private Rectangle Osa(int i) => new(4 + i * 46, 4, 44, 30);
+
+    protected override void OnMouseMove(MouseEventArgs e)
+    {
+        int uus = Enumerable.Range(0, 3).FirstOrDefault(i => Osa(i).Contains(e.Location), -1);
+        if (uus != hiir) { hiir = uus; Invalidate(); }
+        base.OnMouseMove(e);
+    }
+
+    protected override void OnMouseLeave(EventArgs e) { hiir = -1; Invalidate(); base.OnMouseLeave(e); }
+
+    protected override void OnMouseClick(MouseEventArgs e)
+    {
+        for (int i = 0; i < 3; i++)
+            if (Osa(i).Contains(e.Location)) { Keel.Sea(Keeled[i].Kood); Invalidate(); }
+        base.OnMouseClick(e);
+    }
+
+    protected override void OnPaint(PaintEventArgs e)
+    {
+        var g = e.Graphics;
+        g.Clear(Parent?.BackColor ?? Teema.Pind);
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        using (var tee = Ymardus.Tee(new RectangleF(0, 0, Width - 1, Height - 1), (Height - 1) / 2f))
+        using (var b = new SolidBrush(Teema.Paneel2))
+            g.FillPath(b, tee);
+        for (int i = 0; i < 3; i++)
+        {
+            var r = Osa(i);
+            bool valitud = Keel.Praegu == Keeled[i].Kood;
+            if (valitud || hiir == i)
+                using (var tee = Ymardus.Tee(r, r.Height / 2))
+                using (var b = new SolidBrush(valitud ? Teema.Tekst : Teema.Joon))
+                    g.FillPath(b, tee);
+            TextRenderer.DrawText(g, Keeled[i].Tekst, Font, r, valitud ? Teema.Pind : Teema.Tekst, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+        }
+    }
+}
+
+public static class MoodneUi
+{
+    // Suur "pill" sisestusväli (kõrgus 52, hall taust, fookuses ploomi raam)
+    public static RoundedPanel Sisend(out TextBox tekst, int laius, bool parool = false, string vihje = "")
+    {
+        var raam = new RoundedPanel
+        {
+            Size = new Size(laius, 52),
+            Radius = 13,
+            Padding = new Padding(20, 15, 20, 0),
+            FillColor = Teema.Paneel2,
+            BorderColor = Teema.Paneel2,
+            BackColor = Teema.Pind
+        };
+        var t = new TextBox
+        {
+            BorderStyle = BorderStyle.None,
+            Dock = DockStyle.Fill,
+            UseSystemPasswordChar = parool,
+            PlaceholderText = vihje,
+            BackColor = Teema.Paneel2,
+            ForeColor = Teema.Tekst,
+            Font = new Font("Segoe UI", 11.5F)
+        };
+        raam.Controls.Add(t);
+        t.Enter += (s, e) => { raam.FillColor = Teema.Pind; raam.BorderColor = Teema.Teine; t.BackColor = Teema.Pind; raam.Invalidate(); };
+        t.Leave += (s, e) => { raam.FillColor = Teema.Paneel2; raam.BorderColor = Teema.Paneel2; t.BackColor = Teema.Paneel2; raam.Invalidate(); };
+        raam.Click += (s, e) => t.Focus();
+        tekst = t;
+        return raam;
+    }
+
+    // Punane "pill" nupp, paremal valge ring noolega (nool liigub hiire all paremale)
+    public static RoundedButton NoolNupp(string tekst, EventHandler kasitleja)
+    {
+        var nupp = UiStiil.LooSuurNupp(tekst, kasitleja);
+        nupp.Height = 56;
+        nupp.TextAlign = ContentAlignment.MiddleLeft;
+        nupp.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+        float nool = 0;
+        System.Windows.Forms.Timer? anim = null;
+        void Liigu(float siht)
+        {
+            anim?.Stop();
+            float algus = nool;
+            anim = Animatsioon.Kaivita(nupp, 250, t => { nool = algus + (siht - algus) * (float)Animatsioon.Sujuv(t); nupp.Invalidate(); });
+        }
+        nupp.MouseEnter += (s, e) => Liigu(1);
+        nupp.MouseLeave += (s, e) => Liigu(0);
+        nupp.Paint += (s, e) =>
+        {
+            var g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            int d = nupp.Height - 18;
+            var ring = new Rectangle(nupp.Width - d - 9, (nupp.Height - d) / 2, d, d);
+            using (var b = new SolidBrush(nupp.Enabled ? Color.White : Teema.Joon)) g.FillEllipse(b, ring);
+            Ikoonid.Joonista(g, Ikoonid.NoolParemale, new Rectangle(ring.X + (int)(nool * 4), ring.Y, ring.Width, ring.Height),
+                nupp.Enabled ? Teema.Aktsent : Teema.TekstNork, 11f);
+        };
+        return nupp;
+    }
+}

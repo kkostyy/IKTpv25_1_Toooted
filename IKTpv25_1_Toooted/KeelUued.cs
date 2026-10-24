@@ -130,6 +130,8 @@ public static partial class Keel
         L("Hinnad uuenesid (soodustus algas või lõppes) – kontrolli summat", "Цены обновились (скидка началась или закончилась) – проверьте сумму", "Prices updated (a discount started or ended) – check the total");
         // --- Moodne disain ---
         L("Moodne disain", "Современный дизайн", "Modern design"); L("Disain: moodne", "Дизайн: современный", "Design: modern");
+        L("Logi sisse", "Войти", "Sign in"); L("Kassa ja e-pood ühes kohas. Kliendikaardiga 1 € = 1 sent boonust.", "Касса и интернет-магазин в одном месте. С картой клиента 1 € = 1 цент бонусов.", "Till and online shop in one place. With the customer card 1 € = 1 cent bonus.");
+        L("Pole kontot? Registreeru — kliendikaart kohe", "Нет аккаунта? Регистрация — карта клиента сразу", "No account? Sign up — customer card right away");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }
