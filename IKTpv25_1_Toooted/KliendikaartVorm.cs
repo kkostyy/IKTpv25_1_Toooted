@@ -31,6 +31,14 @@ namespace IKTpv25_1_Toooted
                 catch (Exception ex) { Teade.Show("Viga:\n" + ex.Message); return; }
             }
 
+            // Moodne disain (lõuend 2.3): kujunduse valik, oma foto, vöötkood, ostud
+            if (Teema.OnMoodne)
+            {
+                using var m = new KliendikaartMoodneVorm();
+                if (omanik != null) m.ShowDialog(omanik); else { m.StartPosition = FormStartPosition.CenterScreen; m.ShowDialog(); }
+                return;
+            }
+
             using var vorm = new KliendikaartVorm();
             if (omanik != null) vorm.ShowDialog(omanik);
             else { vorm.StartPosition = FormStartPosition.CenterScreen; vorm.ShowDialog(); }

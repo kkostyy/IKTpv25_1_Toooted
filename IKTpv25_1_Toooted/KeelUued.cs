@@ -145,6 +145,12 @@ public static partial class Keel
         L("+ veel {0}", "+ ещё {0}", "+ {0} more");
         L("Profiil", "Профиль", "Profile"); L("Turvalisus", "Безопасность", "Security"); L("Välimus", "Внешний вид", "Appearance");
         L("Hele", "Светлая", "Light"); L("Tume", "Тёмная", "Dark"); L("Klassik", "Классика", "Classic"); L("Moodne", "Современный", "Modern");
+        L("Punane", "Красная", "Red"); L("Ploom", "Сливовая", "Plum"); L("Valge ID", "Белая ID", "White ID"); L("Minu foto", "Моё фото", "My photo");
+        L("Lae oma foto", "Загрузить своё фото", "Upload your photo"); L("JPG või PNG · foto lõigatakse kaardi kujuliseks, all on tume toon, et tekst jääks loetav", "JPG или PNG · фото обрезается по форме карты, снизу тёмный тон, чтобы текст читался", "JPG or PNG · the photo is cropped to the card, with a dark tone below so text stays readable");
+        L("KASSAS", "НА КАССЕ", "AT THE TILL"); L("SKANNI", "СКАНИРУЙ", "SCAN"); L("Boonus", "Бонус", "Bonus"); L("BOONUS", "БОНУС", "BONUS"); L("Tase", "Уровень", "Level");
+        L("Ost nr {0}", "Покупка № {0}", "Purchase no. {0}"); L("Ostusid veel pole.", "Покупок пока нет.", "No purchases yet."); L("Preemiad ja tase  ›", "Награды и уровень  ›", "Rewards and level  ›");
+        L("Kasuta boonust maksmisel", "Использовать бонус при оплате", "Use bonus at checkout"); L("Foto lisatud kaardile", "Фото добавлено на карту", "Photo added to the card");
+        L("Maksmisel märgi „Kasuta boonust“ – boonus läheb allahindluseks.", "При оплате отметьте «Использовать бонус» – бонус пойдёт в скидку.", "At checkout tick “Use bonus” – the bonus becomes a discount.");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }
