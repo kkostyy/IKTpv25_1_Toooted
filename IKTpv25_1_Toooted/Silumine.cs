@@ -40,6 +40,7 @@ internal sealed class ElementidePuu : IMessageFilter
               .Append($"ekraan={ekraan.X},{ekraan.Y} suurus={c.Width}x{c.Height} dock={c.Dock} vis={c.Visible} ")
               .Append($"bg={c.BackColor.R},{c.BackColor.G},{c.BackColor.B}")
               .AppendLine(c is RoundedPanel rp ? $" fill={rp.FillColor.R},{rp.FillColor.G},{rp.FillColor.B}" : "");
+            if (c is Form fm) sb.AppendLine($"    FORM client={fm.ClientSize} disp={fm.DisplayRectangle} pad={fm.Padding} top={fm.TopLevel} min={fm.MinimumSize} max={fm.MaximumSize} as={fm.AutoScroll}");
             if (c is DataGridView d && d.Rows.Count > 0)
                 sb.AppendLine($"    DGV def={d.DefaultCellStyle.BackColor} rows={d.RowsDefaultCellStyle.BackColor} alt={d.AlternatingRowsDefaultCellStyle.BackColor} r0={d.Rows[0].DefaultCellStyle.BackColor} r0inh={d.Rows[0].InheritedStyle.BackColor} c00={d.Rows[0].Cells[0].Style.BackColor} fore={d.Rows[0].InheritedStyle.ForeColor}");
             foreach (Control l in c.Controls) Kirjuta(l, tase + 1);
