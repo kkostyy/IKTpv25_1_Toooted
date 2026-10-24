@@ -183,6 +183,13 @@ public static class MoodneUi
         nupp.Height = 56;
         nupp.TextAlign = ContentAlignment.MiddleLeft;
         nupp.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+        NoolStiil(nupp);
+        return nupp;
+    }
+
+    // Olemasolevale nupule valge ring noolega paremale (nool liigub hiire all)
+    public static void NoolStiil(RoundedButton nupp)
+    {
         float nool = 0;
         System.Windows.Forms.Timer? anim = null;
         void Liigu(float siht)
@@ -203,6 +210,5 @@ public static class MoodneUi
             Ikoonid.Joonista(g, Ikoonid.NoolParemale, new Rectangle(ring.X + (int)(nool * 4), ring.Y, ring.Width, ring.Height),
                 nupp.Enabled ? Teema.Aktsent : Teema.TekstNork, 11f);
         };
-        return nupp;
     }
 }
