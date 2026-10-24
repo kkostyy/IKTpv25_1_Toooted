@@ -164,7 +164,7 @@ namespace IKTpv25_1_Toooted
 
         private void UuendaKokku()
         {
-            lblKokku.Text = Ostukorv.Eur(Ostukorv.Kokku);
+            lblKokku.Text = Ostukorv.Eur(Ostukorv.Kokku + Ostukorv.PantKokku);   // koos pandiga
             int tk = Ostukorv.Kogus;
             lblKorvis.Text = tk == 0 ? Keel.T("Korv on tühi") : Keel.F("{0} toodet, {1} rida", tk, Ostukorv.Ridad.Count);
             btnVormista.Enabled = Ostukorv.Ridad.Count > 0;
@@ -237,7 +237,7 @@ namespace IKTpv25_1_Toooted
         private static void LisaKorvi(Toode t)
         {
             if (t.Kogus <= 0) { Teade.Toast(Keel.F("„{0}“ on otsas.", t.Toodenimetus), TeateTyyp.Hoiatus); return; }
-            string? viga = Ostukorv.Lisa(t.Id, t.Toodenimetus, t.Hind, t.Kogus, 1, t.Pilt);
+            string? viga = Ostukorv.LisaToode(t);
             if (viga != null) Teade.Toast(viga, TeateTyyp.Hoiatus);
             else Teade.Toast(Keel.F("{0} lisati korvi", t.Toodenimetus), TeateTyyp.Edu, 1400);
         }

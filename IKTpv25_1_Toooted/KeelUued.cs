@@ -93,6 +93,11 @@ public static partial class Keel
         L("Lisati {0} toodet, {1} klienti ja {2} ostu.", "Добавлено товаров: {0}, клиентов: {1}, покупок: {2}.", "Added {0} products, {1} customers and {2} purchases.");
         L("Eemaldati {0} toodet, {1} klienti ja {2} ostu.", "Удалено товаров: {0}, клиентов: {1}, покупок: {2}.", "Removed {0} products, {1} customers and {2} purchases.");
         L("Kas eemaldan kõik demoandmed (tooted, kliendid, ostud)?", "Удалить все демо-данные (товары, клиентов, покупки)?", "Remove all demo data (products, customers, purchases)?");
+        // --- Pant ---
+        L("Pakendi tagatisraha", "Залог за тару", "Bottle deposit"); L("Pakendi tagatisraha {0}", "Залог за тару {0}", "Bottle deposit {0}");
+        L("Pakendi tagatisraha ({0} tk) {1}", "Залог за тару ({0} шт) {1}", "Bottle deposit ({0} pcs) {1}"); L("{0} tk · {1}", "{0} шт · {1}", "{0} pcs · {1}");
+        L("Pakendi tagatisraha kokku ({0} tk)", "Залог за тару итого ({0} шт)", "Bottle deposit total ({0} pcs)"); L("Soodustus", "Скидка", "Discount");
+        L("Teenitud boonust ({0} %)", "Начислено бонусов ({0} %)", "Bonus earned ({0} %)");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }

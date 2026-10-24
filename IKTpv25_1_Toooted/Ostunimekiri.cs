@@ -478,7 +478,7 @@ namespace IKTpv25_1_Toooted
                 {
                     if (!tooted.TryGetValue(r.ToodeId!.Value, out var t)) continue;
                     string? viga = t.Kogus <= 0 ? Keel.F("„{0}“ on otsas.", t.Toodenimetus)
-                        : Ostukorv.Lisa(t.Id, t.Toodenimetus, t.Hind, t.Kogus, r.Kogus, t.Pilt);
+                        : Ostukorv.LisaToode(t, r.Kogus);
                     if (viga == null) lisatud++; else vead.Add(viga);
                 }
                 if (lisatud > 0) Teade.Toast(Keel.F("Korvi lisati {0} toodet", lisatud), TeateTyyp.Edu);

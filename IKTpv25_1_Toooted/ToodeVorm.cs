@@ -178,7 +178,7 @@ public class ToodeVorm : Form
         var lisaNupp = UiStiil.LooSuurNupp("Lisa ostukorvi", (s, e) =>
         {
             string? viga = toode.Kogus <= 0 ? Keel.F("„{0}“ on otsas.", toode.Toodenimetus)
-                : Ostukorv.Lisa(toode.Id, toode.Toodenimetus, toode.Hind, toode.Kogus, 1, toode.Pilt);
+                : Ostukorv.LisaToode(toode);
             if (viga != null) Teade.Toast(viga, TeateTyyp.Hoiatus);
         });
         lisaNupp.Bounds = new Rectangle(x, y, 190, 40);
@@ -446,7 +446,7 @@ public class ToodeVorm : Form
             var kaart = new TooteKaart(t);
             kaart.Lisa += x =>
             {
-                string? viga = Ostukorv.Lisa(x.Id, x.Toodenimetus, x.Hind, x.Kogus, 1, x.Pilt);
+                string? viga = Ostukorv.LisaToode(x);
                 if (viga != null) Teade.Toast(viga, TeateTyyp.Hoiatus);
             };
             kaart.Vahenda += x =>

@@ -58,9 +58,16 @@ public static class Arve
 
         foreach (var r in ost.Read)
         {
-            t.Toode(r.Toodenimetus, e(r.Summa) + " A");
-            if (r.Kogus > 1) t.Rida("  " + Keel.F("{0} x {1}", r.Kogus, e(r.Hind)));
+            decimal tava = r.TavaHind is decimal th && th > r.Hind ? th : r.Hind;
+            t.Toode(r.Toodenimetus, e(tava * r.Kogus) + " A");
+            if (r.Kogus > 1) t.Rida("  " + Keel.F("{0} x {1}", r.Kogus, e(tava)));
+            if (tava > r.Hind)
+                t.Rida("  " + (r.Soodus ?? Keel.T("Soodustus")), "-" + e((tava - r.Hind) * r.Kogus));
+            if (r.Pant > 0)
+                t.Rida("  " + Keel.T("Pakendi tagatisraha"), e(r.PantKokku));
         }
+        decimal pant = ost.Read.Sum(r => r.PantKokku);
+        if (pant > 0) t.Rida(Keel.F("Pakendi tagatisraha kokku ({0} tk)", ost.Read.Where(r => r.Pant > 0).Sum(r => r.Kogus)), e(pant));
         if (ost.Tarneviis == Tarne.Kojuvedu)
         {
             t.Toode(Keel.T("Kohaletoimetamine"), e(ost.TarneHind) + " A");
@@ -91,7 +98,9 @@ public static class Arve
 
         if (ost.Klient != null)
         {
-            t.Rida(Keel.T("Teenitud boonust (1 € = 1 sent)"), e(ost.BoonusLisatud));
+            decimal alus = ost.Summa - ost.TarneHind - pant;
+            string pr = alus > 0 ? (ost.BoonusLisatud / alus * 100).ToString("0.#", new System.Globalization.CultureInfo("et-EE")) : "1";
+            t.Rida(Keel.F("Teenitud boonust ({0} %)", pr), e(ost.BoonusLisatud));
             t.Rida(Keel.T("Sinu boonuse saldo"), e(ost.Klient.Boonus));
             t.Joon();
         }
@@ -279,7 +288,8 @@ public static class Arve
         sb.AppendLine();
         sb.AppendLine(Keel.F("Ost nr {0} · {1}", ost.Id, ost.Aeg.ToString("dd.MM.yyyy HH:mm")));
         foreach (var r in ost.Read)
-            sb.AppendLine($"  {r.Toodenimetus}  {r.Kogus} × {Ostukorv.Eur(r.Hind)} = {Ostukorv.Eur(r.Summa)}");
+            sb.AppendLine($"  {r.Toodenimetus}  {r.Kogus} × {Ostukorv.Eur(r.Hind)} = {Ostukorv.Eur(r.Summa)}" +
+                (r.Soodus != null ? $"  ({r.Soodus})" : "") + (r.Pant > 0 ? "  + " + Keel.F("Pakendi tagatisraha {0}", Ostukorv.Eur(r.PantKokku)) : ""));
         if (ost.Tarneviis == Tarne.Kojuvedu) sb.AppendLine(Keel.F("Kohaletoimetamine: {0}", ost.TarneHind == 0 ? Keel.T("TASUTA") : Ostukorv.Eur(ost.TarneHind)));
         if (ost.Soodustus > 0) sb.AppendLine(Keel.F("Boonuse soodustus: -{0}", Ostukorv.Eur(ost.Soodustus)));
         sb.AppendLine(Keel.F("Kokku: {0}", Ostukorv.Eur(ost.Summa)));
