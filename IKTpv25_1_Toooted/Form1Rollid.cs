@@ -10,6 +10,7 @@ namespace IKTpv25_1_Toooted
         private readonly ToolStripMenuItem menuEmail = new("E-posti seaded...");
         private readonly ToolStripMenuItem menuKasutajad = new("Kasutajad...");
         private readonly ToolStripMenuItem menuKampaaniad = new("Kampaaniad...");
+        private readonly ToolStripMenuItem menuDemo = new("Demoandmed...");
         private readonly ToolStripStatusLabel lblKasutaja = new();
         private string? algneTiitel;
         private Point tabKassaAlgne;
@@ -36,6 +37,8 @@ namespace IKTpv25_1_Toooted
             menuKasutajad.Click += (s, e) => AvaVorm(new KasutajadVorm());
             haldus.DropDownItems.Add(menuKampaaniad);
             menuKampaaniad.Click += (s, e) => AvaKampaaniad();
+            haldus.DropDownItems.Add(menuDemo);
+            menuDemo.Click += (s, e) => AvaDemo();
             haldus.DropDownItems.Add(menuStatistika);
             haldus.DropDownItems.Add(menuEksport);
             haldus.DropDownItems.Add(menuEmail);
@@ -86,6 +89,7 @@ namespace IKTpv25_1_Toooted
             menuEmail.Visible = omanik;
             menuKasutajad.Visible = omanik;
             menuKampaaniad.Visible = omanik;
+            menuDemo.Visible = omanik;
 
             // Ostja (klient) ei näe kassat ega ladu – talle avaneb kohe e-pood
             if (AktiivneKasutaja.OnOstja)
@@ -293,6 +297,12 @@ namespace IKTpv25_1_Toooted
             LaadiTooted();
         }
 
+        private void AvaDemo()
+        {
+            AvaVorm(new DemoVorm());
+            LaadiTooted();
+        }
+
         private void LooKulgMenuu()
         {
             kulg = new KulgMenuu();
@@ -305,6 +315,7 @@ namespace IKTpv25_1_Toooted
             kulg.Lisa("kliendid", "\uE716", "Kliendid", () => AvaVorm(new KliendidVorm()), nahtav: () => AktiivneKasutaja.OnOmanik);
             kulg.Lisa("kasutajad", "\uE77B", "Kasutajad", () => AvaVorm(new KasutajadVorm()), nahtav: () => AktiivneKasutaja.OnOmanik);
             kulg.Lisa("kampaaniad", "\uE8EC", "Kampaaniad", AvaKampaaniad, nahtav: () => AktiivneKasutaja.OnOmanik);
+            kulg.Lisa("demo", "\uE7B8", "Demoandmed", AvaDemo, nahtav: () => AktiivneKasutaja.OnOmanik);
             kulg.Lisa("statistika", "\uE9D2", "Statistika", () => AvaVorm(new StatistikaVorm()), nahtav: () => AktiivneKasutaja.OnOmanik);
             kulg.Lisa("seaded", "\uE713", "Seaded", () => SeadedVorm.Ava(this));
             kulg.Valju = VahetaKasutajat;

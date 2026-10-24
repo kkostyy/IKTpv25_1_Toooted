@@ -84,6 +84,15 @@ public static partial class Keel
         L("Täna pole üllatuseks sobivaid tooteid", "Сегодня нет подходящих товаров для сюрприза", "No products available for a surprise today");
         L("Päeva üllatus −{0} %", "Сюрприз дня −{0} %", "Surprise of the day −{0} %"); L("Preemiad · {0} {1} %", "Награды · {0} {1} %", "Rewards · {0} {1} %");
         L("Preemiate jaoks on vaja kliendikaarti. Ava „Kliendikaart“ ja loo see.", "Для наград нужна карта клиента. Откройте «Карта клиента» и создайте её.", "Rewards need a customer card. Open “Customer card” and create one.");
+        // --- Demoandmed ---
+        L("Demoandmed", "Демо-данные", "Demo data"); L("Demoandmed...", "Демо-данные...", "Demo data..."); L("toodet", "товаров", "products"); L("ostu", "покупок", "purchases");
+        L("Üks nupp lisab 50 toodet, 3 klienti ja 20 ostu viimase 30 päeva jooksul, et programm ei näeks esitlusel tühi välja. Demoandmed on märgitud ja neid saab hiljem korraga eemaldada.", "Одна кнопка добавляет 50 товаров, 3 клиентов и 20 покупок за последние 30 дней, чтобы программа не выглядела пустой на защите. Демо-данные помечены, их можно удалить разом.", "One button adds 50 products, 3 customers and 20 purchases from the last 30 days so the app does not look empty in a demo. Demo data is marked and can be removed at once.");
+        L("Lisa demoandmed", "Добавить демо-данные", "Add demo data"); L("Eemalda demoandmed", "Удалить демо-данные", "Remove demo data");
+        L("Loon demoandmeid...", "Создаю демо-данные...", "Creating demo data..."); L("Demoandmed lisatud", "Демо-данные добавлены", "Demo data added"); L("Demoandmed eemaldatud", "Демо-данные удалены", "Demo data removed");
+        L("Demoandmed on juba olemas.", "Демо-данные уже есть.", "Demo data already exists."); L("Demotoode esitluseks.", "Демо-товар для презентации.", "Demo product for presentation.");
+        L("Lisati {0} toodet, {1} klienti ja {2} ostu.", "Добавлено товаров: {0}, клиентов: {1}, покупок: {2}.", "Added {0} products, {1} customers and {2} purchases.");
+        L("Eemaldati {0} toodet, {1} klienti ja {2} ostu.", "Удалено товаров: {0}, клиентов: {1}, покупок: {2}.", "Removed {0} products, {1} customers and {2} purchases.");
+        L("Kas eemaldan kõik demoandmed (tooted, kliendid, ostud)?", "Удалить все демо-данные (товары, клиентов, покупки)?", "Remove all demo data (products, customers, purchases)?");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }
