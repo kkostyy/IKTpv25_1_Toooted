@@ -210,6 +210,7 @@ namespace IKTpv25_1_Toooted
         private readonly ToolStripMenuItem menuDisainRimi = new("E-poe disain (Rimi)");
         private readonly List<ToolStripMenuItem> menuKeeled = new();
         private readonly ToolStripMenuItem menuDisainKlassik = new("Klassikaline disain");
+        private readonly ToolStripMenuItem menuDisainMoodne = new("Moodne disain") { ShortcutKeyDisplayString = "Ctrl+Shift+M" };
 
         private ToolStripMenuItem LooVaadeMenuu()
         {
@@ -241,10 +242,12 @@ namespace IKTpv25_1_Toooted
             vaade.DropDownItems.Add(new ToolStripSeparator());
             menuDisainRimi.ShortcutKeyDisplayString = "Ctrl+Shift+D";
             menuDisainKlassik.ShortcutKeyDisplayString = "Ctrl+Shift+D";
-            menuDisainRimi.Click += (s, e) => { if (!Teema.OnRimi) Teema.VahetaDisain(); };
-            menuDisainKlassik.Click += (s, e) => { if (Teema.OnRimi) Teema.VahetaDisain(); };
+            menuDisainRimi.Click += (s, e) => Teema.SeaDisain(Disain.Rimi);
+            menuDisainKlassik.Click += (s, e) => Teema.SeaDisain(Disain.Klassikaline);
+            menuDisainMoodne.Click += (s, e) => Teema.SeaDisain(Disain.Moodne);
             vaade.DropDownItems.Add(menuDisainRimi);
             vaade.DropDownItems.Add(menuDisainKlassik);
+            vaade.DropDownItems.Add(menuDisainMoodne);
             vaade.DropDownItems.Add(new ToolStripSeparator());
 
             // Keel: nimed alati oma keeles (Eesti / Русский / English)
@@ -269,8 +272,9 @@ namespace IKTpv25_1_Toooted
             menuHele.Checked = !Teema.Tume;
             menuTume.Checked = Teema.Tume;
             foreach (var m in menuVarvid) m.Checked = Equals(m.Tag, Teema.AktsendiNimi);
-            menuDisainRimi.Checked = Teema.OnRimi;
+            menuDisainRimi.Checked = Teema.Stiil == Disain.Rimi;
             menuDisainKlassik.Checked = !Teema.OnRimi;
+            menuDisainMoodne.Checked = Teema.OnMoodne;
             foreach (var m in menuKeeled) m.Checked = Equals(m.Tag, Keel.Praegu);
         }
 

@@ -27,7 +27,7 @@ namespace IKTpv25_1_Toooted
                 if (omanik != null) vorm.ShowDialog(omanik); else vorm.ShowDialog();
                 disain = vorm.UusDisain;
             }
-            if (disain is Disain d && d != Teema.Stiil) Teema.VahetaDisain();
+            if (disain is Disain d && d != Teema.Stiil) Teema.SeaDisain(d);
         }
 
         public SeadedVorm() : base("Seaded", 580, 752)
@@ -109,7 +109,7 @@ namespace IKTpv25_1_Toooted
             };
             cmbDisain.SelectedIndexChanged += (s, e) =>
             {
-                if (!taidan) UusDisain = cmbDisain.SelectedIndex == 1 ? Disain.Klassikaline : Disain.Rimi;
+                if (!taidan) UusDisain = cmbDisain.SelectedIndex switch { 1 => Disain.Klassikaline, 2 => Disain.Moodne, _ => Disain.Rimi };
             };
             cmbKeel.SelectedIndexChanged += (s, e) =>
             {
@@ -162,7 +162,8 @@ namespace IKTpv25_1_Toooted
                 Taida(cmbTeema, new[] { Keel.T("Hele teema"), Keel.T("Tume teema") }, Teema.Tume ? 1 : 0);
                 Taida(cmbVarv, Teema.Aktsendid.Keys.Select(Keel.T).ToArray(), Teema.Aktsendid.Keys.ToList().IndexOf(Teema.AktsendiNimi));
                 var disain = UusDisain ?? Teema.Stiil;
-                Taida(cmbDisain, new[] { Keel.T("E-poe disain (Rimi)"), Keel.T("Klassikaline disain") }, disain == Disain.Rimi ? 0 : 1);
+                Taida(cmbDisain, new[] { Keel.T("E-poe disain (Rimi)"), Keel.T("Klassikaline disain"), Keel.T("Moodne disain") },
+                    disain switch { Disain.Klassikaline => 1, Disain.Moodne => 2, _ => 0 });
                 var keeled = Enum.GetValues<KeeleKood>();
                 Taida(cmbKeel, keeled.Select(Keel.Nimi).ToArray(), Array.IndexOf(keeled, Keel.Praegu));
             }

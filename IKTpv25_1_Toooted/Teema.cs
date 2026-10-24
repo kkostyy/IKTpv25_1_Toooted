@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace IKTpv25_1_Toooted;
 
-public enum Disain { Rimi, Klassikaline }
+public enum Disain { Rimi, Klassikaline, Moodne }
 
 // Värviroll: mida see värv kasutajaliideses tähendab (sama roll = sama värv igas teemas)
 public enum Roll
@@ -31,7 +31,9 @@ public static class Teema
 
     // Disain: e-poe (Rimi) stiil või esimene, klassikaline (sinine, Wordi-laadne). Vahetus: Ctrl+Shift+D
     public static Disain Stiil { get; private set; } = Disain.Rimi;
-    public static bool OnRimi => Stiil == Disain.Rimi;
+    public static bool OnRimi => Stiil != Disain.Klassikaline;   // e-poe disain (ka Moodne põhineb sellel)
+    // Moodne: kaardid ilma raamita, suured ümarused, nupud "pillid", vajutus väikseks (Ctrl+Shift+M)
+    public static bool OnMoodne => Stiil == Disain.Moodne;
     public static string AktsendiNimi { get; private set; } = "Punane";
 
     // Ümarad nurgad (suuremad raadiused) ja külgmenüü
@@ -57,15 +59,15 @@ public static class Teema
     public static Color Teine => !OnRimi ? Aktsent : Tume ? Color.FromArgb(235, 120, 175) : Color.FromArgb(160, 35, 110);
 
     // Heledad toonid: e-pood = sinakashall taust; klassikaline = esimese kujunduse hallid
-    public static Color Taust => Tume ? Color.FromArgb(24, 25, 28) : OnRimi ? Color.FromArgb(238, 241, 242) : Color.FromArgb(235, 237, 240);
+    public static Color Taust => Tume ? Color.FromArgb(24, 25, 28) : OnMoodne ? Color.FromArgb(233, 237, 239) : OnRimi ? Color.FromArgb(238, 241, 242) : Color.FromArgb(235, 237, 240);
     public static Color Paneel => Tume ? Color.FromArgb(34, 35, 39) : OnRimi ? Color.FromArgb(246, 248, 249) : Color.FromArgb(245, 246, 248);
-    public static Color Paneel2 => Tume ? Color.FromArgb(50, 52, 57) : OnRimi ? Color.FromArgb(232, 237, 239) : Color.FromArgb(232, 234, 238);
+    public static Color Paneel2 => Tume ? Color.FromArgb(50, 52, 57) : OnMoodne ? Color.FromArgb(241, 243, 244) : OnRimi ? Color.FromArgb(232, 237, 239) : Color.FromArgb(232, 234, 238);
     public static Color Pind => Tume ? Color.FromArgb(40, 41, 46) : Color.White;
     public static Color PindAlt => Tume ? Color.FromArgb(46, 47, 52) : OnRimi ? Color.FromArgb(247, 249, 250) : Color.FromArgb(248, 249, 251);
     public static Color PildiTaust => Tume ? Color.FromArgb(54, 56, 61) : OnRimi ? Color.FromArgb(240, 243, 244) : Color.FromArgb(240, 242, 245);
-    public static Color Joon => Tume ? Color.FromArgb(62, 64, 70) : OnRimi ? Color.FromArgb(221, 226, 229) : Color.FromArgb(210, 214, 220);
+    public static Color Joon => Tume ? Color.FromArgb(62, 64, 70) : OnMoodne ? Color.FromArgb(226, 230, 232) : OnRimi ? Color.FromArgb(221, 226, 229) : Color.FromArgb(210, 214, 220);
     public static Color Raam => Tume ? Color.FromArgb(82, 85, 92) : OnRimi ? Color.FromArgb(205, 211, 215) : Color.FromArgb(200, 204, 210);
-    public static Color Tekst => Tume ? Color.FromArgb(234, 236, 239) : OnRimi ? Color.FromArgb(46, 46, 46) : Color.FromArgb(40, 40, 40);
+    public static Color Tekst => Tume ? Color.FromArgb(234, 236, 239) : OnMoodne ? Color.FromArgb(27, 28, 31) : OnRimi ? Color.FromArgb(46, 46, 46) : Color.FromArgb(40, 40, 40);
 
     // Vana kujunduse (Designer-faili) värvid → roll
     private static readonly Dictionary<int, Roll> vanadVarvid = new()
@@ -139,7 +141,7 @@ public static class Teema
         bool praegu = Tume;
         Disain praeguneStiil = Stiil;
         Roll? leitud = null;
-        foreach (Disain d in new[] { Disain.Rimi, Disain.Klassikaline })
+        foreach (Disain d in new[] { Disain.Rimi, Disain.Klassikaline, Disain.Moodne })
         {
             foreach (bool tume in new[] { false, true })
             {
@@ -323,11 +325,23 @@ public static class Teema
         Muutus?.Invoke();
     }
 
-    // Ctrl+Shift+D: Rimi <-> klassikaline. Iga disain saab oma värvi (punane / sinine).
+    // Ctrl+Shift+D: e-pood <-> klassikaline. Iga disain saab oma värvi (punane / sinine).
     public static void VahetaDisain()
     {
         Stiil = OnRimi ? Disain.Klassikaline : Disain.Rimi;
         AktsendiNimi = OnRimi ? "Punane" : "Sinine";
+        Salvesta();
+        Muutus?.Invoke();
+    }
+
+    // Ctrl+Shift+M: uus moodne disain <-> tavaline e-poe disain
+    public static void VahetaMoodne() => SeaDisain(OnMoodne ? Disain.Rimi : Disain.Moodne);
+
+    public static void SeaDisain(Disain d)
+    {
+        if (d == Stiil) return;
+        Stiil = d;
+        AktsendiNimi = d == Disain.Klassikaline ? "Sinine" : "Punane";
         Salvesta();
         Muutus?.Invoke();
     }
