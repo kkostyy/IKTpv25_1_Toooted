@@ -154,15 +154,23 @@ namespace IKTpv25_1_Toooted
     // ===================================================================
     public class LoginVorm : KujundusVorm
     {
-        private readonly TextBox txtNimi, txtParool;
-        private readonly Label lblViga;
-        private readonly BrandPaneel bränd;
-        private readonly LinkLabel teemaLink;
+        private TextBox txtNimi = null!, txtParool = null!;
+        private Label lblViga = null!;
+        private BrandPaneel? bränd;
+        private LinkLabel teemaLink = null!;
+        private readonly Disain disain = Teema.Stiil;
 
         protected override bool TagasiNupuga => false;
 
+        // Disain vahetati (Ctrl+Shift+M / D): aken ehitatakse uues disainis uuesti (vt Program)
+        public bool EhitaUuesti { get; private set; }
+
         public LoginVorm() : base(Keel.F("Sisselogimine – {0}", Arve.PoeNimi), 740, 450)
         {
+            Teema.Muutus += DisainMuutus;
+            FormClosed += (s, e) => Teema.Muutus -= DisainMuutus;
+            if (Teema.OnMoodne) { EhitaMoodne(); return; }
+
             bränd = new BrandPaneel { Dock = DockStyle.Left, Width = 320 };
             Controls.Add(bränd);
 
@@ -235,18 +243,102 @@ namespace IKTpv25_1_Toooted
             Shown += (s, e) => txtNimi.Focus();
         }
 
+        private void DisainMuutus()
+        {
+            if ((Teema.Stiil == Disain.Moodne) == (disain == Disain.Moodne) || !IsHandleCreated) return;
+            EhitaUuesti = true;
+            BeginInvoke(new Action(() => { DialogResult = DialogResult.Retry; }));
+        }
+
+        // ---- Moodne disain: tume brändipaneel vasakul, valge kaart paremal (raadius 32) ----
+        private void EhitaMoodne()
+        {
+            ClientSize = new Size(960, 640);
+            BackColor = Teema.Taust;
+
+            Controls.Add(new MoodneBrand("Tere tulemast!", "Kassa ja e-pood ühes kohas. Kliendikaardiga 1 € = 1 sent boonust.") { Bounds = new Rectangle(16, 16, 420, 608) });
+
+            var kaart = new RoundedPanel { Bounds = new Rectangle(452, 16, 492, 608), Radius = 16, FillColor = Teema.Pind, BorderColor = Teema.Pind, BackColor = Teema.Taust };
+            Controls.Add(kaart);
+
+            var keel = new KeelePill { Location = new Point(kaart.Width - 32 - 142, 28) };
+            kaart.Controls.Add(keel);
+            teemaLink = new LinkLabel { AutoSize = true, Location = new Point(32, 38), LinkBehavior = LinkBehavior.HoverUnderline, BackColor = Teema.Pind };
+            teemaLink.LinkClicked += (s, e) => { Teema.Sea(!Teema.Tume, Teema.AktsendiNimi); BackColor = Teema.Taust; Teema.Rakenda(this); MargiTeema(); Invalidate(true); };
+            kaart.Controls.Add(teemaLink);
+
+            const int x = 66, w = 360;
+            kaart.Controls.Add(new Label { Text = "Logi sisse", Location = new Point(x - 2, 132), AutoSize = true, Font = new Font("Segoe UI", 20F, FontStyle.Bold), ForeColor = Teema.Tekst, BackColor = Teema.Pind });
+
+            Label VSilt(string t, int y) { var l = new Label { Text = t, Location = new Point(x, y), AutoSize = true, Font = new Font("Segoe UI", 9.75F, FontStyle.Bold), ForeColor = Teema.Tekst2, BackColor = Teema.Pind }; kaart.Controls.Add(l); return l; }
+            VSilt("Kasutajanimi", 190);
+            var nimi = MoodneUi.Sisend(out txtNimi, w, false, "nt admin");
+            nimi.Location = new Point(x, 212);
+            kaart.Controls.Add(nimi);
+            VSilt("Parool", 278);
+            var parool = MoodneUi.Sisend(out txtParool, w, true, "••••••");
+            parool.Location = new Point(x, 300);
+            parool.Padding = new Padding(20, 15, 52, 0);
+            kaart.Controls.Add(parool);
+            var silm = new Label { Text = "\uE7B3", Font = new Font("Segoe MDL2 Assets", 12F), Size = new Size(40, 40), TextAlign = ContentAlignment.MiddleCenter, Location = new Point(w - 48, 6), ForeColor = Teema.Tekst2, BackColor = Teema.Paneel2, Cursor = Cursors.Hand };
+            silm.Click += (s, e) => txtParool.UseSystemPasswordChar = !txtParool.UseSystemPasswordChar;
+            parool.Controls.Add(silm);
+            silm.BringToFront();
+            txtParool.Enter += (s, e) => silm.BackColor = Teema.Pind;
+            txtParool.Leave += (s, e) => silm.BackColor = Teema.Paneel2;
+
+            lblViga = new Label { Location = new Point(x, 360), Size = new Size(w, 22), ForeColor = Teema.Viga, BackColor = Teema.Pind };
+            kaart.Controls.Add(lblViga);
+
+            var login = MoodneUi.NoolNupp("Logi sisse", (s, e) => LogiSisse());
+            login.Bounds = new Rectangle(x, 386, w, 56);
+            kaart.Controls.Add(login);
+            AcceptButton = login;
+
+            var registreeri = new LinkLabel { Text = "Pole kontot? Registreeru — kliendikaart kohe", AutoSize = true, LinkBehavior = LinkBehavior.HoverUnderline, BackColor = Teema.Pind, Font = new Font("Segoe UI Semibold", 10F) };
+            registreeri.LinkClicked += (s, e) => Registreeri();
+            kaart.Controls.Add(registreeri);
+            registreeri.Location = new Point((kaart.Width - registreeri.PreferredWidth) / 2, 460);
+            var vihje = new Label { Text = "Vaikimisi: admin / admin123  ·  myyja / myyja123", AutoSize = true, ForeColor = Teema.TekstNork, BackColor = Teema.Pind, Font = new Font("Segoe UI", 8.5F) };
+            kaart.Controls.Add(vihje);
+            vihje.Location = new Point((kaart.Width - vihje.PreferredWidth) / 2, 570);
+            MargiTeema();
+
+            Keel.Muutus += KeelMuutus;
+            FormClosed += (s, e) => Keel.Muutus -= KeelMuutus;
+
+            // Kaart tõuseb sisse (16 px, 700 ms)
+            Shown += (s, e) =>
+            {
+                txtNimi.Focus();
+                Animatsioon.Kaivita(kaart, 700, t => kaart.Top = 16 + (int)Math.Round(16 * (1 - Animatsioon.Sujuv(t))));
+            };
+        }
+
+        private void Registreeri()
+        {
+            using var vorm = new RegistreerimineVorm(lubaOmanik: false);
+            if (vorm.ShowDialog(this) == DialogResult.OK)
+            {
+                txtNimi.Text = vorm.UusKasutajanimi;
+                txtParool.Clear();
+                txtParool.Focus();
+            }
+        }
+
         private void KeelMuutus()
         {
             Text = Keel.F("Sisselogimine – {0}", Arve.PoeNimi);
             Teema.Rakenda(this);
             MargiTeema();
+            Invalidate(true);
         }
 
         private void MargiTeema()
         {
             teemaLink.Text = Keel.T(Teema.Tume ? "☀ Hele teema" : "☾ Tume teema");
-            teemaLink.Left = ClientSize.Width - teemaLink.PreferredWidth - 16;
-            bränd.Invalidate();
+            if (bränd != null) teemaLink.Left = ClientSize.Width - teemaLink.PreferredWidth - 16;
+            bränd?.Invalidate();
         }
 
         private void LogiSisse()

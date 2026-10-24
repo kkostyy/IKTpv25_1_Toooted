@@ -66,11 +66,15 @@ internal static class Program
         }
 
         // Kõigepealt sisselogimine; roll määrab, mida kasutaja näeb
-        using (var login = new LoginVorm())
+        // Sisselogimine; kui disain vahetati (Ctrl+Shift+M), avatakse aken uues disainis
+        while (true)
         {
+            using var login = new LoginVorm();
             login.StartPosition = FormStartPosition.CenterScreen;
             login.ShowInTaskbar = true;
-            if (login.ShowDialog() != DialogResult.OK) return;
+            var tulemus = login.ShowDialog();
+            if (tulemus == DialogResult.OK) break;
+            if (!login.EhitaUuesti) return;
         }
 
         Application.Run(new Form1());
