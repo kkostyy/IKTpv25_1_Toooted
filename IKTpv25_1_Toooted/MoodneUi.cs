@@ -392,3 +392,78 @@ public class MoodneFilter : Control
     }
 }
 
+// Moodne hüpikmenüü: valge ümar kast, read on "pillid" (hiire all hall), valitud valik = ploomi täpp
+public class MoodneMenyyJoonistaja : ToolStripProfessionalRenderer
+{
+    public static void Rakenda(ContextMenuStrip m)
+    {
+        m.Renderer = new MoodneMenyyJoonistaja();
+        m.ShowImageMargin = false;
+        m.ShowCheckMargin = m.Items.OfType<ToolStripMenuItem>().Any(i => i.Checked);
+        m.Padding = new Padding(6, 8, 6, 8);
+        m.BackColor = Teema.Pind;
+        m.Font = new Font("Segoe UI", 10F);
+        m.DropShadowEnabled = true;
+        foreach (ToolStripItem i in m.Items)
+        {
+            i.ForeColor = Teema.Tekst;
+            if (i is ToolStripMenuItem mi) { mi.Padding = new Padding(6, 7, 14, 7); mi.AutoSize = true; }
+        }
+        // ümarad nurgad
+        m.Opened += (s, e) => { using var tee = Ymardus.Tee(new RectangleF(0, 0, m.Width, m.Height), 16); m.Region = new Region(tee); };
+    }
+
+    public MoodneMenyyJoonistaja() : base(new ProfessionalColorTable()) { RoundedEdges = false; }
+
+    protected override void OnRenderToolStripBackground(ToolStripRenderEventArgs e)
+    {
+        using var b = new SolidBrush(Teema.Pind);
+        e.Graphics.FillRectangle(b, e.AffectedBounds);
+    }
+
+    protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e)
+    {
+        var g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        using var tee = Ymardus.Tee(new RectangleF(0.5f, 0.5f, e.ToolStrip.Width - 1.5f, e.ToolStrip.Height - 1.5f), 16);
+        using var p = new Pen(Teema.Joon);
+        g.DrawPath(p, tee);
+    }
+
+    protected override void OnRenderImageMargin(ToolStripRenderEventArgs e) { }
+
+    protected override void OnRenderMenuItemBackground(ToolStripItemRenderEventArgs e)
+    {
+        if (!e.Item.Selected || !e.Item.Enabled) return;
+        var g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        var r = new RectangleF(2, 1, e.Item.Width - 4, e.Item.Height - 2);
+        using var tee = Ymardus.Tee(r, r.Height / 2);
+        using var b = new SolidBrush(Teema.Paneel2);
+        g.FillPath(b, tee);
+    }
+
+    protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
+    {
+        e.TextColor = e.Item.Enabled ? Teema.Tekst : Teema.TekstNork;
+        e.TextFont = ((ToolStripMenuItem)e.Item).Checked ? new Font(e.TextFont ?? e.Item.Font, FontStyle.Bold) : e.TextFont;
+        base.OnRenderItemText(e);
+    }
+
+    protected override void OnRenderItemCheck(ToolStripItemImageRenderEventArgs e)
+    {
+        var g = e.Graphics;
+        g.SmoothingMode = SmoothingMode.AntiAlias;
+        var r = e.ImageRectangle;
+        using var b = new SolidBrush(Teema.Teine);
+        g.FillEllipse(b, r.X + r.Width / 2f - 4, r.Y + r.Height / 2f - 4, 8, 8);
+    }
+
+    protected override void OnRenderSeparator(ToolStripSeparatorRenderEventArgs e)
+    {
+        int y = e.Item.Height / 2;
+        using var p = new Pen(Teema.Joon);
+        e.Graphics.DrawLine(p, 12, y, e.Item.Width - 12, y);
+    }
+}
+

@@ -928,6 +928,7 @@ namespace IKTpv25_1_Toooted
                 menuu.Items.Add(item);
             }
             foreach (ToolStripItem i in menuu.Items) i.ForeColor = Teema.Tekst;
+            if (Teema.OnMoodne) MoodneMenyyJoonistaja.Rakenda(menuu);
             menuu.Closed += (s, e) => BeginInvoke(new Action(menuu.Dispose));
             menuu.Show(nupp, new Point(nupp.Width - 10, nupp.Height + 4), ToolStripDropDownDirection.BelowLeft);
         }
