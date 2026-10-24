@@ -1,4 +1,4 @@
-namespace IKTpv25_1_Toooted
+﻿namespace IKTpv25_1_Toooted
 {
     // Peaakna kiirklahvid (F1 näitab kõiki)
     public partial class Form1
@@ -16,6 +16,7 @@ namespace IKTpv25_1_Toooted
             yield return new Kiirklahv(Keys.F7, R, "Partiid", () => Vali("partiid", AvaPartiid), omanik);
             yield return new Kiirklahv(Keys.F8, R, "Autotellimus", () => Vali("tellimus", () => AvaVorm(new AutotellimusVorm())), omanik);
             yield return new Kiirklahv(Keys.F9, R, "Ostude ajalugu", () => Vali("ajalugu", AvaAjalugu));
+            yield return new Kiirklahv(Keys.F11, R, "Ostetakse koos", () => Vali("koos", () => AvaVorm(new OstukorviAnalyysVorm())), omanik);
             yield return new Kiirklahv(Keys.Control | Keys.F, R, "Otsi toodet", () => { ValiVaheleht(tabToode); txtOtsi.Focus(); txtOtsi.SelectAll(); }, omanik);
             yield return new Kiirklahv(Keys.Control | Keys.L, R, "Ostunimekiri", () => Vali("nimekiri", AvaNimekiri));
             yield return new Kiirklahv(Keys.Control | Keys.K, R, "Kliendid", () => Vali("kliendid", () => AvaVorm(new KliendidVorm())), omanik);

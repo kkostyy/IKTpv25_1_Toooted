@@ -81,8 +81,14 @@ class SqlPood(private val context: Context) : SQLiteOpenHelper(context, "akt.db"
 
     override fun onUpgrade(db: SQLiteDatabase, vana: Int, uus: Int) {}
 
-    // Tooted ja kategooriad arvutiversiooni andmebaasist (assets/tooted.json), kaks kasutajat ja mõned ostud
+    // Tooted ja kategooriad: Rimi e-poe kataloog (assets/rimi_kataloog.json.gz, sama mis arvutiversioonis),
+    // kui seda pole, siis väike algandmestik (assets/tooted.json). Lisaks kaks kasutajat ja ostunimekiri.
     private fun algandmed(db: SQLiteDatabase) {
+        if (context.assets.list("")?.contains("rimi_kataloog.json.gz") == true) Rimi.laadi(context, db) else vanadTooted(db)
+        lisaKasutajad(db)
+    }
+
+    private fun vanadTooted(db: SQLiteDatabase) {
         val json = JSONObject(context.assets.open("tooted.json").bufferedReader().use { it.readText() })
         val kat = json.getJSONArray("kategooriad")
         for (i in 0 until kat.length()) {
@@ -103,6 +109,9 @@ class SqlPood(private val context: Context) : SQLiteOpenHelper(context, "akt.db"
             )
             db.insert("tooted", null, vaartused(t, kaasaId = true))
         }
+    }
+
+    private fun lisaKasutajad(db: SQLiteDatabase) {
         db.insert("kasutajad", null, ContentValues().apply {
             put("nimi", "admin"); put("taisNimi", "Admin Omanik"); put("rasi", Parool.rasi("admin123")); put("roll", Roll.Omanik.name)
             put("kaart", "100000"); put("boonus", 0)

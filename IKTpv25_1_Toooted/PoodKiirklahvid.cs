@@ -1,4 +1,4 @@
-namespace IKTpv25_1_Toooted
+﻿namespace IKTpv25_1_Toooted
 {
     // E-poe kiirklahvid (F1 näitab kõiki)
     public partial class PoodVorm
@@ -14,6 +14,7 @@ namespace IKTpv25_1_Toooted
             yield return new Kiirklahv(Keys.Control | Keys.K, R, "Kliendikaart", () => KliendikaartVorm.Ava(this));
             yield return new Kiirklahv(Keys.Control | Keys.P, R, "Preemiad", () => { if (lehed.Praegune is not PreemiadLeht) AvaLeht(new PreemiadLeht()); });
             yield return new Kiirklahv(Keys.Control | Keys.L, R, "Ostunimekiri", AvaNimekiri);
+            yield return new Kiirklahv(Keys.Control | Keys.M, R, "Minu kulutused", AvaKulutused);
             yield return new Kiirklahv(Keys.Control | Keys.T, "Ostukorv", "Toiteväärtus", AvaToitevaartus, korvis);
             yield return new Kiirklahv(Keys.Control | Keys.S, "Ostukorv", "Salvesta ostukorv", SalvestaKorv, korvis);
             yield return new Kiirklahv(Keys.Control | Keys.Enter, "Ostukorv", "Maksma", Vormista, korvis);

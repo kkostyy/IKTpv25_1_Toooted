@@ -36,6 +36,7 @@ def arv(s):
 
 def parsi(sku, url, s):
     d = re.sub(r'\\u([0-9a-fA-F]{4})', lambda m: chr(int(m.group(1), 16)), s).replace('\\/', '/').replace('\\n', '\n').replace('\\"', '"')
+    d = d.encode('utf-16', 'surrogatepass').decode('utf-16', 'replace')   # emoji paarid (\ud83d\ude00) kokku
     t = {'sku': int(sku), 'url': url}
     m = re.search(r'<h1 id="product_name" class="name">(.*?)</h1>', s, re.S)
     if not m: return None
@@ -111,7 +112,7 @@ def main():
     if PIIR: too = too[:PIIR]
     print(f'kokku {len(unikaalne)}, tehtud {len(tehtud)}, teha {len(too)}', flush=True)
     lukk = threading.Lock(); loendur = [0]
-    out = open(VALJUND, 'a', encoding='utf-8'); vead = open(VALJUND + '.vead', 'a', encoding='utf-8')
+    out = open(VALJUND, 'a', encoding='utf-8', errors='replace'); vead = open(VALJUND + '.vead', 'a', encoding='utf-8')
     algus = time.time()
     def tee(paar):
         u, sku = paar

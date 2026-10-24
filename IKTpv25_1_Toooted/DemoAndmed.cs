@@ -127,6 +127,23 @@ public static class DemoAndmed
         var koikTooted = kataloog
             ? db.Toodetabel.AsNoTracking().Where(t => t.KategooriaId <= 11 && t.Kogus > 0).ToList().OrderBy(_ => juhus.Next()).Take(300).ToList()
             : db.Toodetabel.AsNoTracking().ToList();
+        // Tüüpilised "koos ostetakse" paarid (ostukorvi analüüsi jaoks): õlu + krõpsud, pasta + kaste jne
+        var paarid = new List<(Toode A, Toode B)>();
+        if (kataloog)
+        {
+            var koik = db.Toodetabel.AsNoTracking().Where(t => t.Kogus > 0).Select(t => new { t.Id, t.Toodenimetus }).ToList();
+            Toode? Leia(params string[] sonad) =>
+                koik.Where(t => sonad.Any(s => t.Toodenimetus.StartsWith(s, StringComparison.OrdinalIgnoreCase)))
+                    .Select(t => db.Toodetabel.AsNoTracking().First(x => x.Id == t.Id)).FirstOrDefault();
+            foreach (var (a, b) in new[]
+            {
+                (new[] { "Õlu" }, new[] { "Krõpsud", "Kartulikrõpsud" }), (new[] { "Spagetid", "Pasta" }, new[] { "Pastakaste", "Tomatikaste" }),
+                (new[] { "Kohv" }, new[] { "Kohvikoor", "Koor" }), (new[] { "Rukkileib", "Leib" }, new[] { "Või" }),
+                (new[] { "Tortiljakrõpsud", "Nachos" }, new[] { "Salsa" }), (new[] { "Banaan" }, new[] { "Jogurt" })
+            })
+                if (Leia(a) is Toode ta && Leia(b) is Toode tb) paarid.Add((ta, tb));
+        }
+
         for (int i = 0; i < OstuArv; i++)
         {
             var aeg = nyyd.Date.AddDays(-juhus.Next(0, 30)).AddHours(8 + juhus.Next(0, 14)).AddMinutes(juhus.Next(0, 60));
@@ -147,6 +164,13 @@ public static class DemoAndmed
             {
                 int kogus = juhus.Next(1, 4);
                 ost.Read.Add(new OstuRida { ToodeId = t.Id, Toodenimetus = t.Toodenimetus, Kogus = kogus, Hind = t.Hind, TavaHind = t.VanaHind, Pant = t.Pant });
+            }
+            if (paarid.Count > 0 && juhus.Next(100) < 40)
+            {
+                var (pa, pb) = paarid[juhus.Next(paarid.Count)];
+                foreach (var t in new[] { pa, pb })
+                    if (!ost.Read.Any(r => r.ToodeId == t.Id))
+                        ost.Read.Add(new OstuRida { ToodeId = t.Id, Toodenimetus = t.Toodenimetus, Kogus = 1, Hind = t.Hind, TavaHind = t.VanaHind, Pant = t.Pant });
             }
             ost.Vahesumma = ost.Read.Sum(r => r.Summa + r.PantKokku);
             ost.TarneHind = ost.Tarneviis == Tarne.Kojuvedu ? Tarne.Arvuta(ost.Read.Sum(r => r.Summa)) : 0;

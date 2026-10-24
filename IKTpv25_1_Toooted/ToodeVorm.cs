@@ -1,4 +1,6 @@
-﻿namespace IKTpv25_1_Toooted;
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace IKTpv25_1_Toooted;
 
 // Toote leht: pilt, nimi, hind, "Lisa ostukorvi" ning "Toote andmed"
 // (Tooteinfo: päritolumaa, kaubamärk, tootja, kogus, kirjeldus, koostisosad, lisainfo, toiteväärtus;
@@ -285,6 +287,24 @@ public class ToodeVorm : Form
             catch (Exception ex) { Teade.Show("Viga lisamisel:\n" + ex.Message); }
         };
         kaart.Controls.Add(nimekirja);
+        if (!string.IsNullOrEmpty(PereKorv.Kood))
+        {
+            var pere = new LinkLabel
+            {
+                Text = Keel.T("+  Lisa pere korvi"),
+                Location = new Point(x + nimekirja.PreferredWidth + 24, y),
+                AutoSize = true,
+                LinkBehavior = LinkBehavior.HoverUnderline,
+                Font = new Font("Segoe UI Semibold", 9F),
+                BackColor = Teema.Pind
+            };
+            pere.LinkClicked += (s, e) =>
+            {
+                string? viga = PereKorv.Lisa(toode);
+                Teade.Toast(viga ?? Keel.F("„{0}“ lisati pere korvi", toode.Toodenimetus), viga == null ? TeateTyyp.Edu : TeateTyyp.Hoiatus, 2200);
+            };
+            kaart.Controls.Add(pere);
+        }
         y += 30;
 
         if (!string.IsNullOrWhiteSpace(toode.Kaubamark))
@@ -508,7 +528,18 @@ public class ToodeVorm : Form
             Margin = new Padding(0)
         };
 
-        var tooted = koik.Where(t => t.KategooriaId == toode.KategooriaId && t.Id != toode.Id).Take(6).ToList();
+        // Esmalt "sageli ostetakse koos" (ostude ajaloost), siis sama kategooria tooted
+        var koos = new List<Toode>();
+        try
+        {
+            using var db = new ToodedContext();
+            var ostud = db.Ostud.AsNoTracking().Include(o => o.Read).Where(o => o.Read.Any(r => r.ToodeId == toode.Id)).ToList();
+            koos = Ostukorvianalyys.KoosOstetud(toode.Id, ostud).Select(id => koik.FirstOrDefault(t => t.Id == id)).OfType<Toode>().ToList();
+        }
+        catch { }
+        if (koos.Count > 0)
+            p.Controls.Add(new Label { Text = Keel.T("Sageli ostetakse koos"), AutoSize = true, Font = new Font("Segoe UI Semibold", 11F), ForeColor = Teema.Teine, BackColor = Teema.Pind, Margin = new Padding(4, 0, 0, 8) });
+        var tooted = koos.Concat(koik.Where(t => t.KategooriaId == toode.KategooriaId && t.Id != toode.Id && !koos.Contains(t)).Take(6)).ToList();
         if (tooted.Count < 3)
             tooted.AddRange(koik.Where(t => t.Id != toode.Id && !tooted.Contains(t)).Take(3 - tooted.Count));
 

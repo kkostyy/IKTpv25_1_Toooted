@@ -235,6 +235,15 @@ namespace IKTpv25_1_Toooted
             alumised.Controls.Add(lnkSalvesta);
             alumised.Controls.Add(lnkTyhjenda);
             alumised.Controls.Add(lnkToit);
+            // Minu korv pere korvi (teised näevad, mida mina tahan)
+            var lnkJaga = new IkoonTekst("\uE716", "Jaga perega", Teema.Teine, new Font("Segoe UI Semibold", 9F)) { Margin = new Padding(26, 6, 0, 0) };
+            lnkJaga.Click += (s, e) =>
+            {
+                if (string.IsNullOrEmpty(PereKorv.Kood)) { Teade.Toast("Sa ei ole veel peres. Loo pere või liitu ostunimekirja juures.", TeateTyyp.Info, 3500); return; }
+                if (Ostukorv.Ridad.Count == 0) return;
+                Teade.Toast(Keel.F("Pere korvi lisatud {0} tk", PereKorv.JagaMinuKorv()), TeateTyyp.Edu);
+            };
+            alumised.Controls.Add(lnkJaga);
 
             var vahe = new Panel { Dock = DockStyle.Top, Height = 12, BackColor = Teema.Pind };
             jalus.Controls.Add(alumised);
@@ -247,6 +256,7 @@ namespace IKTpv25_1_Toooted
 
             korv.Controls.Add(korviSisu);
             korv.Controls.Add(jalus);
+            korv.Controls.Add(new PereKorviVaade { Dock = DockStyle.Top });   // pere ühine korv (kui kasutaja on peres)
             korv.Controls.Add(korviPais);
             korv.Paint += (s, e) => { using var p = new Pen(Teema.Joon); e.Graphics.DrawLine(p, 0, 0, 0, korv.Height); };
 
@@ -294,6 +304,7 @@ namespace IKTpv25_1_Toooted
             kulg.Lisa("kampaaniad", "\uE8EC", "Kampaaniad", () => NaitaRuudustik(Vaade.Kampaaniad));
             kulg.Lisa("kaart", "\uE8C7", "Kliendikaart", () => KliendikaartVorm.Ava(this));
             kulg.Lisa("preemiad", "\uE734", "Preemiad", () => { if (lehed.Praegune is not PreemiadLeht) AvaLeht(new PreemiadLeht()); });
+            kulg.Lisa("kulutused", "\uE9D2", "Minu kulutused", AvaKulutused);
             kulg.Lisa("nimekiri", "\uE8FD", "Ostunimekiri", AvaNimekiri, Ostunimekiri.OstmataArv);
             kulg.Lisa("korv", "\uE7BF", "Maksma", Vormista, () => Ostukorv.Ridad.Sum(r => r.Kogus));
             kulg.Lisa("seaded", "\uE713", "Seaded", () => SeadedVorm.Ava(this));
@@ -311,6 +322,16 @@ namespace IKTpv25_1_Toooted
             Controls.Add(pais);
             Controls.Add(lilla);
             if (moodne) RakendaMoodne(lilla, pais, nav, keskmine, korv, korviPais);   // Ctrl+Shift+M
+
+            // Hooajaline riba poe päises (Halloween, jõulud, talv, sõbrapäev); klõps tekstil = otsing
+            var hooaeg = new HooajaRiba { Dock = DockStyle.Top, Margin = new Padding(0) };
+            if (hooaeg.Visible)
+            {
+                hooaeg.Otsi = s => { txtOtsi.Text = s; };
+                keskmine.Controls.Add(hooaeg);
+                hooaeg.SendToBack();   // kõige üles
+            }
+            else hooaeg.Dispose();
             keskmine.BringToFront();
 
             Ostukorv.Muutus += KorvMuutus;
@@ -319,7 +340,8 @@ namespace IKTpv25_1_Toooted
             peidetiEnne = MinuDieet.Peida;
             PildiVahemalu.Laetud += PildidLaetud;
             Teema.Muutus += DisainMuutus;
-            Load += (s, e) => { LaadiTooted(); NaitaAvaleht(); UuendaKokku(); };
+            Load += (s, e) => { LaadiTooted(); NaitaAvaleht(); UuendaKokku(); PereKorv.Alusta(); };
+            FormClosed += (s, e) => PereKorv.Peata();
 
             // Kord minutis: kas õhtune soodustus algas/lõppes → korvi hinnad ja kaartide "tempel"
             ohtuKaib = OhtuSoodustus.Kaib(Hinnad.Kell());
@@ -365,6 +387,7 @@ namespace IKTpv25_1_Toooted
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
+            Hooajad.Klahv(keyData);   // Konami kood (lihavõttemuna)
             bool tekstis = ActiveControl is TextBoxBase || ActiveControl is ComboBox;
             if (keyData == (Keys.Alt | Keys.Left) ||
                 (keyData == Keys.Escape && !(ActiveControl is TextBox t && t.TextLength > 0)) ||
@@ -411,6 +434,8 @@ namespace IKTpv25_1_Toooted
         }
 
         // Ostunimekiri; pärast sulgemist võivad korvis olla uued tooted
+        private void AvaKulutused() { if (lehed.Praegune is not KulutusedLeht) AvaLeht(new KulutusedLeht()); }
+
         private void AvaNimekiri() => Aken.Ava(this, new OstunimekiriVorm());
 
         // Ctrl+Shift+D: pood suletakse ja Form1 avab klassikalise poe

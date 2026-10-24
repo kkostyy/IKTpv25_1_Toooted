@@ -28,7 +28,7 @@ public class DemoVorm : KujundusVorm
         Pealkiri("Demoandmed");
         Controls.Add(new Label
         {
-            Text = "Üks nupp lisab 50 toodet, 3 klienti ja 20 ostu viimase 30 päeva jooksul, et programm ei näeks esitlusel tühi välja. Demoandmed on märgitud ja neid saab hiljem korraga eemaldada.",
+            Text = "Üks nupp lisab 3 klienti ja 60 ostu viimase 30 päeva jooksul (tühja poe korral ka 50 toodet), et programm ei näeks esitlusel tühi välja. Demoandmed on märgitud ja neid saab hiljem korraga eemaldada.",
             Location = new Point(20, 56), Size = new Size(480, 56), ForeColor = Teema.Tekst2
         });
         tooteid.Location = new Point(20, 120);
@@ -68,9 +68,13 @@ public class DemoVorm : KujundusVorm
                 : (DemoAndmed.TooteArv.ToString(), "toodet", Keel.F("kõik {0} kategooriat", DemoAndmed.KategooriaArv), Color.FromArgb(226, 6, 19), Color.White),
             (DemoAndmed.OstuArv.ToString(), "ostu", "viimased 30 päeva", Color.FromArgb(27, 28, 31), Color.White),
             (DemoAndmed.KliendiArv.ToString(), "klienti", "kaartide ja boonusega", Teema.Paneel2, Teema.Tekst),
-            (DemoAndmed.ToiduArv.ToString(), "toitumisteabega", "toiteväärtuse jaoks", Color.FromArgb(246, 230, 239), Color.FromArgb(160, 35, 110)),
+            Kataloog()
+                ? ("10", "aeguvat partiid", "Ilma raiskamiseta vitriin", Color.FromArgb(246, 230, 239), Color.FromArgb(160, 35, 110))
+                : (DemoAndmed.ToiduArv.ToString(), "toitumisteabega", "toiteväärtuse jaoks", Color.FromArgb(246, 230, 239), Color.FromArgb(160, 35, 110)),
             ("2", "tagastust", "ostude ajaloos", Color.FromArgb(255, 243, 224), Color.FromArgb(138, 75, 0)),
-            (DemoAndmed.PandiArv.ToString(), "pandipakendit", "joogid 0,10 €", Color.FromArgb(230, 244, 236), Color.FromArgb(17, 104, 58))
+            Kataloog()
+                ? ("6", "koos-ostu paari", "ostukorvi analüüsiks", Color.FromArgb(230, 244, 236), Color.FromArgb(17, 104, 58))
+                : (DemoAndmed.PandiArv.ToString(), "pandipakendit", "joogid 0,10 €", Color.FromArgb(230, 244, 236), Color.FromArgb(17, 104, 58))
         };
         for (int i = 0; i < plaadid.Length; i++)
             valge.Controls.Add(new DemoPlaat(plaadid[i].N, plaadid[i].T, plaadid[i].S, plaadid[i].Taust, plaadid[i].Tekst, i * 60) { Bounds = new Rectangle(24 + i % 3 * 192, 156 + i / 3 * 104, 182, 94) });
@@ -221,7 +225,7 @@ public class DemoSammud : Control
 {
     private static readonly (double Lavi, string Tekst)[] Sammud =
     {
-        (0.40, "{0} toodet ja toiteväärtus"), (0.55, "{1} klienti kliendikaardiga"), (0.80, "{2} ostu 30 päeva peale"), (1.0, "Statistika ja soojuskaart")
+        (0.40, "Tooted (Rimi kataloog või {0} demotoodet)"), (0.55, "{1} klienti kliendikaardiga"), (0.80, "{2} ostu 30 päeva peale"), (1.0, "Statistika ja soojuskaart")
     };
     private double osa;
     private bool tootab, valmis, olemas;
