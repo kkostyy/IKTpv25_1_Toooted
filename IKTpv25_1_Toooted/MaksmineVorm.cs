@@ -5,7 +5,7 @@ namespace IKTpv25_1_Toooted;
 
 // Ostu vormistamine ühes aknas: kliendikaart + boonus, e-post tšeki jaoks, makseviis,
 // saadud summa ja tagasiraha. "Maksa" salvestab ostu (laoseis väheneb) ja loob PDF-tšeki.
-public class MaksmineVorm : Form
+public partial class MaksmineVorm : Form
 {
     // Tulemus (kui DialogResult == OK)
     public Ost? Tulemus { get; private set; }
@@ -141,6 +141,7 @@ public class MaksmineVorm : Form
         Controls.AddRange(new Control[] { korv, klient, tarne, makse, riba });
         AcceptButton = btnMaksa;
         CancelButton = tuhista;
+        if (Teema.OnMoodne) RakendaMoodne(korv, klient, tarne, makse, riba, tuhista);   // lõuend 2.2
 
         Arvuta();
     }
@@ -149,7 +150,7 @@ public class MaksmineVorm : Form
     {
         base.OnLoad(e);
         if (Ostukorv.UuendaHinnad()) Arvuta();   // hind kehtib vormistamise hetkel
-        UiStiil.LisaTagasiNupp(this);   // ← Tagasi = tühista
+        if (!Teema.OnMoodne) UiStiil.LisaTagasiNupp(this);   // ← Tagasi = tühista (moodsas disainis kaardil endal)
         Teema.Rakenda(this);
         txtSaadud.Text = Summa().ToString("0.00", CultureInfo.InvariantCulture);
 
@@ -300,6 +301,7 @@ public class MaksmineVorm : Form
         tarneRiba.Osa = (float)(Ostukorv.Kokku / Tarne.TasutaAlates);
         lblSoodustus.Text = soodustus > 0 ? Keel.F("boonus −{0}", Ostukorv.Eur(soodustus)) : "";
         lblMaksta.Text = Ostukorv.Eur(summa);
+        kokkuvote?.Naita(soodustus, TarneHind(), summa);
 
         if (rbKaart.Checked)
         {
