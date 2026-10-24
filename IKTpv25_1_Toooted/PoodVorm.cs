@@ -508,6 +508,10 @@ namespace IKTpv25_1_Toooted
             Kampaaniad.Uuenda();
             using var db = new ToodedContext();
             koikTooted = db.Toodetabel.Include(t => t.Kategooria).AsNoTracking().ToList();
+            var tagasi = Lemmikud.KontrolliLaoseisu(koikTooted);
+            if (tagasi.Count > 0)
+                Teade.Toast(Keel.T("Lemmik on taas laos:") + " " + string.Join(", ", tagasi.Take(3).Select(t => t.Toodenimetus))
+                    + (tagasi.Count > 3 ? " " + Keel.F("ja veel {0}", tagasi.Count - 3) : ""), TeateTyyp.Edu, 6000);
             kategooriad = db.Kategooriatabel.AsNoTracking().ToList().OrderBy(k => k.Id).ToList();
             LooRail();
             dieet.Uuenda();
@@ -1475,7 +1479,13 @@ namespace IKTpv25_1_Toooted
             if (Taht.Contains(e.Location))
             {
                 Lemmikud.Vaheta(Toode.Id);
-                Teade.Toast(Lemmikud.On(Toode.Id) ? "Lisatud lemmikutesse ★" : "Eemaldatud lemmikutest", TeateTyyp.Info, 1400);   // Toast tõlgib ise
+                if (Lemmikud.On(Toode.Id) && Toode.Kogus <= 0)
+                {
+                    Lemmikud.KontrolliLaoseisu(new[] { Toode });   // jätab meelde, et toode on otsas
+                    Teade.Toast("Lisatud lemmikutesse – anname teada, kui toode on taas laos", TeateTyyp.Info, 3000);
+                }
+                else
+                    Teade.Toast(Lemmikud.On(Toode.Id) ? "Lisatud lemmikutesse ★" : "Eemaldatud lemmikutest", TeateTyyp.Info, 1400);   // Toast tõlgib ise
                 Invalidate();
                 return;
             }
@@ -1602,6 +1612,7 @@ namespace IKTpv25_1_Toooted
             }
             // Moodne: õhtuse soodustuse toode enne algust – "20:00 → 0,85 €" ploomiga (lõuend N12)
             var ohtuS = OhtuSoodustus.S;
+            float kiibiY = pildiKast.Bottom - 26;
             if (Teema.OnMoodne && ohtuS.Sees && Toode.KategooriaId == ohtuS.KategooriaId && !OhtuSoodustus.Kaib(Hinnad.Kell()))
             {
                 decimal pool = Math.Round(Kampaaniad.TavaHind(Toode) * (100 - ohtuS.Protsent) / 100m, 2, MidpointRounding.AwayFromZero);
@@ -1614,7 +1625,19 @@ namespace IKTpv25_1_Toooted
                     var okiip = new RectangleF(pildiKast.X, pildiKast.Bottom - 26, ow, 24);
                     using (var tee = Ymardus.Tee(okiip, 12)) using (var b = new SolidBrush(Color.FromArgb(246, 230, 239))) g.FillPath(b, tee);
                     TextRenderer.DrawText(g, ot, fo, Rectangle.Round(okiip), Teema.Teine, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix);
+                    kiibiY -= 28;
                 }
+            }
+            if (Lemmikud.TaasLaos(Toode.Id) && Toode.Kogus > 0)
+            {
+                // roheline kiip: lemmik on jälle laos
+                using var fk = new Font("Segoe UI", 8F, FontStyle.Bold);
+                string kt = Keel.T("Taas laos!");
+                int kw = TextRenderer.MeasureText(kt, fk).Width + 30;
+                var kiip = new RectangleF(pildiKast.X + 4, kiibiY - 2, kw, 24);
+                using (var tee = Ymardus.Tee(kiip, 12)) using (var b = new SolidBrush(Teema.Edu)) g.FillPath(b, tee);
+                Ikoonid.Joonista(g, "\uEB51", new Rectangle((int)kiip.X + 6, (int)kiip.Y, 16, 24), Color.White, 7.5f);
+                TextRenderer.DrawText(g, kt, fk, new Rectangle((int)kiip.X + 22, (int)kiip.Y, kw - 24, 24), Color.White, TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix | TextFormatFlags.NoPadding);
             }
             bool uhikuga = Toode.UhikuHind != null && Toode.Uhik is string uu && uu != "tk";
             string? alumine = Toode.Pant > 0 && !(uhikuga && (NaitaUhikuHinda || ParimUhikuHind))

@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 
 namespace IKTpv25_1_Toooted;
 
@@ -122,6 +122,12 @@ public static class Teade
         g.SmoothingMode = SmoothingMode.AntiAlias;
         using var b = new SolidBrush(TyybiVarv(tyyp));
         g.FillEllipse(b, r);
+        // ✓ ja ✕ vektorina (kõigis fontides neid märke pole)
+        if (tyyp is TeateTyyp.Edu or TeateTyyp.Viga)
+        {
+            Ikoonid.Joonista(g, tyyp == TeateTyyp.Edu ? "\u2713" : "\uE711", r, Color.White, r.Height * 0.36f * 72f / g.DpiX);
+            return;
+        }
         using var f = new Font("Segoe UI", r.Height * 0.42f, FontStyle.Bold, GraphicsUnit.Pixel);
         TextRenderer.DrawText(g, TyybiMark(tyyp), f, r, Color.White,
             TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
