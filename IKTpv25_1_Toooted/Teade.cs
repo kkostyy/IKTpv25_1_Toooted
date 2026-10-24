@@ -237,6 +237,48 @@ public class TeateVorm : Form
 
         int laius = Math.Max(380, Math.Max(sisuLaius, silt.GetPreferredSize(Size.Empty).Width) + 80 + 32);
         ClientSize = new Size(laius, Math.Max(52 + sisuKorgus, 64) + 28 + riba.Height);
+
+        // Moodne (lõuend 3.2): ümar kaart, ikoon keskel üleval, tekst ja "pill" nupud keskel
+        if (Teema.OnMoodne)
+        {
+            moodne = true;
+            FormBorderStyle = FormBorderStyle.None;
+            int w = Math.Max(400, sisuLaius + 64);
+            ikoon.Bounds = new Rectangle((w - 56) / 2, 28, 56, 56);
+            silt.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
+            silt.Location = new Point((w - silt.GetPreferredSize(Size.Empty).Width) / 2, 98);
+            sisu.TextAlign = ContentAlignment.TopCenter;
+            sisu.AutoSize = false;
+            sisu.Bounds = new Rectangle(32, 132, w - 64, sisuKorgus + 4);
+            riba.BackColor = nupuRida.BackColor = Teema.Pind;
+            riba.Height = 76;
+            nupuRida.Dock = DockStyle.None;
+            nupuRida.Padding = new Padding(0);
+            foreach (Control n in nupuRida.Controls) { n.MinimumSize = new Size(130, 44); n.Margin = new Padding(6, 0, 6, 0); }
+            riba.Resize += (s, e) => nupuRida.Location = new Point((riba.Width - nupuRida.Width) / 2, 12);
+            ClientSize = new Size(w, 132 + sisuKorgus + 20 + riba.Height);
+        }
+    }
+
+    private readonly bool moodne;
+    private double ilmub = 1;
+
+    protected override void OnHandleCreated(EventArgs e)
+    {
+        base.OnHandleCreated(e);
+        if (!moodne) return;
+        using var tee = Ymardus.Tee(new Rectangle(0, 0, Width, Height), 28);
+        Region = new Region(tee);
+    }
+
+    protected override void OnPaint(PaintEventArgs e)
+    {
+        base.OnPaint(e);
+        if (!moodne) return;
+        e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        using var p = new Pen(Teema.Joon, 2);
+        using var tee = Ymardus.Tee(new RectangleF(1, 1, Width - 3, Height - 3), 27);
+        e.Graphics.DrawPath(p, tee);
     }
 
     protected override void OnLoad(EventArgs e)
@@ -249,6 +291,12 @@ public class TeateVorm : Form
     protected override void OnShown(EventArgs e)
     {
         base.OnShown(e);
+        if (moodne)
+        {
+            // hüppab sisse: läbipaistvus 0 → 1, 8 px alt üles
+            int y0 = Top;
+            Animatsioon.Kaivita(this, 260, t => { ilmub = Animatsioon.Sujuv(t); Opacity = ilmub; Top = y0 + (int)((1 - ilmub) * 8); });
+        }
         System.Media.SystemSounds.Asterisk.Play();
         if (AcceptButton is Control c) c.Focus();
     }
