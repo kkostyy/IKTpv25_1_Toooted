@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 
@@ -42,6 +42,16 @@ namespace IKTpv25_1_Toooted
             }
             Teema.Rakenda(this);     // siis värvime kõik teema järgi
             if (Teema.OnMoodne) MoodneStiil.Rakenda(this);   // lülitid ja "pill" valikud
+
+            // Teema või keel muutus, kui aken on lahti (nt seadetes): värvime ja tõlgime uuesti
+            Teema.Muutus += UuendaTeema;
+            FormClosed += (s, e) => Teema.Muutus -= UuendaTeema;
+        }
+
+        private void UuendaTeema()
+        {
+            if (!IsHandleCreated || IsDisposed) return;
+            BeginInvoke(new Action(() => { if (!IsDisposed) Teema.Rakenda(this); }));
         }
 
         // ← Tagasi, Esc, Alt+←, hiire külgnupp: aken sulgub (muudatuste korral küsib enne)

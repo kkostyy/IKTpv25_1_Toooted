@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 
 namespace IKTpv25_1_Toooted
 {
@@ -17,7 +17,6 @@ namespace IKTpv25_1_Toooted
             jaotised.Lisa("Profiil", "", 58);
             jaotised.Lisa("Turvalisus", "", 368);
             jaotised.Lisa("Välimus", "", 446);
-            jaotised.Valitud += y => VilgutaPlokki(y);
             Controls.Add(jaotised);
 
             // Teema: Hele / Tume
@@ -28,6 +27,40 @@ namespace IKTpv25_1_Toooted
             var varvid = new VarviTapid(cmbVarv) { Location = cmbVarv.Location, Width = 250 };
             foreach (var c in new[] { cmbTeema, cmbDisain, cmbKeel, cmbVarv }) c.Visible = false;
             Controls.AddRange(new Control[] { teema, disain, keel, varvid });
+
+            // Jaotised päris vahelehtedena: igaüks oma paneelil, nähtav ainult valitud
+            var piirid = new[] { 58, 368, 446, 620 };
+            var lehed = new List<Panel>();
+            for (int i = 0; i < 3; i++)
+            {
+                int algus = piirid[i], lopp = piirid[i + 1];
+                var leht = new Panel { Location = new Point(nihe - 6, 50), Size = new Size(ClientSize.Width - nihe + 6, 560), BackColor = Teema.Pind, Visible = i == 0 };
+                foreach (var c in Controls.Cast<Control>().Where(c => c != jaotised && c.Top >= algus && c.Top < lopp && c.Left >= nihe - 6).ToList())
+                {
+                    Controls.Remove(c);
+                    c.Location = new Point(c.Left - (nihe - 6), c.Top - algus + 8);
+                    leht.Controls.Add(c);
+                }
+                lehed.Add(leht);
+                Controls.Add(leht);
+            }
+            jaotised.ValitudNr += i =>
+            {
+                for (int k = 0; k < lehed.Count; k++) lehed[k].Visible = k == i;
+                var l = lehed[i];
+                int y0 = l.Top;
+                Animatsioon.Kaivita(l, 220, t => l.Top = y0 + (int)(12 * (1 - Animatsioon.Sujuv(t))));   // libiseb kergelt üles
+            };
+
+            // Salvesta / Sulge: suured "pillid"
+            var alumised = Controls.OfType<RoundedButton>().Where(b => b.Top >= 690).OrderBy(b => b.Left).ToList();
+            foreach (var b in alumised)
+            {
+                b.AutoSize = false;
+                b.Size = new Size(170, 46);
+                b.Font = new Font("Segoe UI Semibold", 10.5F);
+            }
+            if (alumised.Count == 2) alumised[1].Left = alumised[0].Right + 12;
             Teema.Muutus += teema.Invalidate;
             Teema.Muutus += varvid.Invalidate;
             FormClosed += (s, e) => { Teema.Muutus -= teema.Invalidate; Teema.Muutus -= varvid.Invalidate; };
@@ -50,6 +83,7 @@ namespace IKTpv25_1_Toooted
         private readonly List<(string Nimi, string Ikoon, int Y)> jaotised = new();
         private int valitud, hiir = -1;
         public event Action<int>? Valitud;
+        public event Action<int>? ValitudNr;   // jaotise järjekorranumber
 
         public SeadeteJaotised()
         {
@@ -74,7 +108,7 @@ namespace IKTpv25_1_Toooted
         {
             base.OnMouseClick(e);
             for (int i = 0; i < jaotised.Count; i++)
-                if (Koht(i).Contains(e.Location)) { valitud = i; Invalidate(); Valitud?.Invoke(jaotised[i].Y); }
+                if (Koht(i).Contains(e.Location)) { valitud = i; Invalidate(); Valitud?.Invoke(jaotised[i].Y); ValitudNr?.Invoke(i); }
         }
 
         protected override void OnPaint(PaintEventArgs e)

@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted
@@ -175,14 +175,16 @@ namespace IKTpv25_1_Toooted
             L("E-posti seaded...", () => AvaVorm(new EmailSeadedVorm()), true);
             L("Registreeri kasutaja...", () => AvaVorm(new RegistreerimineVorm(lubaOmanik: true)), true);
             m.Items.Add(new ToolStripSeparator());
-            L("Hele teema", () => Teema.Sea(false, Teema.AktsendiNimi));
-            L("Tume teema", () => Teema.Sea(true, Teema.AktsendiNimi));
-            L("E-poe disain (Rimi)", () => Teema.SeaDisain(Disain.Rimi));
-            L("Klassikaline disain", () => Teema.SeaDisain(Disain.Klassikaline));
+            ToolStripMenuItem V(string t, Action a, bool valitud) { var i = new ToolStripMenuItem(Keel.T(t), null, (s, e) => a()) { Checked = valitud }; m.Items.Add(i); return i; }
+            V("Hele teema", () => Teema.Sea(false, Teema.AktsendiNimi), !Teema.Tume);
+            V("Tume teema", () => Teema.Sea(true, Teema.AktsendiNimi), Teema.Tume);
+            V("Moodne disain", () => Teema.SeaDisain(Disain.Moodne), Teema.OnMoodne);
+            V("E-poe disain (Rimi)", () => Teema.SeaDisain(Disain.Rimi), Teema.Stiil == Disain.Rimi);
+            V("Klassikaline disain", () => Teema.SeaDisain(Disain.Klassikaline), Teema.Stiil == Disain.Klassikaline);
             m.Items.Add(new ToolStripSeparator());
             foreach (var k in Enum.GetValues<KeeleKood>())
-                m.Items.Add(Keel.Nimi(k), null, (s, e) => Keel.Sea(k));
-            foreach (ToolStripItem i in m.Items) i.ForeColor = Teema.Tekst;
+                V(Keel.Nimi(k), () => Keel.Sea(k), Keel.Praegu == k).Tag = k;
+            MoodneMenyyJoonistaja.Rakenda(m);
             m.Closed += (s, e) => BeginInvoke(new Action(m.Dispose));
             m.Show(Cursor.Position);
         }
@@ -195,7 +197,7 @@ namespace IKTpv25_1_Toooted
             m.Items.Add(Keel.T("Vaheta kasutajat..."), null, (s, e) => VahetaKasutajat());
             m.Items.Add(new ToolStripSeparator());
             m.Items.Add(Keel.T("Välju"), null, (s, e) => Close());
-            foreach (ToolStripItem i in m.Items) i.ForeColor = Teema.Tekst;
+            MoodneMenyyJoonistaja.Rakenda(m);
             m.Closed += (s, e) => BeginInvoke(new Action(m.Dispose));
             m.Show(Cursor.Position);
         }
