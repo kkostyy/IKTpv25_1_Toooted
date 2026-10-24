@@ -1,4 +1,4 @@
-namespace IKTpv25_1_Toooted;
+﻿namespace IKTpv25_1_Toooted;
 
 // Uute funktsioonide tõlked (eesti → vene, inglise)
 public static partial class Keel
@@ -151,6 +151,7 @@ public static partial class Keel
         L("Ost nr {0}", "Покупка № {0}", "Purchase no. {0}"); L("Ostusid veel pole.", "Покупок пока нет.", "No purchases yet."); L("Preemiad ja tase  ›", "Награды и уровень  ›", "Rewards and level  ›");
         L("Kasuta boonust maksmisel", "Использовать бонус при оплате", "Use bonus at checkout"); L("Foto lisatud kaardile", "Фото добавлено на карту", "Photo added to the card");
         L("Maksmisel märgi „Kasuta boonust“ – boonus läheb allahindluseks.", "При оплате отметьте «Использовать бонус» – бонус пойдёт в скидку.", "At checkout tick “Use bonus” – the bonus becomes a discount.");
+        L("Ajatelg · {0:dd.MM} – {1:dd.MM}", "Шкала · {0:dd.MM} – {1:dd.MM}", "Timeline · {0:dd.MM} – {1:dd.MM}"); L("Mustand", "Черновик", "Draft");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }
