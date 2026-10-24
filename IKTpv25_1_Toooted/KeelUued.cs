@@ -209,6 +209,17 @@ public static partial class Keel
         L("ja veel {0}", "и ещё {0}", "and {0} more");
         L("Taas laos!", "Снова есть!", "Back in stock!");
         L("Lisatud lemmikutesse – anname teada, kui toode on taas laos", "Добавлено в избранное – сообщим, когда товар снова появится", "Added to favourites – we'll let you know when it's back in stock");
+        L("Müügiprognoos: 14 päeva tagasi + 7 ette", "Прогноз продаж: 14 дней назад + 7 вперёд", "Sales forecast: last 14 days + next 7");
+        L("Lõpevad peagi (müügitempo järgi)", "Скоро закончатся (по темпу продаж)", "Running out soon (by sales pace)");
+        L("tegelik", "факт", "actual");
+        L("prognoos", "прогноз", "forecast");
+        L("oodatav käive järgmise 7 päeva jooksul", "ожидаемая выручка за следующие 7 дней", "expected revenue over the next 7 days");
+        L("võrreldes viimase 7 päevaga", "по сравнению с последними 7 днями", "vs the last 7 days");
+        L("Prognoosiks on vaja vähemalt paari nädala müüke.", "Для прогноза нужны продажи хотя бы за пару недель.", "A forecast needs at least a couple of weeks of sales.");
+        L("Järgmise 2 nädala jooksul ei lõpe ükski toode.", "В ближайшие 2 недели ни один товар не закончится.", "No product will run out in the next 2 weeks.");
+        L("otsas", "нет", "sold out");
+        L("~{0} päeva", "~{0} дн.", "~{0} days");
+        L("laos {0} tk · müüakse {1} tk päevas", "на складе {0} шт · продаётся {1} шт в день", "{0} in stock · sells {1} a day");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }
