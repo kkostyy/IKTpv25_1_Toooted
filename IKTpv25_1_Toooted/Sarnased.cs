@@ -71,9 +71,10 @@ public class SoodsamRida : Control
         TextRenderer.DrawText(g, toode.Toodenimetus, fNimi, new Rectangle(x, 14, hindX - x - 8, 20), Teema.Tekst, fl);
         string kilo = $"{Ikoonid.Hind(toode.UhikuHind ?? 0)}/{toode.Uhik}".Replace("€", " €");
         TextRenderer.DrawText(g, kilo, fVaike, new Point(x, 38), Teema.TekstNork, fl);
-        int kw = TextRenderer.MeasureText(g, kilo, fVaike, Size.Empty, fl).Width;
+        var mf = TextFormatFlags.NoPrefix | TextFormatFlags.NoPadding;
+        int kw = TextRenderer.MeasureText(g, kilo, fVaike, Size.Empty, mf).Width;
         string vahe = Keel.F("{0} % odavam kilohind", Sarnased.Odavam(alus, toode));
-        var kiip = new Rectangle(x + kw + 8, 35, TextRenderer.MeasureText(g, vahe, fRoh, Size.Empty, fl).Width + 16, 20);
+        var kiip = new Rectangle(x + kw + 8, 35, TextRenderer.MeasureText(g, vahe, fRoh, Size.Empty, mf).Width + 16, 20);
         using (var tee = Ymardus.Tee(kiip, 10)) using (var b = new SolidBrush(Ymardus.Segu(Teema.Pind, Teema.Edu, 0.14f))) g.FillPath(b, tee);
         TextRenderer.DrawText(g, vahe, fRoh, kiip, Teema.Edu, fl | TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
 
