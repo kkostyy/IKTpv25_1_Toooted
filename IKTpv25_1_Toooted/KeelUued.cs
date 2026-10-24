@@ -119,6 +119,15 @@ public static partial class Keel
         L("Partii", "Партия", "Batch"); L("Partii lisatud: {0} · {1} tk", "Партия добавлена: {0} · {1} шт", "Batch added: {0} · {1} pcs"); L("Vali tabelist partii.", "Выберите партию в таблице.", "Select a batch in the table.");
         L("Kas kannan maha {0} tk „{1}“?", "Списать {0} шт «{1}»?", "Write off {0} pcs of “{1}”?"); L("Toodet ei leitud.", "Товар не найден.", "Product not found.");
         L("Aegub {0:dd.MM} −{1} %", "Годен до {0:dd.MM} −{1} %", "Expires {0:dd.MM} −{1} %"); L("−{0} % · aegub {1:dd.MM}", "−{0} % · годен до {1:dd.MM}", "−{0} % · expires {1:dd.MM}");
+        // --- Õhtune soodustus ---
+        L("Õhtune soodustus", "Вечерняя скидка", "Evening discount"); L("Õhtune soodustus...", "Вечерняя скидка...", "Evening discount...");
+        L("Õhtune soodustus −{0} %", "Вечерняя скидка −{0} %", "Evening discount −{0} %"); L("Õhtune küpsetiste tund", "Вечерний час выпечки", "Evening bakery hour");
+        L("KÄIB PRAEGU", "ИДЁТ СЕЙЧАС", "ON NOW"); L("TÄNA ÕHTUL", "СЕГОДНЯ ВЕЧЕРОМ", "TONIGHT"); L("Kehtib kuni 00:00", "Действует до 00:00", "Valid until 00:00");
+        L("Algab {0} pärast", "Начнётся через {0}", "Starts in {0}"); L("Sees", "Включено", "On"); L("Algab", "Начало", "Starts"); L("Soodustus %", "Скидка %", "Discount %"); L("Kategooria", "Категория", "Category");
+        L("Pärast kella {0:hh\\:mm} on kõik leivad, saiad ja saiakesed {1} % odavamad.", "После {0:hh\\:mm} весь хлеб, булки и выпечка дешевле на {1} %.", "After {0:hh\\:mm} all bread, buns and pastries are {1} % cheaper.");
+        L("Ei liitu kampaania ega säilivusaja soodustusega – kehtib suurim. Hind arvutatakse maksmise hetkel.", "Не суммируется с акцией и скидкой по сроку – действует большая. Цена считается в момент оплаты.", "Does not stack with campaign or expiry discounts – the larger applies. Price is set at payment.");
+        L("Õhtune küpsetiste tund algas: −{0} %", "Вечерний час выпечки начался: −{0} %", "Evening bakery hour started: −{0} %");
+        L("Hinnad uuenesid (soodustus algas või lõppes) – kontrolli summat", "Цены обновились (скидка началась или закончилась) – проверьте сумму", "Prices updated (a discount started or ended) – check the total");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }

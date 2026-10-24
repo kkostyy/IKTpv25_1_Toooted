@@ -148,6 +148,7 @@ public class MaksmineVorm : Form
     protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
+        if (Ostukorv.UuendaHinnad()) Arvuta();   // hind kehtib vormistamise hetkel
         UiStiil.LisaTagasiNupp(this);   // ← Tagasi = tühista
         Teema.Rakenda(this);
         txtSaadud.Text = Summa().ToString("0.00", CultureInfo.InvariantCulture);
@@ -356,6 +357,13 @@ public class MaksmineVorm : Form
             return;
         }
 
+        // Hind fikseeritakse maksmise hetkel (nt korv kell 19:55, makse 20:01 → õhtune soodustus)
+        if (Ostukorv.UuendaHinnad())
+        {
+            Arvuta();
+            Teade.Toast("Hinnad uuenesid (soodustus algas või lõppes) – kontrolli summat", TeateTyyp.Info, 4000);
+            if (rbSularaha.Checked) return;
+        }
         decimal soodustus = Soodustus();
         decimal tarneHind = TarneHind();
         decimal summa = Summa();

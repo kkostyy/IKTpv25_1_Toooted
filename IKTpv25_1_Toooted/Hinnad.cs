@@ -57,6 +57,8 @@ public static class Hinnad
     {
         if (TananeYllatus(aeg) is { } y && y.ToodeId == t.Id)
             yield return (y.Protsent, Keel.F("Päeva üllatus −{0} %", y.Protsent));
+        if (OhtuSoodustus.Kehtib(t, aeg))
+            yield return (OhtuSoodustus.S.Protsent, Keel.F("Õhtune soodustus −{0} %", OhtuSoodustus.S.Protsent));
         if (Aegumine.AllahindlusKuni(t.Id) is DateTime aegub)
             yield return (Aegumine.Protsent, Keel.F("Aegub {0:dd.MM} −{1} %", aegub, Aegumine.Protsent));
     }

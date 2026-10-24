@@ -57,6 +57,33 @@ public static class Ostukorv
         return viga;
     }
 
+    // Korvi hinnad uuesti praeguse aja järgi (nt kell sai 20:00). Tagastab true, kui midagi muutus.
+    public static bool UuendaHinnad()
+    {
+        if (Ridad.Count == 0) return false;
+        Dictionary<int, Toode> tooted;
+        try
+        {
+            using var db = new ToodedContext();
+            var ids = Ridad.Select(r => r.Id).ToList();
+            tooted = db.Toodetabel.Where(t => ids.Contains(t.Id)).ToDictionary(t => t.Id);
+        }
+        catch { return false; }
+        bool muutus = false;
+        foreach (var r in Ridad)
+        {
+            if (!tooted.TryGetValue(r.Id, out var t)) continue;
+            var h = Hinnad.Lopphind(t);
+            if (h.Hind != r.Hind) muutus = true;
+            r.Hind = h.Hind;
+            r.TavaHind = h.TavaHind;
+            r.Soodus = h.Soodus ? h.Allikas : null;
+            r.Pant = t.Pant;
+        }
+        if (muutus) Muutus?.Invoke();
+        return muutus;
+    }
+
     public static string? Lisa(int id, string nimi, decimal hind, int laos, int kogus = 1, string? pilt = null, decimal pant = 0)
     {
         var olemas = Ridad.FirstOrDefault(r => r.Id == id);
