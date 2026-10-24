@@ -220,6 +220,9 @@ public static partial class Keel
         L("otsas", "нет", "sold out");
         L("~{0} päeva", "~{0} дн.", "~{0} days");
         L("laos {0} tk · müüakse {1} tk päevas", "на складе {0} шт · продаётся {1} шт в день", "{0} in stock · sells {1} a day");
+        L("Sarnased ja soodsamad €/{0} järgi", "Похожие и дешевле за 1 {0}", "Similar and cheaper per {0}");
+        L("{0} % odavam kilohind", "цена за кг/л на {0} % ниже", "{0} % cheaper per unit");
+        L("„{0}“ lisatud ostukorvi", "«{0}» добавлен в корзину", "“{0}” added to basket");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }

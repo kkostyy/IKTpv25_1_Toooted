@@ -35,3 +35,45 @@ public class TooteTestid
         Assert.Null(new Toode { Hind = 2m }.SoodusProtsent);
     }
 }
+
+public class SarnasteTestid
+{
+    private static Toode T(int id, string nimi, decimal hind, decimal kogus, string uhik = "kg", int kat = 1, int laos = 10) =>
+        new() { Id = id, Toodenimetus = nimi, Hind = hind, UhikuKogus = kogus, Uhik = uhik, KategooriaId = kat, Kogus = laos };
+
+    [Fact]
+    public void Leiab_sama_toote_odavama_kilohinnaga()
+    {
+        var alus = T(1, "Juust Atleet viilutatud 500g", 2.99m, 0.5m);          // 5,98 €/kg
+        var koik = new[]
+        {
+            alus,
+            T(2, "Juust Eesti viilutatud 1kg", 4.99m, 1m),                       // 4,99 €/kg – sobib
+            T(3, "Juust Edam 300g", 2.49m, 0.3m),                                // 8,30 €/kg – kallim
+            T(4, "Kohupiim 400g", 1.20m, 0.4m),                                  // pole ühist sõna
+            T(5, "Juust Gouda 1kg", 3.99m, 1m, laos: 0),                         // otsas
+            T(6, "Juust röstsaia 1l", 1.00m, 1m, uhik: "l"),                     // teine ühik
+            T(7, "Juust kodune 1kg", 3.50m, 1m, kat: 2),                         // teine kategooria
+        };
+        var leitud = Sarnased.Leia(alus, koik);
+        Assert.Equal(new[] { 2 }, leitud.Select(t => t.Id));
+        Assert.Equal(17, Sarnased.Odavam(alus, leitud[0]));
+    }
+
+    [Fact]
+    public void Tykihinnaga_tootel_pole_vordlust()
+    {
+        var alus = T(1, "Munad M 10tk", 2.89m, 10m, uhik: "tk");
+        Assert.Empty(Sarnased.Leia(alus, new[] { alus, T(2, "Munad L 10tk", 1.99m, 10m, uhik: "tk") }));
+    }
+}
+
+public class LiitsonaTestid
+{
+    [Theory]
+    [InlineData("toorjuust", "juust", true)]
+    [InlineData("leib", "rukkileib", true)]
+    [InlineData("piim", "piim", true)]
+    [InlineData("juust", "jogurt", false)]
+    public void Liitsona_sarnasus(string a, string b, bool oodatud) => Assert.Equal(oodatud, Sarnased.Sarnane(a, b));
+}

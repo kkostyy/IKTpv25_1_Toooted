@@ -132,6 +132,40 @@ public class ToodeVorm : Form
 
         ylemine = YlemineKaart();
         sisu.Controls.Add(ylemine);
+
+        // Sarnased ja soodsamad (parem kilo-/liitrihind)
+        var soodsamad = Sarnased.Leia(toode, koik);
+        if (soodsamad.Count > 0)
+        {
+            sisu.Controls.Add(new Label
+            {
+                Text = Keel.F("Sarnased ja soodsamad €/{0} järgi", toode.Uhik),
+                AutoSize = true,
+                Margin = new Padding(0, 18, 0, 10),
+                Font = new Font("Segoe UI Semibold", 15F),
+                ForeColor = Teema.Tekst
+            });
+            var kast = new RoundedPanel
+            {
+                Width = Laius, Radius = 6, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                Padding = new Padding(0, 8, 0, 8), Margin = new Padding(0)
+            };
+            var veerg = new FlowLayoutPanel { FlowDirection = FlowDirection.TopDown, WrapContents = false, AutoSize = true, Location = new Point(1, 8), BackColor = Teema.Pind, Margin = new Padding(0) };
+            foreach (var t in soodsamad)
+            {
+                var rida = new SoodsamRida(toode, t, Laius - 2);
+                rida.Ava += x => { toode = x; soovitatud = false; EhitaHiljem(); };
+                rida.Lisa += x =>
+                {
+                    string? viga = Ostukorv.LisaToode(x);
+                    Teade.Toast(viga ?? Keel.F("„{0}“ lisatud ostukorvi", x.Toodenimetus), viga == null ? TeateTyyp.Edu : TeateTyyp.Hoiatus);
+                };
+                veerg.Controls.Add(rida);
+            }
+            kast.Controls.Add(veerg);
+            sisu.Controls.Add(kast);
+        }
+
         sisu.Controls.Add(new Label
         {
             Text = "Toote andmed",
