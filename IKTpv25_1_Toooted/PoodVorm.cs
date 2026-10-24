@@ -173,6 +173,7 @@ namespace IKTpv25_1_Toooted
 
             // ================= 5. Paremal "Sinu ostukorv" =================
             var korv = new Panel { Dock = DockStyle.Right, Width = 390, BackColor = Teema.Pind };
+            korviVeerg = korv;
 
             var korviPais = new Panel { Dock = DockStyle.Top, Height = 54, BackColor = Teema.Pind };
             korviPais.Controls.Add(new Label
@@ -803,6 +804,8 @@ namespace IKTpv25_1_Toooted
                 {
                     int nihe = t.Width + 14;
                     t.Visible = false;
+                    // ainult Tagasi nupuga päis kaob täiesti
+                    if (p.Name == "tagasiPais" && p.Controls.Cast<Control>().All(o => o == t || !o.Visible)) { p.Visible = false; continue; }
                     foreach (Control o in p.Controls)
                         if (o != t && o.Left > t.Left && Math.Abs(o.Top - t.Top) < 36 && o.Dock == DockStyle.None) o.Left -= nihe;
                 }
@@ -813,7 +816,12 @@ namespace IKTpv25_1_Toooted
         public void Manusta(Form vorm, Action? suletud)
         {
             if (vorm is KujundusVorm k) k.IlmaTagasita = true;   // poe riba "Tagasi" on juba olemas
-            else PeidaOmaTagasi(vorm);
+            else
+            {
+                PeidaOmaTagasi(vorm);
+                // mõni vorm lisab Tagasi alles laadimisel (OnLoad) – peidame ka selle
+                vorm.Load += (s, e) => vorm.BeginInvoke(new Action(() => PeidaOmaTagasi(vorm)));
+            }
             var leht = new VormiLeht(vorm, suletud, () => lehed.Tagasi());
             // sama vorm juba lahti (nt Seaded kaks korda järjest): asendatakse, pinu ei kasva
             if (lehed.Praegune is VormiLeht vana && vana.VormiTyyp == vorm.GetType())
@@ -846,6 +854,8 @@ namespace IKTpv25_1_Toooted
         private void NavMuutus()
         {
             dieet.Visible = lehed.Praegune is PoeVaadeLeht;
+            // maksmise ajal on kokkuvõte vormi sees – korvi veerg peidetakse (rohkem ruumi)
+            if (moodne && korviVeerg != null) korviVeerg.Visible = !(lehed.Praegune is VormiLeht vl && vl.VormiTyyp == typeof(MaksmineVorm));
             if (lehed.Praegune is PoeVaadeLeht p) sisu = p.Sisu;
             else
             {
@@ -1582,8 +1592,15 @@ namespace IKTpv25_1_Toooted
             {
                 decimal pool = Math.Round(Kampaaniad.TavaHind(Toode) * (100 - ohtuS.Protsent) / 100m, 2, MidpointRounding.AwayFromZero);
                 if (pool < h.Hind)
-                    using (var fo = new Font("Segoe UI", 8.5F, FontStyle.Bold))
-                        TextRenderer.DrawText(g, $"{ohtuS.Algus:hh\\:mm} → {Ostukorv.Eur(pool)}", fo, new Point(x, hinnaY + 62), Teema.Teine);
+                {
+                    // ploomi kiip pildi vasakus alanurgas (all paremal on koguse nupp)
+                    using var fo = new Font("Segoe UI", 8F, FontStyle.Bold);
+                    string ot = $"{ohtuS.Algus:hh\\:mm} → {Ostukorv.Eur(pool)}";
+                    int ow = TextRenderer.MeasureText(ot, fo).Width + 16;
+                    var okiip = new RectangleF(pildiKast.X, pildiKast.Bottom - 26, ow, 24);
+                    using (var tee = Ymardus.Tee(okiip, 12)) using (var b = new SolidBrush(Color.FromArgb(246, 230, 239))) g.FillPath(b, tee);
+                    TextRenderer.DrawText(g, ot, fo, Rectangle.Round(okiip), Teema.Teine, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix);
+                }
             }
             string? alumine = Toode.Pant > 0
                 ? "+ " + Keel.F("Pakendi tagatisraha {0}", Ostukorv.Eur(Toode.Pant))

@@ -1,4 +1,4 @@
-namespace IKTpv25_1_Toooted;
+﻿namespace IKTpv25_1_Toooted;
 
 // Arendaja abi: kui keskkonnamuutuja AKT_SILUMINE=1, kirjutab F12 aktiivse akna elementide puu
 // (tüüp, asukoht, suurus, värvid) faili %TEMP%\akt_puu.txt. Tavakasutuses ei tee midagi.
@@ -13,7 +13,23 @@ internal sealed class ElementidePuu : IMessageFilter
 
     public bool PreFilterMessage(ref Message m)
     {
-        if (m.Msg != WM_KEYDOWN || (Keys)(int)m.WParam != Keys.F12 || Form.ActiveForm is not Form f) return false;
+        if (m.Msg != WM_KEYDOWN || Form.ActiveForm is not Form f) return false;
+        var klahv = (Keys)(int)m.WParam;
+        // Ctrl+F1…F11: avab vormid otse (testimiseks ilma hüpikmenüüta), Ctrl+F12 vahetab keelt
+        if ((Control.ModifierKeys & Keys.Control) != 0 && klahv is >= Keys.F1 and <= Keys.F12)
+        {
+            Form? uus = klahv switch
+            {
+                Keys.F1 => new StatistikaVorm(), Keys.F2 => new DemoVorm(), Keys.F3 => new OhtuSeadedVorm(),
+                Keys.F4 => new KasutajadVorm(), Keys.F5 => new EmailSeadedVorm(), Keys.F6 => new RegistreerimineVorm(lubaOmanik: true),
+                Keys.F7 => new SeadedVorm(), Keys.F8 => new ParooliMuutmineVorm(), Keys.F9 => new KaardiTasemedVorm(),
+                Keys.F10 => new KliendikaartMoodneVorm(), Keys.F11 => new KliendidVorm(), _ => null
+            };
+            if (uus != null) Aken.Ava(f, uus);
+            else Keel.Sea(Keel.Praegu == KeeleKood.ET ? KeeleKood.RU : Keel.Praegu == KeeleKood.RU ? KeeleKood.EN : KeeleKood.ET);
+            return true;
+        }
+        if (klahv != Keys.F12) return false;
         var sb = new System.Text.StringBuilder();
         void Kirjuta(Control c, int tase)
         {

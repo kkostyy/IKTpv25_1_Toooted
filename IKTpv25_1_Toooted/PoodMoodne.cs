@@ -11,6 +11,7 @@ namespace IKTpv25_1_Toooted
     public partial class PoodVorm
     {
         private readonly bool moodne = Teema.OnMoodne;
+        private Panel? korviVeerg;   // paremal ostukorv (maksmise lehel peidetud)
         private MoodneKylgriba? kylgriba;
         private MoodneTabid? tabid;
 
