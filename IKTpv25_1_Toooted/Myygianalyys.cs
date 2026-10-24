@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted;
 
@@ -60,6 +60,69 @@ public static class Myygianalyys
         }
         return kokku.Select(kv => new KategooriaMarginaal(nimed.GetValueOrDefault(kv.Key, "Muu"), kv.Value.Kaive, kv.Value.Marg, kv.Value.Hinn))
             .OrderByDescending(k => k.Marginaal).ToList();
+    }
+
+    // ---- Prognoos ----
+
+    // Käive päevade kaupa: [0] = algus, [paevi-1] = algus + paevi-1 (tarne ei lähe käibe sisse)
+    public static decimal[] PaevaKaive(IEnumerable<Ost> ostud, DateTime algus, int paevi)
+    {
+        var k = new decimal[paevi];
+        foreach (var o in ostud)
+        {
+            int i = (o.Aeg.Date - algus.Date).Days;
+            if (i >= 0 && i < paevi) k[i] += o.Summa - o.TarneHind;
+        }
+        return k;
+    }
+
+    // Järgmise "paevi" päeva käibe prognoos. ajalugu = täispäevad, viimane element on eilne päev.
+    // Iga päev = sama nädalapäeva kaalutud keskmine viimasest 4 nädalast (värskem nädal kaalub rohkem: 4,3,2,1)
+    // × trend (viimased 14 päeva / eelnevad 14 päeva, piiratud 0,8…1,25).
+    public static decimal[] Prognoos(decimal[] ajalugu, int paevi = 7)
+    {
+        int n = ajalugu.Length;
+        var tulem = new decimal[paevi];
+        if (n == 0) return tulem;
+
+        decimal viimased = ajalugu.Skip(Math.Max(0, n - 14)).Sum();
+        decimal eelnevad = ajalugu.Skip(Math.Max(0, n - 28)).Take(Math.Max(0, Math.Min(14, n - 14))).Sum();
+        decimal trend = eelnevad > 0 ? Math.Clamp(viimased / eelnevad, 0.8m, 1.25m) : 1m;
+
+        for (int d = 0; d < paevi; d++)
+        {
+            decimal summa = 0, kaal = 0;
+            for (int nadal = 1; nadal <= 4; nadal++)
+            {
+                // tulevane päev on indeksil n + d; sama nädalapäev nädal(aid) varem
+                int i = n + d - 7 * nadal;
+                while (i >= n) i -= 7;   // prognoos üle nädala: kasutame ajaloost sama nädalapäeva
+                if (i < 0) continue;
+                decimal w = 5 - nadal;
+                summa += ajalugu[i] * w;
+                kaal += w;
+            }
+            tulem[d] = kaal > 0 ? Math.Round(summa / kaal * trend, 2) : 0;
+        }
+        return tulem;
+    }
+
+    public record Lopeb(Toode Toode, decimal PaevasTk, decimal PaeviJaanud);
+
+    // Tooted, mis praeguse müügitempo järgi lõpevad "piir" päeva jooksul (kõige kiiremad ees)
+    public static List<Lopeb> Lopevad(IEnumerable<Ost> ostud, IEnumerable<Toode> tooted, int paevi = 28, int piir = 14)
+    {
+        var myydud = ostud.SelectMany(o => o.Read).Where(r => r.ToodeId != null)
+            .GroupBy(r => r.ToodeId!.Value).ToDictionary(g => g.Key, g => g.Sum(r => r.Kogus));
+        var tulem = new List<Lopeb>();
+        foreach (var t in tooted)
+        {
+            if (!myydud.TryGetValue(t.Id, out int tk) || tk <= 0) continue;
+            decimal paevas = (decimal)tk / paevi;
+            decimal jaanud = Math.Round(Math.Max(0, t.Kogus) / paevas, 1);
+            if (jaanud <= piir) tulem.Add(new Lopeb(t, Math.Round(paevas, 1), jaanud));
+        }
+        return tulem.OrderBy(l => l.PaeviJaanud).ThenByDescending(l => l.PaevasTk).ToList();
     }
 
     // Muutus eelmise perioodiga võrreldes (%), null kui võrrelda pole millega

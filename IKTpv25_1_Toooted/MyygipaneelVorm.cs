@@ -6,21 +6,24 @@ namespace IKTpv25_1_Toooted;
 
 // ===================================================================
 //  Müügipaneel (omanik): periood 7/30/90 päeva, 4 KPI-d muutusega,
-//  soojuskaart "tund × nädalapäev" ja kõige kasumlikumad kategooriad.
+//  soojuskaart "tund × nädalapäev", kõige kasumlikumad kategooriad,
+//  7 päeva müügiprognoos ja peagi lõppevad tooted.
 // ===================================================================
 public class MyygipaneelVorm : KujundusVorm
 {
     private readonly FlowLayoutPanel kpiRida, perioodid;
     private readonly Soojuskaart kaart = new() { Dock = DockStyle.Fill };
     private readonly KategooriaRibad ribad = new() { Dock = DockStyle.Fill };
+    private readonly PrognoosiGraafik prognoos = new() { Dock = DockStyle.Fill };
+    private readonly LopevadNimekiri lopevad = new() { Dock = DockStyle.Fill };
     private int paevi = 30;
     private readonly MoodneFilter? moodneFilter;   // lõuend N9: perioodid valgel "pillil"
 
-    public MyygipaneelVorm() : base("Müügipaneel", 1180, 760)
+    public MyygipaneelVorm() : base("Müügipaneel", 1180, 900)
     {
         FormBorderStyle = FormBorderStyle.Sizable;
         MaximizeBox = true;
-        MinimumSize = new Size(1000, 640);
+        MinimumSize = new Size(1000, 760);
         BackColor = Teema.Taust;
 
         var yla = new Panel { Dock = DockStyle.Top, Height = 64, BackColor = Teema.Taust };
@@ -42,9 +45,11 @@ public class MyygipaneelVorm : KujundusVorm
         kpiRida = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 116, Padding = new Padding(16, 0, 16, 8), BackColor = Teema.Taust, WrapContents = false };
         if (Teema.OnMoodne) kpiRida.Resize += (s, e) => VenitaKpi();
 
-        var tabel = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1, Padding = new Padding(16, 0, 16, 16), BackColor = Teema.Taust };
+        var tabel = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 2, Padding = new Padding(16, 0, 16, 16), BackColor = Teema.Taust };
         tabel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 62));
         tabel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 38));
+        tabel.RowStyles.Add(new RowStyle(SizeType.Percent, 56));
+        tabel.RowStyles.Add(new RowStyle(SizeType.Percent, 44));
         var kaartKaart = UiStiil.LooKaardiPaneel("Ostud: tund × nädalapäev", kaart);
         kaartKaart.Dock = DockStyle.Fill;
         kaartKaart.Margin = new Padding(0, 0, 12, 0);
@@ -60,6 +65,15 @@ public class MyygipaneelVorm : KujundusVorm
         }
         tabel.Controls.Add(kaartKaart, 0, 0);
         tabel.Controls.Add(ribaKaart, 1, 0);
+        kaartKaart.Margin = new Padding(0, 0, 12, 12);
+        ribaKaart.Margin = new Padding(0, 0, 0, 12);
+        var progKaart = UiStiil.LooKaardiPaneel("Müügiprognoos: 14 päeva tagasi + 7 ette", prognoos);
+        progKaart.Dock = DockStyle.Fill;
+        progKaart.Margin = new Padding(0, 0, 12, 0);
+        var lopKaart = UiStiil.LooKaardiPaneel("Lõpevad peagi (müügitempo järgi)", lopevad);
+        lopKaart.Dock = DockStyle.Fill;
+        tabel.Controls.Add(progKaart, 0, 1);
+        tabel.Controls.Add(lopKaart, 1, 1);
 
         Controls.Add(tabel);
         Controls.Add(kpiRida);
@@ -110,6 +124,15 @@ public class MyygipaneelVorm : KujundusVorm
             if (Teema.OnMoodne) VenitaKpi();
 
             kaart.Naita(Myygianalyys.Soojuskaart(ostud));
+
+            // Prognoos ei sõltu valitud perioodist: alati 8 nädala ajalugu (täispäevad kuni eilseni)
+            var tana = nyyd.Date;
+            var ajaluguOstud = Myygianalyys.Ostud(db, tana.AddDays(-56), tana);
+            var ajalugu = Myygianalyys.PaevaKaive(ajaluguOstud, tana.AddDays(-56), 56);
+            var tegelik = ajalugu.Skip(56 - 13).Append(Myygianalyys.PaevaKaive(Myygianalyys.Ostud(db, tana, tana.AddDays(1)), tana, 1)[0]).ToArray();
+            var ette = Myygianalyys.Prognoos(ajalugu, 8).Skip(1).ToArray();   // täna on tegelik, prognoos homsest
+            prognoos.Naita(tegelik, ette, tana.AddDays(-13));
+            lopevad.Naita(Myygianalyys.Lopevad(ajaluguOstud.Where(o => o.Aeg >= tana.AddDays(-28)), tooted.Values));
             ribad.Naita(Myygianalyys.Kategooriad(ostud, tooted, nimed));
         }
         catch (Exception ex) { Teade.Show("Andmete laadimine ebaõnnestus:\n" + ex.Message); }
