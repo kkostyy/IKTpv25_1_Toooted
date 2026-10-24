@@ -41,6 +41,7 @@ namespace IKTpv25_1_Toooted
                 if (KysiSulgemisel) JalgiMuudatusi(this);
             }
             Teema.Rakenda(this);     // siis värvime kõik teema järgi
+            if (Teema.OnMoodne) MoodneStiil.Rakenda(this);   // lülitid ja "pill" valikud
         }
 
         // ← Tagasi, Esc, Alt+←, hiire külgnupp: aken sulgub (muudatuste korral küsib enne)

@@ -150,6 +150,7 @@ public partial class MaksmineVorm : Form
     {
         base.OnLoad(e);
         if (Ostukorv.UuendaHinnad()) Arvuta();   // hind kehtib vormistamise hetkel
+        if (Teema.OnMoodne) MoodneStiil.Rakenda(this);
         if (!Teema.OnMoodne) UiStiil.LisaTagasiNupp(this);   // ← Tagasi = tühista (moodsas disainis kaardil endal)
         Teema.Rakenda(this);
         txtSaadud.Text = Summa().ToString("0.00", CultureInfo.InvariantCulture);

@@ -6,7 +6,7 @@ namespace IKTpv25_1_Toooted
     //  Seaded: kõik kasutaja seaded ühes aknas
     //  Profiil (nimi, e-post, kliendikaart) · Turvalisus · Välimus (teema, värv, disain, keel)
     // ===================================================================
-    public class SeadedVorm : KujundusVorm
+    public partial class SeadedVorm : KujundusVorm
     {
         private readonly TextBox txtTaisNimi, txtEmail, txtAadress;
         private readonly CheckBox chkTsekk, chkUmarad;
@@ -127,6 +127,8 @@ namespace IKTpv25_1_Toooted
             var sulge = Nupp("Sulge", x + 120, 696);
             sulge.DialogResult = DialogResult.Cancel;
             CancelButton = sulge;
+
+            if (Teema.OnMoodne) RakendaMoodne();   // lõuend 3.3: jaotised vasakul, segmendid, värvitäpid
 
             // Keele vahetusel tõlgitakse ka valikute tekstid
             Teema.Muutus += ValikudHiljem;
