@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 
@@ -57,7 +57,8 @@ namespace IKTpv25_1_Toooted
                 Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
                 BackColor = Color.White
             };
-            nupud.Controls.Add(UiStiil.LooNupp("Tšekk (PDF)", (s, e) => PrindiTsekk(), true));
+            nupud.Controls.Add(UiStiil.LooNupp("Osta uuesti", (s, e) => OstaUuesti(), true));
+            nupud.Controls.Add(UiStiil.LooNupp("Tšekk (PDF)", (s, e) => PrindiTsekk()));
             var tagasta = UiStiil.LooNupp("Tagasta ost", (s, e) => Tagasta());
             tagasta.Visible = lubaTagastus;
             nupud.Controls.Add(tagasta);
@@ -157,6 +158,36 @@ namespace IKTpv25_1_Toooted
 
         private static Ost? LaeOst(ToodedContext db, int nr) =>
             db.Ostud.Include(o => o.Read).Include(o => o.Klient).FirstOrDefault(o => o.Id == nr);
+
+        // Kõik valitud tšeki tooted uuesti ostukorvi (praeguse hinnaga, nii palju kui laos on)
+        private void OstaUuesti()
+        {
+            if (ValitudNr() is not int nr) { Teade.Show("Vali tabelist ost."); return; }
+            using var db = new ToodedContext();
+            var read = db.OstuRead.AsNoTracking().Where(r => r.OstId == nr).ToList();
+            var ids = read.Where(r => r.ToodeId != null).Select(r => r.ToodeId!.Value).ToList();
+            var tooted = db.Toodetabel.AsNoTracking().Include(t => t.Kategooria).Where(t => ids.Contains(t.Id)).ToDictionary(t => t.Id);
+
+            int lisatud = 0;
+            var puudu = new List<string>();
+            foreach (var r in read)
+            {
+                if (r.ToodeId is not int id || !tooted.TryGetValue(id, out var t)) { puudu.Add(r.Toodenimetus); continue; }
+                int vaba = t.Kogus - Ostukorv.KorvisKogus(id);
+                int kogus = Math.Min(r.Kogus, vaba);
+                if (kogus <= 0 || Ostukorv.LisaToode(t, kogus) != null) { puudu.Add(r.Toodenimetus); continue; }
+                lisatud += kogus;
+                if (kogus < r.Kogus) puudu.Add($"{r.Toodenimetus} ({r.Kogus - kogus})");
+            }
+
+            if (lisatud == 0)
+                Teade.Show(Keel.T("Ühtegi toodet ei saanud lisada – kõik on otsas või müügilt maas."), Keel.T("Osta uuesti"));
+            else if (puudu.Count == 0)
+                Teade.Toast(Keel.F("Ostukorvi lisatud {0} tk – sama, mis tšekil nr {1}", lisatud, nr));
+            else
+                Teade.Show(Keel.F("Ostukorvi lisatud {0} tk.", lisatud) + "\n\n" + Keel.T("Puudu (otsas või müügilt maas):") + "\n• " + string.Join("\n• ", puudu),
+                    Keel.T("Osta uuesti"), MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
 
         private void PrindiTsekk()
         {

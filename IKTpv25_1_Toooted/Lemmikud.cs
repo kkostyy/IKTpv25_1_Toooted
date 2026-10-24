@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace IKTpv25_1_Toooted;
 
@@ -36,6 +36,43 @@ public static class Lemmikud
         }
         catch { }
         Muutus?.Invoke();
+    }
+
+    // ---- "Taas laos" teavitus ----
+    // Lemmikud, mis olid viimati otsas (fail lemmikud_otsas.json). Kui mõni neist on jälle laos,
+    // teatab pood sellest ja kaardil on kiip "Taas laos!" (kuni programmi sulgemiseni).
+    private static string OtsasFail => Path.Combine(Kaustad.Juur, "lemmikud_otsas.json");
+    private static readonly HashSet<int> taasLaos = new();
+
+    public static bool TaasLaos(int tooteId) => taasLaos.Contains(tooteId);
+
+    // Tagastab lemmikud, mis vahepeal said laoseisu juurde
+    public static List<Toode> KontrolliLaoseisu(IEnumerable<Toode> tooted)
+    {
+        HashSet<int> otsas;
+        try
+        {
+            otsas = File.Exists(OtsasFail)
+                ? JsonSerializer.Deserialize<HashSet<int>>(File.ReadAllText(OtsasFail)) ?? new()
+                : new();
+        }
+        catch { otsas = new(); }
+
+        var lemmikud = tooted.Where(t => On(t.Id)).ToList();
+        var tagasi = lemmikud.Where(t => t.Kogus > 0 && otsas.Contains(t.Id)).ToList();
+        foreach (var t in tagasi) taasLaos.Add(t.Id);
+
+        var uus = lemmikud.Where(t => t.Kogus <= 0).Select(t => t.Id).ToHashSet();
+        if (!uus.SetEquals(otsas))
+        {
+            try
+            {
+                Directory.CreateDirectory(Kaustad.Juur);
+                File.WriteAllText(OtsasFail, JsonSerializer.Serialize(uus));
+            }
+            catch { }
+        }
+        return tagasi;
     }
 }
 

@@ -199,6 +199,16 @@ public static partial class Keel
         L("Näita kõiki tulemusi ({0})", "Показать все результаты ({0})", "Show all results ({0})");
         L("Kilo-/liitrihind: odavam enne", "Цена за кг/л: сначала дешёвые", "Price per kg/l: low to high");
         L("soodsaim", "выгоднее", "best value");
+        L("Osta uuesti", "Купить снова", "Buy again");
+        L("Ühtegi toodet ei saanud lisada – kõik on otsas või müügilt maas.", "Не удалось добавить ни одного товара – всё закончилось или снято с продажи.", "No products could be added – all are sold out or discontinued.");
+        L("Ostukorvi lisatud {0} tk – sama, mis tšekil nr {1}", "В корзину добавлено {0} шт – как в чеке № {1}", "Added {0} pcs to basket – same as receipt no. {1}");
+        L("Ostukorvi lisatud {0} tk.", "В корзину добавлено {0} шт.", "Added {0} pcs to basket.");
+        L("Puudu (otsas või müügilt maas):", "Нет (закончилось или снято с продажи):", "Missing (sold out or discontinued):");
+        L("Vali tabelist ost.", "Выберите покупку в таблице.", "Select a purchase in the table.");
+        L("Lemmik on taas laos:", "Избранное снова в наличии:", "Favourite back in stock:");
+        L("ja veel {0}", "и ещё {0}", "and {0} more");
+        L("Taas laos!", "Снова есть!", "Back in stock!");
+        L("Lisatud lemmikutesse – anname teada, kui toode on taas laos", "Добавлено в избранное – сообщим, когда товар снова появится", "Added to favourites – we'll let you know when it's back in stock");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }
