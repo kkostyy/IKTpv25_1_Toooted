@@ -188,6 +188,10 @@ namespace IKTpv25_1_Toooted
                 manuseAla = new Panel { Dock = DockStyle.Fill, BackColor = Teema.Taust, AutoScroll = true, Padding = new Padding(16) };
                 Controls.Add(manuseAla);
             }
+            // sama vorm uuesti (nt Kampaaniad kaks korda): vana suletakse, ei kuhju
+            sulgen = true;
+            foreach (var f in manused.Where(f => f.GetType() == vorm.GetType()).ToList()) f.Close();
+            sulgen = false;
             foreach (var f in manused) f.Visible = false;
             manused.Add(vorm);
             manuseAla.Visible = true;

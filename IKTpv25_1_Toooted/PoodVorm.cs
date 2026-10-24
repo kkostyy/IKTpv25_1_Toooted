@@ -814,7 +814,14 @@ namespace IKTpv25_1_Toooted
         {
             if (vorm is KujundusVorm k) k.IlmaTagasita = true;   // poe riba "Tagasi" on juba olemas
             else PeidaOmaTagasi(vorm);
-            AvaLeht(new VormiLeht(vorm, suletud, () => lehed.Tagasi()));
+            var leht = new VormiLeht(vorm, suletud, () => lehed.Tagasi());
+            // sama vorm juba lahti (nt Seaded kaks korda järjest): asendatakse, pinu ei kasva
+            if (lehed.Praegune is VormiLeht vana && vana.VormiTyyp == vorm.GetType())
+            {
+                Teema.Rakenda(leht);
+                lehed.Asenda(leht);
+            }
+            else AvaLeht(leht);
         }
 
         // Kompositsioon: lapselemendid joonistatakse koos (animatsioonid ei vilgu ega rebene)
