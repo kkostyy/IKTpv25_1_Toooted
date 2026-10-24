@@ -139,9 +139,50 @@ namespace IKTpv25_1_Toooted
             catch { kpiMyyk.Naita("—"); }
         }
 
+        // ---- Üks aken: vormid avanevad peaakna sisualal (vasak menüü jääb alles) ----
+        private Panel? manuseAla;
+        private readonly List<Form> manused = new();
+        private bool viimaneTooted = true, sulgen;
+
+        public bool VoibManustada => moodne && Visible;
+
+        public void Manusta(Form vorm, Action? suletud)
+        {
+            if (manuseAla == null)
+            {
+                manuseAla = new Panel { Dock = DockStyle.Fill, BackColor = Teema.Taust, AutoScroll = true, Padding = new Padding(16) };
+                Controls.Add(manuseAla);
+            }
+            foreach (var f in manused) f.Visible = false;
+            manused.Add(vorm);
+            manuseAla.Visible = true;
+            manuseAla.BringToFront();
+            Aken.Paigalda(vorm, manuseAla, () =>
+            {
+                manused.Remove(vorm);
+                if (manused.Count > 0) manused[^1].Visible = true;
+                else if (manuseAla != null) { manuseAla.Visible = false; if (!sulgen) MoodneVaheleht(viimaneTooted); }
+                suletud?.Invoke();
+            });
+        }
+
+        private void SulgeManused()
+        {
+            sulgen = true;
+            foreach (var f in manused.ToList()) if (!f.IsDisposed) f.Close();
+            sulgen = false;
+        }
+
+        protected override CreateParams CreateParams
+        {
+            get { var cp = base.CreateParams; if (Teema.OnMoodne) cp.ExStyle |= 0x02000000; return cp; }
+        }
+
         private void MoodneVaheleht(bool tooted)
         {
             if (!moodne) return;
+            viimaneTooted = tooted;
+            if (!sulgen && manused.Count > 0) SulgeManused();
             pnlTop.Visible = pnlKassaRibbon.Visible = false;
             if (moodnePealkiri != null) moodnePealkiri.Text = Keel.T(tooted ? "Tooted" : "Kassa");
             moodneMenuu?.Vali(tooted ? "tooted" : "kassa");

@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Drawing.Drawing2D;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,8 +34,7 @@ namespace IKTpv25_1_Toooted
             // Moodne disain (lõuend 2.3): kujunduse valik, oma foto, vöötkood, ostud
             if (Teema.OnMoodne)
             {
-                using var m = new KliendikaartMoodneVorm();
-                if (omanik != null) m.ShowDialog(omanik); else { m.StartPosition = FormStartPosition.CenterScreen; m.ShowDialog(); }
+                Aken.Ava(omanik, new KliendikaartMoodneVorm());
                 return;
             }
 

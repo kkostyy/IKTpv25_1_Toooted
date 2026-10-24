@@ -1,9 +1,9 @@
-using System.Globalization;
+﻿using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted
 {
-    public partial class Form1 : Form
+    public partial class Form1 : Form, IVormiHost
     {
         // Uus valitud pildifail (täistee); null = pilti ei muudeta
         private string? uusPiltTee = null;

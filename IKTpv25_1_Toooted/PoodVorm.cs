@@ -7,7 +7,7 @@ namespace IKTpv25_1_Toooted
     //  ülal lilla riba, päis (logo, otsing, kasutaja, ostukorvi nupp), menüüriba (Tooted, Kampaaniad, ...),
     //  vasakul kategooriate ikoonid, keskel avaleht (riiulid "Parimad pakkumised" jne) või tooteruudustik,
     //  paremal "Sinu ostukorv".
-    public partial class PoodVorm : Form, ITagasi
+    public partial class PoodVorm : Form, ITagasi, IVormiHost
     {
         private enum Vaade { Avaleht, Kategooria, Kampaaniad, Odav, Lemmikud, Otsing, Muu }
 
@@ -408,11 +408,7 @@ namespace IKTpv25_1_Toooted
         }
 
         // Ostunimekiri; pärast sulgemist võivad korvis olla uued tooted
-        private void AvaNimekiri()
-        {
-            using var vorm = new OstunimekiriVorm();
-            vorm.ShowDialog(this);
-        }
+        private void AvaNimekiri() => Aken.Ava(this, new OstunimekiriVorm());
 
         // Ctrl+Shift+D: pood suletakse ja Form1 avab klassikalise poe
         private void DisainMuutus()
@@ -795,6 +791,21 @@ namespace IKTpv25_1_Toooted
         // ---------------------------------------------------------------
 
         // Uus leht poe sisualale (toiteväärtus, preemiad, pere nimekiri ...)
+        // Moodne: vormid (seaded, kliendikaart, ajalugu ...) avanevad poe lehena, mitte eraldi aknas
+        public bool VoibManustada => moodne && Visible;
+
+        public void Manusta(Form vorm, Action? suletud)
+        {
+            if (vorm is KujundusVorm k) k.IlmaTagasita = true;   // poe riba "Tagasi" on juba olemas
+            AvaLeht(new VormiLeht(vorm, suletud, () => lehed.Tagasi()));
+        }
+
+        // Kompositsioon: lapselemendid joonistatakse koos (animatsioonid ei vilgu ega rebene)
+        protected override CreateParams CreateParams
+        {
+            get { var cp = base.CreateParams; if (Teema.OnMoodne) cp.ExStyle |= 0x02000000; return cp; }
+        }
+
         public void AvaLeht(Leht leht)
         {
             Teema.Rakenda(leht);
@@ -877,10 +888,12 @@ namespace IKTpv25_1_Toooted
 
         private void AvaToode(Toode t)
         {
-            using var vorm = new ToodeVorm(t, koikTooted);
-            vorm.ShowDialog(this);
-            if (vorm.OtsiKaubamarki != null)
-                txtOtsi.Text = vorm.OtsiKaubamarki;   // käivitab otsingu
+            var vorm = new ToodeVorm(t, koikTooted);
+            Aken.Ava(this, vorm, () =>
+            {
+                if (vorm.OtsiKaubamarki != null)
+                    txtOtsi.Text = vorm.OtsiKaubamarki;   // käivitab otsingu
+            });
         }
 
         private void Vormista()

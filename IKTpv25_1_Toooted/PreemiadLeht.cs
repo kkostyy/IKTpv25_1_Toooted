@@ -231,7 +231,7 @@ public class PreemiadLeht : Leht
             pood.Activate();
             return;
         }
-        using var vorm = new Form
+        var vorm = new Form
         {
             Text = Keel.T("Preemiad"),
             StartPosition = FormStartPosition.CenterParent,
@@ -244,7 +244,7 @@ public class PreemiadLeht : Leht
         vorm.Controls.Add(leht);
         UiStiil.LisaTagasiNupp(vorm);
         vorm.Load += (s, e) => { Teema.Rakenda(vorm); leht.Avatud(); };
-        if (omanik != null) vorm.ShowDialog(omanik); else vorm.ShowDialog();
+        Aken.Ava(omanik, vorm);
     }
 }
 
@@ -258,7 +258,8 @@ public class TaseVeerg : Control
     {
         SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
         BackColor = Color.FromArgb(27, 28, 31);
-        Animatsioon.Tsykkel(this, s => { aeg = s; Invalidate(); }, 40);
+        // läige: joonistatakse uuesti ainult kaart ja medal (mitte terve veerg)
+        Animatsioon.Tsykkel(this, s => { aeg = s; Invalidate(new Rectangle(0, 20, Width, (int)((Width - 2) / 1.586f) + 200)); }, 50);
     }
 
     public void Naita(TaseInfo uus)
@@ -298,8 +299,8 @@ public class TaseVeerg : Control
         string jargmine = tase.Jargmine is Tase j
             ? Keel.F("{0}-tasemeni veel {1} oste", Keel.T(Preemiad.TaseNimi(j)), Ostukorv.Eur(tase.Jargmiseni))
             : Keel.T("Kõrgeim tase – aitäh!");
-        TextRenderer.DrawText(g, jargmine, fb, new Rectangle(0, (int)y, Width, 22), Color.White, TextFormatFlags.HorizontalCenter);
-        y += 36;
+        TextRenderer.DrawText(g, jargmine, fb, new Rectangle(0, (int)y, Width, 40), Color.White, TextFormatFlags.HorizontalCenter | TextFormatFlags.WordBreak);
+        y += 50;
 
         // redel
         for (int i = Preemiad.Tasemed.Length - 1; i >= 0; i--)
@@ -587,28 +588,32 @@ public class YllatusPaneel : Control
         TextRenderer.DrawText(g, Keel.T("Kord päevas – juhuslik soodustus ühele tootele"), f, new Rectangle(0, 20, Width, 40), Color.White, TextFormatFlags.WordBreak);
 
         // Karp
-        float cx = Width / 2f, cy = 190, w = 120;
+        float cx = Width / 2f, cy = Math.Max(190, Height * 0.36f), w = 140;
         double kalle = avamine < 0 ? Math.Sin(Math.Clamp((aeg % 2.4) / 0.6, 0, 1) * Math.PI * 3) * 6 * (1 - Math.Clamp((aeg % 2.4) / 0.6, 0, 1)) : 0;
         var olek = g.Save();
         g.TranslateTransform(cx, cy + w / 2);
         g.RotateTransform((float)kalle);
-        var karp = new RectangleF(-w / 2, -w * 0.75f, w, w * 0.75f);
-        using (var b = new SolidBrush(Color.FromArgb(226, 6, 19))) g.FillRectangle(b, karp);
-        using (var b = new SolidBrush(Color.FromArgb(245, 210, 106))) g.FillRectangle(b, -9, karp.Y, 18, karp.Height);
+        var karp = new RectangleF(-w / 2, -w * 0.8f, w, w * 0.8f);
+        for (int i = 0; i < 6; i++)   // pehme vari
+            using (var vb = new SolidBrush(Color.FromArgb(14, 0, 0, 0)))
+            using (var vt = Ymardus.Tee(RectangleF.Inflate(new RectangleF(karp.X, karp.Y + 14, karp.Width, karp.Height), 6 - i, 6 - i), 20))
+                g.FillPath(vb, vt);
+        using (var tee = Ymardus.Tee(karp, 18)) using (var b = new SolidBrush(Color.FromArgb(226, 6, 19))) g.FillPath(b, tee);
+        using (var b = new SolidBrush(Color.White)) g.FillRectangle(b, -9, karp.Y, 18, karp.Height);
 
         // Kaas lendab üles ja pöörleb
         double a = avamine < 0 ? 0 : Math.Clamp(avamine / 0.45, 0, 1);
-        float kaasY = (float)(karp.Y - 22 - a * 160), kaasNurk = (float)(a * -40);
+        float kaasY = (float)(karp.Y - 16 - a * 160), kaasNurk = (float)(a * -40);
         int alfa = (int)(255 * (1 - Math.Clamp((a - 0.6) / 0.4, 0, 1)));
         if (alfa > 0)
         {
             var o2 = g.Save();
             g.TranslateTransform(0, kaasY + 11);
             g.RotateTransform(kaasNurk);
-            var kaas = new RectangleF(-w / 2 - 8, -11, w + 16, 22);
-            using (var b = new SolidBrush(Color.FromArgb(alfa, 196, 0, 16))) g.FillRectangle(b, kaas);
-            using (var b = new SolidBrush(Color.FromArgb(alfa, 245, 210, 106))) g.FillRectangle(b, -9, kaas.Y, 18, kaas.Height);
-            using (var p = new Pen(Color.FromArgb(alfa, 245, 210, 106), 6))
+            var kaas = new RectangleF(-w / 2 - 10, -15, w + 20, 32);
+            using (var tee = Ymardus.Tee(kaas, 12)) using (var b = new SolidBrush(Color.FromArgb(alfa, 240, 48, 60))) g.FillPath(b, tee);
+            using (var b = new SolidBrush(Color.FromArgb(alfa, Color.White))) g.FillRectangle(b, -9, kaas.Y, 18, kaas.Height);
+            using (var p = new Pen(Color.FromArgb(alfa, Color.White), 6))
             {
                 g.DrawEllipse(p, -26, -30, 24, 20);
                 g.DrawEllipse(p, 2, -30, 24, 20);

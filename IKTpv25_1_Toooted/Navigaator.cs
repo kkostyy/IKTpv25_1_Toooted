@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 
 namespace IKTpv25_1_Toooted;
 
@@ -108,7 +108,8 @@ public class Navigaator
         Muutus?.Invoke();
         uus.Avatud();
 
-        if (suund == 0)
+        // Moodne: kohe, ilma libisemiseta (paljude elementidega leht "rebenes" liikudes)
+        if (suund == 0 || Teema.OnMoodne)
         {
             uus.Dock = DockStyle.Fill;
             return;
