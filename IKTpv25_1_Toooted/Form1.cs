@@ -87,8 +87,8 @@ namespace IKTpv25_1_Toooted
         {
             tabToode.Valitud = tab == tabToode;
             tabKassa.Valitud = tab == tabKassa;
-            pnlTop.Visible = tab == tabToode;
-            pnlKassaRibbon.Visible = tab == tabKassa;
+            pnlTop.Visible = !moodne && tab == tabToode;   // moodsas disainis vana lint ei ilmu (ka hetkeks mitte)
+            pnlKassaRibbon.Visible = !moodne && tab == tabKassa;
 
             // Kassa vahelehel on toote sisestuse asemel ostukorv
             kaartSisestus.Visible = tab == tabToode;

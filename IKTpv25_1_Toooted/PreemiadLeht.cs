@@ -219,12 +219,19 @@ public class PreemiadLeht : Leht
 
     private static RoundedPanel Sektsioon(string pealkiri, string paremal, Color paremVarv, Control sisu, int sisuKorgus)
     {
-        var kaart = new RoundedPanel { Radius = 15, FillColor = Teema.Pind, BorderColor = Teema.Pind, BackColor = Teema.Taust, Padding = new Padding(22, 16, 22, 18), Margin = new Padding(0, 0, 0, 14), Height = sisuKorgus + 16 + 44 + 18 };
+        var kaart = new RoundedPanel { Radius = 15, FillColor = Teema.Pind, BorderColor = Teema.Pind, BackColor = Teema.Taust, Padding = new Padding(22, 16, 22, 18), Margin = new Padding(0, 0, 0, 14), Height = sisuKorgus + 16 + 56 + 18 };   // päis kuni 56 (kitsas: alamtekst pealkirja all)
         var pais = new Panel { Dock = DockStyle.Top, Height = 44, BackColor = Teema.Pind };
-        pais.Controls.Add(new Label { Text = Keel.T(pealkiri), AutoSize = true, Location = new Point(0, 2), Font = new Font("Segoe UI", 15F, FontStyle.Bold), ForeColor = Teema.Tekst, BackColor = Teema.Pind });
+        var pk = new Label { Text = Keel.T(pealkiri), AutoSize = true, Location = new Point(0, 2), Font = new Font("Segoe UI", 15F, FontStyle.Bold), ForeColor = Teema.Tekst, BackColor = Teema.Pind };
+        pais.Controls.Add(pk);
         var p = new Label { Text = paremal, AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = paremVarv, BackColor = Teema.Pind, Anchor = AnchorStyles.Top | AnchorStyles.Right };
         pais.Controls.Add(p);
-        pais.Resize += (s, e) => p.Location = new Point(pais.Width - p.PreferredWidth - 2, 10);
+        pais.Resize += (s, e) =>
+        {
+            // ei mahu pealkirja kõrvale → pealkirja alla
+            bool kitsas = pk.PreferredWidth + p.PreferredWidth + 16 > pais.Width;
+            p.Location = kitsas ? new Point(2, 32) : new Point(pais.Width - p.PreferredWidth - 2, 10);
+            pais.Height = kitsas ? 56 : 44;
+        };
         kaart.Controls.Add(sisu);
         kaart.Controls.Add(pais);
         return kaart;

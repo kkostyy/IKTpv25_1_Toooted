@@ -48,8 +48,11 @@ public static class Aken
         if (taida) vorm.Dock = DockStyle.Fill;
         else
         {
-            void Keskele() => vorm.Location = new Point(Math.Max(0, (konteiner.ClientSize.Width - vorm.Width) / 2), 0);
-            konteiner.Resize += (s, e) => { if (!vorm.IsDisposed) Keskele(); };
+            void Keskele() { if (!vorm.IsDisposed) vorm.Location = new Point(Math.Max(0, (konteiner.ClientSize.Width - vorm.Width) / 2), 16); }
+            konteiner.Resize += (s, e) => Keskele();
+            konteiner.Layout += (s, e) => Keskele();
+            vorm.SizeChanged += (s, e) => Keskele();
+            vorm.Shown += (s, e) => Keskele();
             Keskele();
             // valge dialoog hallil alusel: ümarad nurgad
             if (Teema.OnMoodne && vorm.BackColor.ToArgb() != konteiner.BackColor.ToArgb())
