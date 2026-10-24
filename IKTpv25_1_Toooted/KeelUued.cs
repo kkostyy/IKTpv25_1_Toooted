@@ -98,6 +98,17 @@ public static partial class Keel
         L("Pakendi tagatisraha ({0} tk) {1}", "Залог за тару ({0} шт) {1}", "Bottle deposit ({0} pcs) {1}"); L("{0} tk · {1}", "{0} шт · {1}", "{0} pcs · {1}");
         L("Pakendi tagatisraha kokku ({0} tk)", "Залог за тару итого ({0} шт)", "Bottle deposit total ({0} pcs)"); L("Soodustus", "Скидка", "Discount");
         L("Teenitud boonust ({0} %)", "Начислено бонусов ({0} %)", "Bonus earned ({0} %)");
+        // --- Müügipaneel ---
+        L("Müügipaneel", "Панель продаж", "Sales dashboard"); L("Müügipaneel...", "Панель продаж...", "Sales dashboard..."); L("{0} päeva", "{0} дней", "{0} days");
+        L("Ostud: tund × nädalapäev", "Покупки: час × день недели", "Purchases: hour × weekday"); L("Kõige kasumlikumad kategooriad", "Самые прибыльные категории", "Most profitable categories");
+        L("Käive", "Выручка", "Revenue"); L("Oste", "Покупок", "Purchases"); L("Keskmine ost", "Средний чек", "Average purchase"); L("Marginaal", "Маржа", "Margin");
+        L("eelmise perioodiga", "к прошлому периоду", "vs previous period"); L("eelmist perioodi pole", "нет прошлого периода", "no previous period");
+        L("Esmaspäev", "Понедельник", "Monday"); L("Teisipäev", "Вторник", "Tuesday"); L("Kolmapäev", "Среда", "Wednesday"); L("Neljapäev", "Четверг", "Thursday");
+        L("Reede", "Пятница", "Friday"); L("Laupäev", "Суббота", "Saturday"); L("Pühapäev", "Воскресенье", "Sunday"); L("{0} ostu", "{0} покупок", "{0} purchases");
+        L("käive {0}", "выручка {0}", "revenue {0}"); L("hinnanguline", "оценочно", "estimated"); L("Selles perioodis müüki pole.", "В этом периоде продаж нет.", "No sales in this period.");
+        L("Sisseostuhind € (marginaali jaoks)", "Закупочная цена € (для маржи)", "Purchase price € (for margin)");
+        L("Pakendi tagatisraha € (pudel/purk 0.10)", "Залог за тару € (бутылка/банка 0.10)", "Bottle deposit € (bottle/can 0.10)");
+        L("Sisseostuhind ja tagatisraha peavad olema arvud (nt 0.10) või tühjad.", "Закупочная цена и залог должны быть числами (напр. 0.10) или пустыми.", "Purchase price and deposit must be numbers (e.g. 0.10) or empty.");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }
