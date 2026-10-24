@@ -28,7 +28,8 @@ jobs:
           ./gradlew assembleRelease recordPaparazziDebug 2>&1 | tee ../ehitus.log
       - name: Vead
         if: failure()
-        run: grep -E "^e: |error:|FAILED|What went wrong" -A3 ehitus.log | head -150
+        run: |
+          grep -E "^e: |error:|FAILED|What went wrong" -A3 ehitus.log | head -150
       - name: Paki
         run: |
           cp android/app/build/outputs/apk/release/app-release.apk AktPood.apk
