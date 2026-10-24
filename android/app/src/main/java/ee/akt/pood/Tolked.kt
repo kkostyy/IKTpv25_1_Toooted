@@ -104,6 +104,7 @@ object Tolked {
         L("Laoseis peab olema täisarv.", "Остаток должен быть целым числом.", "Stock must be a whole number."); L("Toode salvestatud", "Товар сохранён", "Product saved")
         L("Kustuta toode", "Удалить товар", "Delete product"); L("Toode kustutatud", "Товар удалён", "Product deleted")
         L("Uus kampaania", "Новая акция", "New campaign"); L("Salvesta kampaania", "Сохранить акцию", "Save campaign"); L("Kampaania salvestatud", "Акция сохранена", "Campaign saved")
+        L("Näita rohkem ({0} veel)", "Показать ещё (осталось {0})", "Show more ({0} left)")
         L("Kampaaniaid veel pole.", "Акций пока нет.", "No campaigns yet."); L("Käib", "Идёт", "Running"); L("Tulekul", "Скоро", "Upcoming"); L("Lõppenud", "Закончилась", "Ended")
     }
 }

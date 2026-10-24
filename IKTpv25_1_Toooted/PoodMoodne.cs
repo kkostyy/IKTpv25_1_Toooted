@@ -29,6 +29,7 @@ namespace IKTpv25_1_Toooted
             kylgriba.Lisa("lemmikud", "", "Minu lemmikud", () => NaitaRuudustik(Vaade.Lemmikud));
             kylgriba.Lisa("kaart", "", "Kliendikaart", () => KliendikaartVorm.Ava(this));
             kylgriba.Lisa("preemiad", "", "Preemiad", () => { if (lehed.Praegune is not PreemiadLeht) AvaLeht(new PreemiadLeht()); });
+            kylgriba.Lisa("kulutused", "\uE9D2", "Minu kulutused", AvaKulutused);
             kylgriba.Lisa("nimekiri", "", "Ostunimekiri", AvaNimekiri, Ostunimekiri.OstmataArv);
             kylgriba.Lisa("seaded", "", "Seaded", () => SeadedVorm.Ava(this));
             kylgriba.Valju = Close;

@@ -50,6 +50,7 @@ namespace IKTpv25_1_Toooted
             moodneMenuu.Lisa("myyk", "", "Müügipaneel", () => AvaVorm(new MyygipaneelVorm()), () => AktiivneKasutaja.OnOmanik);
             moodneMenuu.Lisa("partiid", "", "Partiid", AvaPartiid, () => AktiivneKasutaja.OnOmanik);
             moodneMenuu.Lisa("tellimus", "\uE7B8", "Autotellimus", () => AvaVorm(new AutotellimusVorm()), () => AktiivneKasutaja.OnOmanik);
+            moodneMenuu.Lisa("koos", "\uE8EC", "Ostetakse koos", () => AvaVorm(new OstukorviAnalyysVorm()), () => AktiivneKasutaja.OnOmanik);
             moodneMenuu.Lisa("kliendid", "", "Kliendid", () => AvaVorm(new KliendidVorm()), () => AktiivneKasutaja.OnOmanik);
             moodneMenuu.Lisa("ajalugu", "", "Ostude ajalugu", AvaAjalugu);
             moodneMenuu.Lisa("nimekiri", "", "Ostunimekiri", AvaNimekiri);
@@ -265,6 +266,7 @@ namespace IKTpv25_1_Toooted
             V("Moodne disain", () => Teema.SeaDisain(Disain.Moodne), Teema.OnMoodne);
             V("E-poe disain (Rimi)", () => Teema.SeaDisain(Disain.Rimi), Teema.Stiil == Disain.Rimi);
             V("Klassikaline disain", () => Teema.SeaDisain(Disain.Klassikaline), Teema.Stiil == Disain.Klassikaline);
+            V("Hooajaline kujundus", () => Hooajad.Sees = !Hooajad.Sees, Hooajad.Sees);
             m.Items.Add(new ToolStripSeparator());
             foreach (var k in Enum.GetValues<KeeleKood>())
                 V(Keel.Nimi(k), () => Keel.Sea(k), Keel.Praegu == k).Tag = k;

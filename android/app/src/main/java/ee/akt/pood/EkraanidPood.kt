@@ -392,6 +392,7 @@ private fun OtsinguRida(olek: AppOlek, t: Toode, otsi: String) {
 @Composable
 fun RuudustikEkraan(olek: AppOlek, e: Ekraan.Ruudustik) {
     var jarjestus by remember { mutableIntStateOf(0) }
+    var naita by remember { mutableIntStateOf(40) }   // suur kataloog: 40 kaupa
     val alus = when (e.vaade) {
         "kampaaniad" -> olek.tooted.filter { it.soodusProtsent != null }
         "lemmikud" -> olek.tooted.filter { it.id in olek.lemmikud }
@@ -414,7 +415,13 @@ fun RuudustikEkraan(olek: AppOlek, e: Ekraan.Ruudustik) {
         }
         Vahe(12.dp)
         if (tooted.isEmpty()) Tyhi(Ik.Kott, Keel.t("Siin pole veel tooteid"), Keel.t(if (e.vaade == "lemmikud") "Märgi toode südamega, et see siia lisada." else "Proovi teist kategooriat või muuda dieeti."))
-        else Ruudud(olek, tooted)
+        else {
+            Ruudud(olek, tooted.take(naita))
+            if (tooted.size > naita) {
+                Vahe(12.dp)
+                AaarisNupp(Keel.f("Näita rohkem ({0} veel)", tooted.size - naita), { naita += 40 }, Modifier.fillMaxWidth())
+            }
+        }
     }
 }
 
