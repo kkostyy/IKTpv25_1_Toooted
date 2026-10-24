@@ -161,6 +161,8 @@ public static class Teema
         }
         Tume = praegu;
         Stiil = praeguneStiil;
+        // tume taust (nt kaardi tume värv = teksti värv) ei tohi tumedas teemas valgeks minna
+        if (!onTekst && leitud is Roll.Tekst or Roll.Tekst2 or Roll.TekstNork) return null;
         return leitud;
     }
 
@@ -176,7 +178,13 @@ public static class Teema
     {
         // Tag "omavarv": element värvib end ise (nt tume tootekaart) – ainult tõlgime
         if (juur.Tag as string == "omavarv") { TolgiPuu(juur); return; }
-        RakendaUks(juur);
+        try { RakendaUks(juur); }
+        catch (Exception ex)
+        {
+            // üks vigane element ei tohi kogu ülejäänud akna värvimist katkestada
+            if (Environment.GetEnvironmentVariable("AKT_SILUMINE") == "1")
+                File.AppendAllText(Path.Combine(Path.GetTempPath(), "akt_viga.txt"), $"{juur.GetType().Name} '{juur.Name}': {ex}\n");
+        }
         foreach (Control c in juur.Controls)
             Rakenda(c);
         if (juur is Form) juur.Invalidate(true);
@@ -282,7 +290,8 @@ public static class Teema
         dgv.ColumnHeadersHeight = OnMoodne ? 42 : 36;
         dgv.RowTemplate.Height = OnMoodne ? 44 : 32;   // moodne: õhulisemad read
 
-        var pais = dgv.ColumnHeadersDefaultCellStyle;
+        // NB: getter annab poolikult täidetud stiili puhul KOOPIA – muudame koopiat ja omistame tagasi
+        var pais = new DataGridViewCellStyle(dgv.ColumnHeadersDefaultCellStyle);
         pais.BackColor = Paneel;
         pais.ForeColor = TekstNork;
         pais.SelectionBackColor = Paneel;
@@ -290,7 +299,7 @@ public static class Teema
         pais.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
         pais.Padding = new Padding(6, 0, 0, 0);
 
-        var rida = dgv.DefaultCellStyle;
+        var rida = new DataGridViewCellStyle(dgv.DefaultCellStyle);
         rida.BackColor = Pind;
         rida.ForeColor = Tekst;
         rida.SelectionBackColor = AktsentHele;
@@ -309,6 +318,8 @@ public static class Teema
             dgv.AlternatingRowsDefaultCellStyle.BackColor = Ymardus.Segu(Pind, Paneel2, 0.5f);
             dgv.AlternatingRowsDefaultCellStyle.SelectionBackColor = Paneel2;
         }
+        dgv.ColumnHeadersDefaultCellStyle = pais;
+        dgv.DefaultCellStyle = rida;
         foreach (DataGridViewRow r in dgv.Rows) r.Height = OnMoodne ? 44 : 32;
         dgv.Invalidate();
     }

@@ -90,7 +90,7 @@ namespace IKTpv25_1_Toooted
             cmbTeema = Valik(x, 496, 250);
             Silt("Poe värv", 290, 476);
             cmbVarv = Valik(290, 496, 250);
-            Silt("Disain (Ctrl+Shift+D)", x, 536);
+            Silt(Teema.OnMoodne ? "Disain (Ctrl+Shift+M)" : "Disain (Ctrl+Shift+D)", x, 536);
             cmbDisain = Valik(x, 556, 250);
             Silt("Keel", 290, 536);
             cmbKeel = Valik(290, 556, 250);
@@ -98,6 +98,7 @@ namespace IKTpv25_1_Toooted
             chkUmarad.CheckedChanged += (s, e) => { if (!taidan) Teema.SeaUmarad(chkUmarad.Checked); };
             Controls.Add(chkUmarad);
             TaidaValikud();
+            foreach (var c in new Control[] { cmbTeema, cmbVarv, cmbDisain, cmbKeel, chkUmarad }) c.Tag = "ei-jalgi";
 
             cmbTeema.SelectedIndexChanged += (s, e) => { if (!taidan) Teema.Sea(cmbTeema.SelectedIndex == 1, Teema.AktsendiNimi); };
             cmbVarv.SelectedIndexChanged += (s, e) =>
@@ -150,7 +151,7 @@ namespace IKTpv25_1_Toooted
         // Mitte valiku enda sündmuse sees (combobox ei taha oma ridu muuta sel hetkel)
         private void ValikudHiljem()
         {
-            if (IsHandleCreated && !IsDisposed) BeginInvoke(new Action(TaidaValikud));
+            if (IsHandleCreated && !IsDisposed) BeginInvoke(new Action(() => { TaidaValikud(); NaitaKaart(); }));   // ka kaardi rida uues keeles
         }
 
         private void TaidaValikud()

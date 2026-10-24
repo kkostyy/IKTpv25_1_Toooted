@@ -347,7 +347,7 @@ namespace IKTpv25_1_Toooted
             g.Clear(Parent?.BackColor ?? Teema.Pind);
             g.SmoothingMode = SmoothingMode.AntiAlias;
             using (var tee = Ymardus.Tee(new RectangleF(0, 0, Width - 1, Height - 1), 26))
-            using (var b = new SolidBrush(Color.FromArgb(246, 230, 239)))
+            using (var b = new SolidBrush(Teema.Tume ? Color.FromArgb(58, 36, 52) : Color.FromArgb(246, 230, 239)))
                 g.FillPath(b, tee);
 
             float k = (float)(0.92 + 0.08 * Animatsioon.Pop(hypp));
@@ -478,13 +478,13 @@ namespace IKTpv25_1_Toooted
             foreach (var o in ostud)
             {
                 var r = new RectangleF(0, y, Width - 1, 60);
-                using (var tee = Ymardus.Tee(r, 18)) using (var b = new SolidBrush(Color.FromArgb(246, 230, 239))) g.FillPath(b, tee);
+                using (var tee = Ymardus.Tee(r, 18)) using (var b = new SolidBrush(Teema.Tume ? Color.FromArgb(58, 36, 52) : Color.FromArgb(246, 230, 239))) g.FillPath(b, tee);
                 var ring = new RectangleF(10, y + 10, 40, 40);
                 using (var b = new SolidBrush(Color.FromArgb(160, 35, 110))) g.FillEllipse(b, ring);
                 Ikoonid.Joonista(g, Ikoonid.Ostukorv, Rectangle.Round(ring), Color.White, 11f);
-                TextRenderer.DrawText(g, Keel.F("Ost nr {0}", o.Id), fb, new Point(60, y + 12), Color.FromArgb(27, 28, 31));
-                TextRenderer.DrawText(g, o.Aeg.ToString("dd.MM.yyyy"), f, new Point(60, y + 32), Color.FromArgb(100, 106, 115));
-                TextRenderer.DrawText(g, Ostukorv.Eur(o.Summa), fb, new Rectangle(0, y + 12, Width - 12, 18), Color.FromArgb(27, 28, 31), TextFormatFlags.Right);
+                TextRenderer.DrawText(g, Keel.F("Ost nr {0}", o.Id), fb, new Point(60, y + 12), Teema.Tekst);
+                TextRenderer.DrawText(g, o.Aeg.ToString("dd.MM.yyyy"), f, new Point(60, y + 32), Teema.TekstNork);
+                TextRenderer.DrawText(g, Ostukorv.Eur(o.Summa), fb, new Rectangle(0, y + 12, Width - 12, 18), Teema.Tekst, TextFormatFlags.Right);
                 TextRenderer.DrawText(g, "+" + Ostukorv.Eur(o.BoonusLisatud), f, new Rectangle(0, y + 32, Width - 12, 18), Color.FromArgb(17, 104, 58), TextFormatFlags.Right);
                 y += 68;
             }

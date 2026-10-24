@@ -194,6 +194,7 @@ public static partial class Keel
         L("Hind arvutatakse kassas ostu hetkel, mitte korvi lisamisel.", "Цена считается на кассе в момент покупки, а не при добавлении в корзину.", "The price is calculated at checkout, not when added to the basket."); L("TŠEKIL", "В ЧЕКЕ", "ON THE RECEIPT");
         L("tagasi", "назад", "back");
         L("Lisa korvi", "В корзину", "Add to basket"); L("Lemmikud", "Избранное", "Favourites");
+        L("Disain (Ctrl+Shift+M)", "Дизайн (Ctrl+Shift+M)", "Design (Ctrl+Shift+M)");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }

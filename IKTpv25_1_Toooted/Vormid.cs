@@ -40,6 +40,12 @@ namespace IKTpv25_1_Toooted
             if (TagasiNupuga && !IlmaTagasita)
             {
                 UiStiil.LisaTagasiNupp(this, pealkirjaSilt);
+                // pealkiri ei mahu kõrvuti Tagasi nupuga → aken laiemaks
+                if (pealkirjaSilt != null && pealkirjaSilt.Parent != null && pealkirjaSilt.Parent != this)
+                {
+                    int vaja = pealkirjaSilt.Right + 20 - pealkirjaSilt.Parent.ClientSize.Width;
+                    if (vaja > 0 && FormBorderStyle != FormBorderStyle.Sizable) ClientSize = new Size(ClientSize.Width + vaja, ClientSize.Height);
+                }
                 KeyPreview = true;
                 if (KysiSulgemisel) JalgiMuudatusi(this);
             }
@@ -85,6 +91,7 @@ namespace IKTpv25_1_Toooted
         {
             foreach (Control c in juur.Controls)
             {
+                if (c.Tag as string == "ei-jalgi") continue;   // nt teema/keel – rakenduvad kohe, pole "salvestamata"
                 switch (c)
                 {
                     case TextBox t: t.TextChanged += (s, e) => Muudetud = true; break;
