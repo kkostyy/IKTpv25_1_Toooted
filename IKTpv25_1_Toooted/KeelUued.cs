@@ -36,6 +36,15 @@ public static partial class Keel
         L("piim", "молоко", "milk"); L("nisu", "пшеница", "wheat"); L("rukis", "рожь", "rye"); L("oder", "ячмень", "barley"); L("kaer", "овёс", "oats");
         L("gluteen", "глютен", "gluten"); L("muna", "яйцо", "egg"); L("soja", "соя", "soy"); L("kala", "рыба", "fish"); L("pähklid", "орехи", "nuts");
         L("seller", "сельдерей", "celery"); L("sinep", "горчица", "mustard"); L("seesam", "кунжут", "sesame");
+        // --- Toiteväärtus ---
+        L("Toiteväärtus", "Пищевая ценность", "Nutrition"); L("Ostukorvi toiteväärtus", "Пищевая ценность корзины", "Basket nutrition");
+        L("Kui palju energiat ja toitaineid on ostukorvis", "Сколько энергии и питательных веществ в корзине", "How much energy and nutrients are in the basket");
+        L("päeva energiat ühele inimesele", "дней энергии для одного человека", "days of energy for one person"); L("kcal kokku", "ккал всего", "kcal total");
+        L("andmed puuduvad", "нет данных", "no data"); L("Toiteväärtus puudub:", "Нет пищевой ценности:", "No nutrition data:");
+        L("Ostukorv on tühi – lisa tooteid, et näha toiteväärtust.", "Корзина пуста – добавьте товары, чтобы увидеть пищевую ценность.", "The basket is empty – add products to see nutrition.");
+        L("Energia", "Энергия", "Energy"); L("Rasvad", "Жиры", "Fat"); L("millest küllastunud", "из них насыщенные", "of which saturates");
+        L("Süsivesikud", "Углеводы", "Carbohydrates"); L("millest suhkrud", "из них сахара", "of which sugars"); L("Valgud", "Белки", "Protein"); L("Sool", "Соль", "Salt");
+        L("KUST KALORID TULEVAD", "ОТКУДА КАЛОРИИ", "WHERE CALORIES COME FROM"); L("Andmeid pole", "Нет данных", "No data"); L("OSTUKORV", "КОРЗИНА", "BASKET");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }

@@ -26,7 +26,7 @@ namespace IKTpv25_1_Toooted
         private readonly RoundedButton btnMaksma;
         private readonly KorviNupp korviNupp;
         private readonly List<IkoonTekst> navLingid = new();
-        private readonly IkoonTekst lnkSalvesta, lnkTyhjenda;
+        private readonly IkoonTekst lnkSalvesta, lnkTyhjenda, lnkToit;
         private readonly ToolTip vihjed = new();
 
         private List<Toode> koikTooted = new();
@@ -192,7 +192,7 @@ namespace IKTpv25_1_Toooted
             var korviSisu = new Panel { Dock = DockStyle.Fill, Padding = new Padding(16, 0, 12, 0), BackColor = Teema.Pind };
             korviSisu.Controls.Add(new KorvVaade { Dock = DockStyle.Fill });
 
-            var jalus = new Panel { Dock = DockStyle.Bottom, Height = 236, Padding = new Padding(16, 14, 16, 4), BackColor = Teema.Pind };
+            var jalus = new Panel { Dock = DockStyle.Bottom, Height = 262, Padding = new Padding(16, 14, 16, 4), BackColor = Teema.Pind };
             jalus.Paint += (s, e) => { using var p = new Pen(Teema.Joon); e.Graphics.DrawLine(p, 0, 0, jalus.Width, 0); };
             var rida1 = Rida("Kohaletoimetamine", out lblPakkimine, new Font("Segoe UI", 10F), Teema.Tekst2, 28);
             // Tasuta tarne edenemisriba: "Lisa veel 7,40 € ja kojuvedu on tasuta"
@@ -213,7 +213,7 @@ namespace IKTpv25_1_Toooted
                 Ikoonid.Joonista(e.Graphics, Ikoonid.NoolParemale, new Rectangle(btnMaksma.Width - 40, 0, 30, btnMaksma.Height),
                     btnMaksma.Enabled ? Color.White : Teema.TekstNork, 10f);
 
-            var alumised = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 44, BackColor = Teema.Pind, Padding = new Padding(14, 12, 0, 0), WrapContents = false };
+            var alumised = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 70, BackColor = Teema.Pind, Padding = new Padding(14, 12, 0, 0), WrapContents = true };
             lnkSalvesta = new IkoonTekst("", "Salvesta ostukorv", Teema.Teine, new Font("Segoe UI Semibold", 9F)) { Margin = new Padding(0, 0, 26, 0) };
             lnkSalvesta.Click += (s, e) => SalvestaKorv();
             lnkTyhjenda = new IkoonTekst(Ikoonid.Prygikast, "Tühjenda ostukorv", Teema.Teine, new Font("Segoe UI Semibold", 9F));
@@ -223,8 +223,12 @@ namespace IKTpv25_1_Toooted
                     Teade.Show("Kas tühjendan ostukorvi?", "Ostukorv", MessageBoxButtons.YesNo) == DialogResult.Yes)
                     Ostukorv.Tyhjenda();
             };
+            lnkToit = new IkoonTekst("\uE9D2", "Toiteväärtus", Teema.Teine, new Font("Segoe UI Semibold", 9F)) { Margin = new Padding(0, 6, 0, 0) };
+            lnkToit.Click += (s, e) => AvaToitevaartus();
+            vihjed.SetToolTip(lnkToit, Keel.T("Kui palju energiat ja toitaineid on ostukorvis"));
             alumised.Controls.Add(lnkSalvesta);
             alumised.Controls.Add(lnkTyhjenda);
+            alumised.Controls.Add(lnkToit);
 
             var vahe = new Panel { Dock = DockStyle.Top, Height = 12, BackColor = Teema.Pind };
             jalus.Controls.Add(alumised);
@@ -450,7 +454,7 @@ namespace IKTpv25_1_Toooted
             lblKokku.Text = Ostukorv.Eur(Ostukorv.Kokku + tarne);
             bool tyhi = Ostukorv.Ridad.Count == 0;
             btnMaksma.Enabled = !tyhi;
-            lnkSalvesta.Enabled = lnkTyhjenda.Enabled = !tyhi;
+            lnkSalvesta.Enabled = lnkTyhjenda.Enabled = lnkToit.Enabled = !tyhi;
             korviNupp.Invalidate();
         }
 
@@ -745,6 +749,13 @@ namespace IKTpv25_1_Toooted
         {
             Teema.Rakenda(leht);
             lehed.Ava(leht);
+        }
+
+        // Ostukorvi toiteväärtus (leht poe sees, "← Tagasi" viib tagasi)
+        private void AvaToitevaartus()
+        {
+            if (lehed.Praegune is ToitevaartusLeht) return;
+            AvaLeht(new ToitevaartusLeht(() => koikTooted.ToDictionary(t => t.Id)));
         }
 
         private void NavMuutus()
