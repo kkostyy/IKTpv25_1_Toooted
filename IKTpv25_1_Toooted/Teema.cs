@@ -174,10 +174,18 @@ public static class Teema
     // Värvib vormi (või paneeli) koos kõigi alamelementidega praeguse teema järgi
     public static void Rakenda(Control juur)
     {
+        // Tag "omavarv": element värvib end ise (nt tume tootekaart) – ainult tõlgime
+        if (juur.Tag as string == "omavarv") { TolgiPuu(juur); return; }
         RakendaUks(juur);
         foreach (Control c in juur.Controls)
             Rakenda(c);
         if (juur is Form) juur.Invalidate(true);
+    }
+
+    private static void TolgiPuu(Control c)
+    {
+        Keel.TolgiElement(c);
+        foreach (Control l in c.Controls) TolgiPuu(l);
     }
 
     private static readonly System.Reflection.MethodInfo? SeaStiil =

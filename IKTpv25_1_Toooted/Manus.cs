@@ -44,6 +44,7 @@ public static class Aken
         vorm.FormBorderStyle = FormBorderStyle.None;
         vorm.ShowInTaskbar = false;
         vorm.MinimumSize = Size.Empty;   // akna miinimum ei tohi lehte laiemaks venitada
+        if (konteiner is ScrollableControl sc) sc.AutoScroll = !taida;   // täitev vorm kerib ise (muidu kaks kerimisriba)
         if (taida) vorm.Dock = DockStyle.Fill;
         else
         {

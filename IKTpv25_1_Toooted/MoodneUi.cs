@@ -276,7 +276,9 @@ public static class MoodneStiil
     {
         rb.Tag = "moodne";
         rb.AutoSize = false;
-        rb.Height = 38;
+        int vana = rb.Height;
+        rb.Height = 34;
+        rb.Top -= (34 - vana) / 2;   // kasvab mõlemale poole, mitte ainult alla
         rb.Width = TextRenderer.MeasureText(rb.Text, rb.Font).Width + 52;
         rb.Cursor = Cursors.Hand;
         rb.TextChanged += (s, e) => rb.Width = TextRenderer.MeasureText(Keel.T(rb.Text), rb.Font).Width + 52;

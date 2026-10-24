@@ -223,6 +223,7 @@ namespace IKTpv25_1_Toooted
             if (Teema.OnMoodne && Teema.OnRimi && Visible && VoibManustada)
             {
                 var pood = new PoodVorm(this);
+                moodneMenuu?.Vali("pood");   // menüüs pole ühtki punkti valitud – lahti on pood
                 Aken.Ava(this, pood, () =>
                 {
                     if (Equals(pood.Tag, "disain") && Teema.OnMoodne) BeginInvoke(new Action(AvaPood));

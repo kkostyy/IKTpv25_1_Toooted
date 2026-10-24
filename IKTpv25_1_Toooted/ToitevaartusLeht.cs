@@ -41,14 +41,17 @@ public class ToitevaartusLeht : Leht
             // lõuend N4: paks pealkiri + hall "päevanorm" kiip
             pealkiri.Font = new Font("Segoe UI", 21F, FontStyle.Bold);
             tabel.SetColumnSpan(pealkiri, 2);
-            var norm = new Label { Text = Keel.T("päevanorm = 2000 kcal täiskasvanu"), AutoSize = false, Size = new Size(250, 32), TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 8.5F, FontStyle.Bold), ForeColor = Teema.Tekst, BackColor = Teema.Pind, Anchor = AnchorStyles.Right, Margin = new Padding(0, 12, 0, 0) };
-            using (var t = Ymardus.Tee(new RectangleF(0, 0, 250, 32), 16)) norm.Region = new Region(t);
+            var normTekst = Keel.T("päevanorm = 2000 kcal täiskasvanu");
+            int nw = TextRenderer.MeasureText(normTekst, new Font("Segoe UI", 8F, FontStyle.Bold)).Width + 20;
+            var norm = new Label { Text = normTekst, AutoSize = false, Size = new Size(nw, 32), TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 8F, FontStyle.Bold), ForeColor = Teema.Tekst, BackColor = Teema.Pind, Anchor = AnchorStyles.Right, Margin = new Padding(0, 12, 0, 0) };
+            using (var t = Ymardus.Tee(new RectangleF(0, 0, nw, 32), 16)) norm.Region = new Region(t);
             tabel.Controls.Add(norm, 2, 0);
         }
 
         // ---- Vasakul: korv ----
         var vasak = new RoundedPanel { Dock = DockStyle.Fill, Radius = 24, FillColor = Teema.Pind, BorderColor = Teema.OnMoodne ? Teema.Pind : Teema.Joon, BackColor = Teema.Taust, Padding = new Padding(16, 14, 12, 14), Margin = new Padding(0, 0, 12, 0) };
         korviRead = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, WrapContents = false, AutoScroll = true, BackColor = Teema.Pind };
+        korviRead.Resize += (s, e) => { foreach (Control c in korviRead.Controls) if (c is MoodneToiteRida) c.Width = Math.Max(160, korviRead.ClientSize.Width - 6); };
         lblPuudu = new Label { Dock = DockStyle.Bottom, Height = 64, Padding = new Padding(10, 8, 10, 8), Font = new Font("Segoe UI", 8.75F), ForeColor = Teema.Hoiatus, BackColor = Ymardus.Segu(Teema.Pind, Teema.Hoiatus, 0.12f), Visible = false };
         var vasakPealkiri = new Label { Text = "OSTUKORV", Dock = DockStyle.Top, Height = 26, Font = UiStiil.AlapealkiriFont, ForeColor = Teema.TekstNork, BackColor = Teema.Pind };
         vasak.Controls.Add(korviRead);
@@ -86,7 +89,16 @@ public class ToitevaartusLeht : Leht
         ylemine.Controls.Add(paremal);
         keskSisu.Controls.Add(ylemine);
         keskSisu.Controls.Add(ribad);
-        keskSisu.Resize += (s, e) => ribad.Width = Math.Max(260, keskSisu.ClientSize.Width - 8);
+        keskSisu.Resize += (s, e) =>
+        {
+            // kitsas: rõngas väiksem ja päevade arv rõnga alla (ei teki külgkerimist)
+            int w = Math.Max(200, keskSisu.ClientSize.Width - 8);
+            int d = Math.Clamp(w - 200, 150, 250);
+            rong.Size = new Size(d, d);
+            ylemine.FlowDirection = w < 400 ? FlowDirection.TopDown : FlowDirection.LeftToRight;
+            ribad.Width = w;
+        };
+        keskSisu.HorizontalScroll.Enabled = false;
         kesk.Controls.Add(keskSisu);
         tabel.Controls.Add(kesk, 1, 1);
 
@@ -126,7 +138,7 @@ public class ToitevaartusLeht : Leht
         foreach (var r in Ostukorv.Ridad.ToList())
         {
             decimal? kcal = td.TryGetValue(r.Id, out var t) ? Toitevaartus.TooteKcal(t, r.Kogus) : null;
-            korviRead.Controls.Add(Teema.OnMoodne ? new MoodneToiteRida(r, kcal) { Width = Math.Max(240, korviRead.ClientSize.Width - 6) } : KorviRida(r, kcal));
+            korviRead.Controls.Add(Teema.OnMoodne ? new MoodneToiteRida(r, kcal) { Width = Math.Max(160, korviRead.ClientSize.Width - 6) } : KorviRida(r, kcal));
         }
         if (lblTk != null) lblTk.Text = Keel.F("{0} tk", Ostukorv.Ridad.Sum(r => r.Kogus));
         if (Ostukorv.Ridad.Count == 0)

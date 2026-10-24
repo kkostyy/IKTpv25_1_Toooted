@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 
 namespace IKTpv25_1_Toooted;
 
@@ -12,6 +12,8 @@ public partial class MaksmineVorm
     {
         SuspendLayout();
         ClientSize = new Size(1100, 800);
+        FormBorderStyle = FormBorderStyle.Sizable;   // venib ka poe lehena
+        MinimumSize = new Size(800, 640);
         BackColor = Teema.Taust;
         korv.Visible = false;
         riba.Visible = false;
@@ -25,8 +27,18 @@ public partial class MaksmineVorm
         paa.Controls.Add(new MaksmiseSammud { Bounds = new Rectangle(26, 90, 660, 52) });
 
         int y = 158;
-        foreach (var (kaart, h) in new[] { (tarne, 118), (klient, 206), (makse, 170) })
+        var kaardid = new List<RoundedPanel>();
+        foreach (var (kaart, h0) in new[] { (tarne, 118), (klient, 206), (makse, 170) })
         {
+            int h = h0;
+            // valikud muutuvad kõrgemateks "pillideks" – nende all olevad read nihkuvad allapoole
+            if (kaart.Controls.OfType<RadioButton>().Any())
+            {
+                int rTop = kaart.Controls.OfType<RadioButton>().Max(r => r.Top);
+                foreach (Control c in kaart.Controls) if (c is not RadioButton && c.Top > rTop + 4) c.Top += 14;
+                h += 14;
+            }
+            kaardid.Add(kaart);
             Controls.Remove(kaart);
             kaart.FillColor = kaart.BorderColor = Teema.Pind;
             kaart.Bounds = new Rectangle(14, y, 680, h);
@@ -51,6 +63,20 @@ public partial class MaksmineVorm
         MoodneUi.NoolStiil(btnMaksa);
         kokkuvote.Controls.Add(btnMaksa);
         Controls.Add(kokkuvote);
+
+        // paigutus akna laiuse järgi: kokkuvõte 260–340 px paremal, vasak kaart ülejäänud
+        void Paiguta()
+        {
+            int W = ClientSize.Width, H = ClientSize.Height;
+            int kw = Math.Clamp(W * 32 / 100, 260, 340), kx = W - 16 - kw;
+            paa.Bounds = new Rectangle(16, 16, Math.Max(400, kx - 32), H - 32);
+            foreach (var k in kaardid) k.Width = paa.Width - 28;
+            foreach (var c in paa.Controls.OfType<MaksmiseSammud>()) c.Width = paa.Width - 52;
+            kokkuvote.Bounds = new Rectangle(kx, 16, kw, H - 32);
+            btnMaksa.Bounds = new Rectangle(20, kokkuvote.Height - 84, kw - 40, 60);
+        }
+        Resize += (s, e) => Paiguta();
+        Paiguta();
         ResumeLayout(true);
     }
 }
