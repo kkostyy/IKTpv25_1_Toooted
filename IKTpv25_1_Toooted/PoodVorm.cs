@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted
@@ -1387,7 +1387,7 @@ namespace IKTpv25_1_Toooted
                         g.FillPath(vari, vt);
                 if (hover) kaart.Offset(0, -3);
                 using (var path = Ymardus.Tee(kaart, 24))
-                using (var b = new SolidBrush(Teema.Paneel2))
+                using (var b = new SolidBrush(OhtuSoodustus.Kehtib(Toode, Hinnad.Kell()) && !Teema.Tume ? Color.FromArgb(255, 247, 224) : Teema.Paneel2))   // õhtu: kreemjas (N12)
                     g.FillPath(b, path);
                 using (var path = Ymardus.Tee(new RectangleF(kaart.X + 10, kaart.Y + 10, kaart.Width - 20, 162), 18))
                 using (var b = new SolidBrush(Teema.Pind))
@@ -1409,6 +1409,21 @@ namespace IKTpv25_1_Toooted
             else
                 Ikoonid.JoonistaEmoji(g, Ikoonid.KategooriaIkoon(Toode.Kategooria?.Kategooria_nimetus),
                     Rectangle.Round(pildiKast), Teema.Joon, 40f);
+
+            // Moodne: roheline pandimünt pildi paremas alanurgas (lõuend N8)
+            if (Teema.OnMoodne && Toode.Pant > 0)
+            {
+                using var fm = new Font("Segoe UI", 8F, FontStyle.Bold);
+                string pt = "+" + Ostukorv.Eur(Toode.Pant);
+                int mw = TextRenderer.MeasureText(pt, fm).Width + 34;
+                var munt = new RectangleF(pildiKast.Right - mw, pildiKast.Bottom - 30, mw, 28);
+                using (var tee = Ymardus.Tee(munt, 14)) using (var b = new SolidBrush(Color.FromArgb(20, 130, 70))) g.FillPath(b, tee);
+                var p0 = new RectangleF(munt.X + 4, munt.Y + 4, 20, 20);
+                using (var b = new SolidBrush(Color.White)) g.FillEllipse(b, p0);
+                using (var fp = new Font("Segoe UI", 7F, FontStyle.Bold))
+                    TextRenderer.DrawText(g, "P", fp, Rectangle.Round(p0), Color.FromArgb(20, 130, 70), TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+                TextRenderer.DrawText(g, pt, fm, new Rectangle((int)munt.X + 26, (int)munt.Y, mw - 28, 28), Color.White, TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix);
+            }
 
             // Soodustus: lilla ring paremal üleval (õhtune soodustus punane "tempel", mis lendab peale)
             var h = Hinnad.Lopphind(Toode);
@@ -1458,6 +1473,15 @@ namespace IKTpv25_1_Toooted
             {
                 using var vana = new Font("Segoe UI Semibold", 9.5F, FontStyle.Strikeout);
                 TextRenderer.DrawText(g, Ikoonid.Hind(h.TavaHind), vana, new Point(x + laius + 4, hinnaY + 21), Teema.Tekst2);
+            }
+            // Moodne: õhtuse soodustuse toode enne algust – "20:00 → 0,85 €" ploomiga (lõuend N12)
+            var ohtuS = OhtuSoodustus.S;
+            if (Teema.OnMoodne && ohtuS.Sees && Toode.KategooriaId == ohtuS.KategooriaId && !OhtuSoodustus.Kaib(Hinnad.Kell()))
+            {
+                decimal pool = Math.Round(Kampaaniad.TavaHind(Toode) * (100 - ohtuS.Protsent) / 100m, 2, MidpointRounding.AwayFromZero);
+                if (pool < h.Hind)
+                    using (var fo = new Font("Segoe UI", 8.5F, FontStyle.Bold))
+                        TextRenderer.DrawText(g, $"{ohtuS.Algus:hh\\:mm} → {Ostukorv.Eur(pool)}", fo, new Point(x, hinnaY + 62), Teema.Teine);
             }
             string? alumine = Toode.Pant > 0
                 ? "+ " + Keel.F("Pakendi tagatisraha {0}", Ostukorv.Eur(Toode.Pant))
