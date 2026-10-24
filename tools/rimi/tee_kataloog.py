@@ -4,26 +4,30 @@ import json, gzip, sys, re, random, datetime
 
 SISSE, VALJA = sys.argv[1], sys.argv[2]
 
-KATEGOORIAD = [  # (programmi Id, nimi, Rimi kood)
-    (1, "Piimatooted, munad, juust", "SH-11"),
-    (2, "Leivad, saiad, kondiitritooted", "SH-6"),
-    (3, "Puuviljad, köögiviljad", "SH-12"),
-    (4, "Liha- ja kalatooted", "SH-8"),
-    (5, "Joogid", "SH-3"),
-    (6, "Maiustused ja snäkid", "SH-9"),
-    (7, "Külmutatud toidukaubad", "SH-4"),
-    (8, "Kauasäilivad toidukaubad", "SH-13"),
-    (9, "Valmistoit", "SH-16"),
-    (10, "Vegantooted", "SH-17"),
-    (11, "Talu toidab", "SH-19"),
-    (12, "Alkohol", "SH-1"),
-    (13, "Lastekaubad", "SH-5"),
-    (14, "Enesehooldustarbed", "SH-2"),
-    (15, "Puhastusvahendid", "SH-14"),
-    (16, "Kodu- ja vabaajakaubad", "SH-10"),
-    (17, "Lemmikloomakaubad", "SH-7"),
+KATEGOORIAD = [  # (programmi Id, nimi, Rimi URL-i esimene osa /tooted/<osa>/…)
+    # NB! Rimi koodid (SH-x) ei sobi: joogid on kolme koodi all, puhastusvahendid kodukaupade all
+    (1, "Piimatooted, munad, juust", "piimatooted-munad-juust"),
+    (2, "Leivad, saiad, kondiitritooted", "leivad-saiad-kondiitritooted"),
+    (3, "Puuviljad, köögiviljad", "puuviljad-koogiviljad-lilled"),
+    (4, "Liha- ja kalatooted", "liha--ja-kalatooted"),
+    (5, "Joogid", "joogid"),
+    (6, "Maiustused ja snäkid", "maiustused-ja-snakid"),
+    (7, "Külmutatud toidukaubad", "kulmutatud-toidukaubad"),
+    (8, "Kauasäilivad toidukaubad", "kauasailivad-toidukaubad"),
+    (9, "Valmistoit", "valmistoit"),
+    (10, "Vegantooted", "vegantooted"),
+    (11, "Talu toidab", "talu-toidab"),
+    (12, "Alkohol", "alkohol"),
+    (13, "Lastekaubad", "lastekaubad"),
+    (14, "Enesehooldustarbed", "enesehooldustarbed"),
+    (15, "Puhastusvahendid", "puhastusvahendid"),
+    (16, "Kodu- ja vabaajakaubad", "kodu--ja-vabaajakaubad"),
+    (17, "Lemmikloomakaubad", "lemmikloomakaubad"),
 ]
 KOOD = {k: i for i, _, k in KATEGOORIAD}
+def kategooria(t):
+    m = re.search(r'/tooted/([^/]+)/', t.get('url') or '')
+    return KOOD.get(m.group(1)) if m else None
 PILT = "https://rimibaltic-res.cloudinary.com/image/upload/b_white,c_limit,f_jpg,h_400,q_85,w_400/d_ecommerce:backend-fallback.png/MAT_{}_PCE_EE"
 
 def kogus(t):
@@ -41,7 +45,7 @@ def kogus(t):
 tooted = []
 for rida in open(SISSE, encoding='utf-8'):
     t = json.loads(rida)
-    kat = KOOD.get(t.get('kategooria'))
+    kat = kategooria(t)
     if not kat or not t.get('nimi') or not t.get('hind'): continue   # teenused jms
     juhus = random.Random(t['sku'])
     uhik, uk = kogus(t)
