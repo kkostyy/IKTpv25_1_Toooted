@@ -336,6 +336,7 @@
             kulg.Lisa("kampaaniad", "\uE8EC", "Kampaaniad", AvaKampaaniad, nahtav: () => AktiivneKasutaja.OnOmanik);
             kulg.Lisa("myyk", "\uE9F9", "Müügipaneel", () => AvaVorm(new MyygipaneelVorm()), nahtav: () => AktiivneKasutaja.OnOmanik);
             kulg.Lisa("partiid", "\uE823", "Partiid", AvaPartiid, nahtav: () => AktiivneKasutaja.OnOmanik);
+            kulg.Lisa("tellimus", "\uE7B8", "Autotellimus", () => AvaVorm(new AutotellimusVorm()), nahtav: () => AktiivneKasutaja.OnOmanik);
             kulg.Lisa("demo", "\uE7B8", "Demoandmed", AvaDemo, nahtav: () => AktiivneKasutaja.OnOmanik);
             kulg.Lisa("statistika", "\uE9D2", "Statistika", () => AvaVorm(new StatistikaVorm()), nahtav: () => AktiivneKasutaja.OnOmanik);
             kulg.Lisa("seaded", "\uE713", "Seaded", () => SeadedVorm.Ava(this));

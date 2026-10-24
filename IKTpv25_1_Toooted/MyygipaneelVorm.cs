@@ -72,6 +72,11 @@ public class MyygipaneelVorm : KujundusVorm
         progKaart.Margin = new Padding(0, 0, 12, 0);
         var lopKaart = UiStiil.LooKaardiPaneel("Lõpevad peagi (müügitempo järgi)", lopevad);
         lopKaart.Dock = DockStyle.Fill;
+        var tellima = new LinkLabel { Text = Keel.T("Autotellimus →"), AutoSize = true, BackColor = Teema.Pind, LinkBehavior = LinkBehavior.HoverUnderline, Font = new Font("Segoe UI Semibold", 9.5F) };
+        tellima.LinkClicked += (s, e) => Aken.Ava(this, new AutotellimusVorm(), null);
+        lopKaart.Controls.Add(tellima);
+        tellima.BringToFront();
+        lopKaart.Resize += (s, e) => tellima.Location = new Point(lopKaart.Width - tellima.Width - 18, 16);
         tabel.Controls.Add(progKaart, 0, 1);
         tabel.Controls.Add(lopKaart, 1, 1);
 
