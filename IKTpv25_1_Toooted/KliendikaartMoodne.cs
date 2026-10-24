@@ -146,7 +146,8 @@ namespace IKTpv25_1_Toooted
         public KliendikaartMoodneVorm()
         {
             Text = Keel.T("Kliendikaart");
-            FormBorderStyle = FormBorderStyle.FixedDialog;
+            FormBorderStyle = FormBorderStyle.Sizable;   // venib (ka peaakna sees)
+            MinimumSize = new Size(820, 640);
             StartPosition = FormStartPosition.CenterParent;
             MaximizeBox = MinimizeBox = false;
             ShowInTaskbar = false;
@@ -201,20 +202,23 @@ namespace IKTpv25_1_Toooted
             foto.MinimumSize = new Size(150, 44);
             ((RoundedButton)foto).Peamine = false;
             vasak.Controls.Add(foto);
-            vasak.Controls.Add(new Label { Text = "JPG või PNG · foto lõigatakse kaardi kujuliseks, all on tume toon, et tekst jääks loetav", Location = new Point(196, 628), Size = new Size(470, 36), ForeColor = Teema.TekstNork, BackColor = Teema.Pind, Font = new Font("Segoe UI", 8.5F) });
+            var fotoInfo = new Label { Text = "JPG või PNG · foto lõigatakse kaardi kujuliseks, all on tume toon, et tekst jääks loetav", Location = new Point(196, 628), Size = new Size(470, 36), ForeColor = Teema.TekstNork, BackColor = Teema.Pind, Font = new Font("Segoe UI", 8.5F) };
+            vasak.Controls.Add(fotoInfo);
             Controls.Add(vasak);
 
             // ---- Paremal ----
             var kood = new VootkoodiKaart(AktiivneKasutaja.Kaardinumber ?? "") { Bounds = new Rectangle(720, 16, 264, 180) };
             Controls.Add(kood);
-            Controls.Add(new VarviPlaat("Boonus", Ostukorv.Eur(AktiivneKasutaja.Boonus), Color.FromArgb(226, 6, 19)) { Bounds = new Rectangle(720, 208, 126, 90) });
+            var boonusPlaat = new VarviPlaat("Boonus", Ostukorv.Eur(AktiivneKasutaja.Boonus), Color.FromArgb(226, 6, 19)) { Bounds = new Rectangle(720, 208, 126, 90) };
+            Controls.Add(boonusPlaat);
             var tasePlaat = new VarviPlaat("Tase", $"{Keel.T(tase.Nimi)} · {(tase.Protsent * 100).ToString("0.#", new System.Globalization.CultureInfo("et-EE"))} %", Color.FromArgb(160, 35, 110)) { Bounds = new Rectangle(858, 208, 126, 90), Cursor = Cursors.Hand };
             tasePlaat.Click += (s, e) => KaardiTasemedVorm.Ava(this);
             Controls.Add(tasePlaat);
 
             var paremAll = new RoundedPanel { Bounds = new Rectangle(720, 310, 264, 394), Radius = 14, FillColor = Teema.Pind, BorderColor = Teema.Pind, BackColor = Teema.Taust };
             paremAll.Controls.Add(new Label { Text = "Viimased ostud", Location = new Point(18, 16), AutoSize = true, Font = new Font("Segoe UI", 12F, FontStyle.Bold), ForeColor = Teema.Tekst, BackColor = Teema.Pind });
-            paremAll.Controls.Add(new OstuRead(ostud) { Bounds = new Rectangle(12, 48, 240, 200) });
+            var ostuRead = new OstuRead(ostud) { Bounds = new Rectangle(12, 48, 240, 200) };
+            paremAll.Controls.Add(ostuRead);
             var preemiad = UiStiil.LooSuurNupp("Preemiad ja tase  ›", (s, e) =>
             {
                 Control? o = TopLevel ? Owner : TopLevelControl;   // manustatud: peaaken
@@ -230,6 +234,31 @@ namespace IKTpv25_1_Toooted
             paremAll.Controls.Add(boonus);
             Controls.Add(paremAll);
 
+            // Paigutus akna suuruse järgi: parem veerg 280 px, vasak kaart võtab ülejäänu
+            void Paiguta()
+            {
+                int W = ClientSize.Width, H = ClientSize.Height, pr = 280, x = W - 16 - pr;
+                vasak.Bounds = new Rectangle(16, 16, Math.Max(400, x - 16 - 16), H - 32);
+                int sisu = vasak.Width - 56;
+                int tw = (sisu - 4 * 8) / pisipildid.Count, th = Math.Min(112, (int)(tw * 0.62f) + 30);
+                int ky = vasak.Height - 28 - 44 - 22 - th - 16;
+                kaart.Bounds = new Rectangle(28, 92, sisu, Math.Max(200, ky - 92));
+                for (int i = 0; i < pisipildid.Count; i++) pisipildid[i].Bounds = new Rectangle(28 + i * (tw + 8), kaart.Bottom + 16, tw, th);
+                foto.Location = new Point(28, vasak.Height - 28 - 44);
+                fotoInfo.Bounds = new Rectangle(foto.Right + 16, foto.Top + 4, Math.Max(80, vasak.Width - foto.Right - 44), 40);
+                lblValik.Location = new Point(vasak.Width - 28 - lblValik.PreferredWidth, 40);
+                kood.Bounds = new Rectangle(x, 16, pr, 180);
+                boonusPlaat.Bounds = new Rectangle(x, 208, (pr - 12) / 2, 90);
+                tasePlaat.Bounds = new Rectangle(x + (pr + 12) / 2, 208, (pr - 12) / 2, 90);
+                paremAll.Bounds = new Rectangle(x, 310, pr, Math.Max(300, H - 326));
+                ostuRead.Bounds = new Rectangle(12, 48, pr - 24, Math.Max(68, paremAll.Height - 48 - 140));
+                preemiad.Bounds = new Rectangle(18, paremAll.Height - 128, pr - 36, 50);
+                boonus.Bounds = new Rectangle(18, paremAll.Height - 68, pr - 36, 50);
+            }
+            Resize += (s, e) => Paiguta();
+            lblValik.TextChanged += (s, e) => lblValik.Left = vasak.Width - 28 - lblValik.PreferredWidth;
+            Paiguta();
+
             ValiKujundus(kaart.Disain, salvesta: false);
         }
 
@@ -238,7 +267,6 @@ namespace IKTpv25_1_Toooted
             kaart.Vaheta(n);
             foreach (var p in pisipildid) p.Valitud = p.Disain == n;
             lblValik.Text = Keel.T(KaardiKujundus.Nimed[n]);
-            lblValik.Location = new Point(660 - lblValik.PreferredWidth, 40);
             if (salvesta) KaardiKujundus.Vali(AktiivneKasutaja.Id, n);
         }
 
@@ -323,7 +351,8 @@ namespace IKTpv25_1_Toooted
                 g.FillPath(b, tee);
 
             float k = (float)(0.92 + 0.08 * Animatsioon.Pop(hypp));
-            float w = 440 * k, h = 278 * k;
+            float alus = Math.Min(440, Math.Min(Width - 60, (Height - 50) * 1.58f));   // väikesel alal väiksem kaart
+            float w = alus * k, h = alus / 1.58f * k;
             var r = new RectangleF((Width - w) / 2 + kalle.X * 10, (Height - h) / 2 + kalle.Y * 8 + (float)Math.Sin(aeg * 1.1) * 4, w, h);
             for (int i = 0; i < 8; i++)
                 using (var vari = new SolidBrush(Color.FromArgb(12, 60, 10, 40)))

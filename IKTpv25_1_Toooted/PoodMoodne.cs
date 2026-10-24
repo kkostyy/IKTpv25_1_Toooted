@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 
 namespace IKTpv25_1_Toooted
 {
@@ -63,7 +63,14 @@ namespace IKTpv25_1_Toooted
             tabid.Lisa("Lemmikud", Vaade.Lemmikud, () => NaitaRuudustik(Vaade.Lemmikud));
             var keel = new KeelePill { BackColor = Teema.Taust };
             yla.Controls.AddRange(new Control[] { otsing, tabid, keel });
-            yla.Resize += (s, e) => keel.Location = new Point(yla.Width - keel.Width, 9);
+            yla.Resize += (s, e) =>
+            {
+                // kitsas: otsing kahaneb, keelevalik ei jää vahelehtede alla
+                keel.Location = new Point(yla.Width - keel.Width, 9);
+                otsing.Width = Math.Clamp(yla.Width - tabid.Width - keel.Width - 48, 180, 330);
+                tabid.Left = otsing.Right + 16;
+                keel.Visible = tabid.Right + 12 <= keel.Left;
+            };
             keskmine.Controls.Add(yla);
             yla.SendToBack();   // kõige üles
 
@@ -335,6 +342,33 @@ namespace IKTpv25_1_Toooted
         }
     }
 
+    // Läbipaistev raamiga "pill" nupp tumedal taustal (hiire all heledam)
+    public class RaamNupp : Control
+    {
+        private bool hover;
+        public RaamNupp(string tekst)
+        {
+            Text = tekst;
+            SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
+            Font = new Font("Segoe UI Semibold", 10.5F);
+            Cursor = Cursors.Hand;
+        }
+
+        protected override void OnMouseEnter(EventArgs e) { hover = true; Invalidate(); base.OnMouseEnter(e); }
+        protected override void OnMouseLeave(EventArgs e) { hover = false; Invalidate(); base.OnMouseLeave(e); }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            var g = e.Graphics;
+            g.Clear(Parent?.BackColor ?? Color.FromArgb(27, 28, 31));
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            using var tee = Ymardus.Tee(new RectangleF(1, 1, Width - 3, Height - 3), (Height - 3) / 2f);
+            if (hover) using (var b = new SolidBrush(Color.FromArgb(30, 255, 255, 255))) g.FillPath(b, tee);
+            using (var p = new Pen(Color.FromArgb(90, 255, 255, 255), 1.5f)) g.DrawPath(p, tee);
+            TextRenderer.DrawText(g, Keel.T(Text), Font, ClientRectangle, Color.White, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+        }
+    }
+
     // Nädala pakkumine: tume kaart, suur nimi ja hind, −% kiip, toode valges ringis (hõljub)
     public class NadalaPakkumine : Control
     {
@@ -345,25 +379,20 @@ namespace IKTpv25_1_Toooted
         {
             this.toode = toode;
             SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
+            BackColor = Color.FromArgb(27, 28, 31);   // nuppude nurgad tumedal taustal (mitte valged)
             var lisaNupp = MoodneUi.NoolNupp("Lisa ostukorvi", (s, e) => lisa());
             lisaNupp.Size = new Size(210, 52);
-            var infoNupp = new RoundedButton { Text = Keel.T("Tooteinfo"), Size = new Size(130, 52), Font = new Font("Segoe UI Semibold", 10.5F), Cursor = Cursors.Hand, Peamine = false };
+            var infoNupp = new RaamNupp("Tooteinfo") { Size = new Size(130, 52) };
             infoNupp.Click += (s, e) => info();
-            infoNupp.Paint += (s, e) =>
-            {
-                // läbipaistev raamiga nupp tumedal taustal
-                var g = e.Graphics;
-                g.SmoothingMode = SmoothingMode.AntiAlias;
-                g.Clear(Color.FromArgb(27, 28, 31));
-                using var p = new Pen(Color.FromArgb(70, 255, 255, 255), 1.5f);
-                using var tee = Ymardus.Tee(new RectangleF(1, 1, infoNupp.Width - 3, infoNupp.Height - 3), 25);
-                g.DrawPath(p, tee);
-                TextRenderer.DrawText(g, infoNupp.Text, infoNupp.Font, infoNupp.ClientRectangle, Color.White, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
-            };
             Controls.Add(lisaNupp);
             Controls.Add(infoNupp);
             Resize += (s, e) =>
             {
+                // kitsal kaardil väiksemad nupud, et ring neid ei kataks
+                float d = Math.Min(230, Math.Min(Height - 80, Width * 0.36f));
+                int vaba = (int)(Width - d - 34 - 40 - 32);
+                lisaNupp.Width = Math.Clamp(vaba - 140, 150, 210);
+                infoNupp.Width = Math.Clamp(vaba - lisaNupp.Width - 10, 100, 130);
                 lisaNupp.Location = new Point(32, Height - 84);
                 infoNupp.Location = new Point(lisaNupp.Right + 10, Height - 84);
             };
@@ -391,9 +420,20 @@ namespace IKTpv25_1_Toooted
             using (var b = new SolidBrush(Color.FromArgb(240, 80, 90))) g.FillEllipse(b, mr.X + 13, mr.Y + 11, 8, 8);
             TextRenderer.DrawText(g, Keel.T("NÄDALA PAKKUMINE"), fm, Rectangle.Round(new RectangleF(mr.X + 26, mr.Y, mr.Width - 26, mr.Height)), Color.White, TextFormatFlags.VerticalCenter);
 
-            int tekstiLaius = Width - 330;
-            using (var f = new Font("Segoe UI", 26F, FontStyle.Bold))
-                TextRenderer.DrawText(g, toode.Toodenimetus, f, new Rectangle(28, 70, tekstiLaius, 100), Color.White, TextFormatFlags.WordBreak | TextFormatFlags.EndEllipsis);
+            // ring paremal (kitsal kaardil väiksem), tekst ringist vasakule
+            float d = Math.Min(230, Math.Min(Height - 80, Width * 0.36f)), cx = Width - d / 2 - 34;
+            int tekstiLaius = Math.Max(120, (int)(cx - d / 2) - 44);
+            // nimi mahub kahele reale: font väheneb, kuni mahub
+            float suurus = 26F;
+            Font f0 = new Font("Segoe UI", suurus, FontStyle.Bold);
+            while (suurus > 13 && TextRenderer.MeasureText(toode.Toodenimetus, f0, new Size(tekstiLaius, 1000), TextFormatFlags.WordBreak).Height > 2 * TextRenderer.MeasureText("Ag", f0).Height + 2)
+            {
+                f0.Dispose();
+                suurus -= 2;
+                f0 = new Font("Segoe UI", suurus, FontStyle.Bold);
+            }
+            using (f0)
+                TextRenderer.DrawText(g, toode.Toodenimetus, f0, new Rectangle(28, 70, tekstiLaius, 98), Color.White, TextFormatFlags.WordBreak | TextFormatFlags.EndEllipsis);
             using (var f = new Font("Segoe UI", 10.5F))
                 TextRenderer.DrawText(g, string.Join(" · ", new[] { toode.Kaubamark, toode.Pakend }.Where(x => !string.IsNullOrEmpty(x))), f, new Point(32, 172), Color.FromArgb(185, 189, 196));
             using (var f = new Font("Segoe UI", 34F, FontStyle.Bold))
@@ -413,7 +453,7 @@ namespace IKTpv25_1_Toooted
             }
 
             // toode valges ringis, hõljub
-            float d = Math.Min(230, Height - 80), cx = Width - 160, cy = Height / 2f - 10 + (float)Math.Sin(aeg * 0.9) * 8;
+            float cy = Height / 2f - 10 + (float)Math.Sin(aeg * 0.9) * 8;
             var ring = new RectangleF(cx - d / 2, cy - d / 2, d, d);
             for (int i = 0; i < 6; i++)
                 using (var vari = new SolidBrush(Color.FromArgb(16, 0, 0, 0)))

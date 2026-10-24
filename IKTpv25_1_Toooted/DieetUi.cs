@@ -83,8 +83,9 @@ public class DieediKaart : Panel
         kaart.Controls.Add(new Label { Text = "Minu dieet", Location = new Point(76, 14), AutoSize = true, Font = new Font("Segoe UI", 15F, FontStyle.Bold), ForeColor = Teema.Tekst, BackColor = Teema.Pind });
         kaart.Controls.Add(new Label { Text = "Valik jääb meelde ja kehtib kogu poes", Location = new Point(78, 42), AutoSize = true, Font = new Font("Segoe UI", 8.5F), ForeColor = Teema.TekstNork, BackColor = Teema.Pind });
 
-        var sobib = new Label { AutoSize = true, Font = new Font("Segoe UI", 15F, FontStyle.Bold), ForeColor = Teema.Edu, BackColor = Teema.Pind, Location = new Point(360, 14) };
-        var teada = new Label { AutoSize = true, Font = new Font("Segoe UI", 8.5F), ForeColor = Teema.TekstNork, BackColor = Teema.Pind, Location = new Point(362, 42) };
+        // loendur teise rea paremas otsas (kiipide kõrval), et ei kattuks lülititega
+        var sobib = new Label { AutoSize = true, Font = new Font("Segoe UI", 12.5F, FontStyle.Bold), ForeColor = Teema.Edu, BackColor = Teema.Pind, Location = new Point(600, 76) };
+        var teada = new Label { AutoSize = true, Font = new Font("Segoe UI", 8.5F), ForeColor = Teema.TekstNork, BackColor = Teema.Pind, Location = new Point(600, 102) };
         kaart.Controls.Add(sobib);
         kaart.Controls.Add(teada);
 
@@ -103,9 +104,18 @@ public class DieediKaart : Panel
         lylitid.Controls.Add(peida);
         lylitid.Controls.Add(info);
         kaart.Controls.Add(lylitid);
-        kaart.Resize += (s, e) => lylitid.Location = new Point(kaart.Width - lylitid.Width - 20, 18);
+        void Paiguta()
+        {
+            lylitid.Location = new Point(Math.Max(330, kaart.Width - lylitid.Width - 20), 18);
+            sobib.Left = kaart.Width - sobib.PreferredWidth - 24;
+            teada.Left = kaart.Width - teada.PreferredWidth - 24;
+            if (kaart.Controls.OfType<FlowLayoutPanel>().FirstOrDefault(f => f.Top == 76) is FlowLayoutPanel r) r.Width = Math.Max(200, Math.Min(sobib.Left, teada.Left) - 36);
+        }
+        kaart.Resize += (s, e) => Paiguta();
+        sobib.TextChanged += (s, e) => Paiguta();
+        teada.TextChanged += (s, e) => Paiguta();
 
-        var rida = new FlowLayoutPanel { Location = new Point(18, 76), Size = new Size(1200, 50), WrapContents = false, BackColor = Teema.Pind, Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right };
+        var rida = new FlowLayoutPanel { Location = new Point(18, 76), Size = new Size(600, 50), WrapContents = false, BackColor = Teema.Pind };
         foreach (var (mark, nimi) in new[] { (DieediMark.Laktoosivaba, "Laktoosivaba"), (DieediMark.Gluteenivaba, "Gluteenivaba"), (DieediMark.Vegan, "Vegan"), (DieediMark.Pahklivaba, "Pähklivaba"), (DieediMark.Eesti, "Eesti toode") })
         {
             var k = new DieediKiip(nimi, () => MinuDieet.Valik.HasFlag(mark)) { Margin = new Padding(0, 0, 8, 0) };
@@ -135,8 +145,7 @@ public class DieediKaart : Panel
         int sobib = koik.Count(MinuDieet.Sobib);
         int teada = koik.Count(t => Dieet.Analuusi(t).KoostisTeada);
         lblSobib.Text = Keel.F("Sulle sobib {0} / {1} toodet", sobib, koik.Count);
-        if (Teema.OnMoodne) lblSobib.Left = Math.Max(360, (lblSobib.Parent?.Width ?? 900) / 2 - 140);
-        lblTeada.Left = lblSobib.Left + 2;
+        if (!Teema.OnMoodne) lblTeada.Left = lblSobib.Left;
         lblTeada.Text = Keel.F("Koostis on teada {0} tootel", teada);
         viimaneArv = sobib;
         foreach (var k in kiibid.Controls.OfType<DieediKiip>()) k.Invalidate();
