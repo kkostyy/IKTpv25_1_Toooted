@@ -132,6 +132,9 @@ public static partial class Keel
         L("Moodne disain", "Современный дизайн", "Modern design"); L("Disain: moodne", "Дизайн: современный", "Design: modern");
         L("Logi sisse", "Войти", "Sign in"); L("Kassa ja e-pood ühes kohas. Kliendikaardiga 1 € = 1 sent boonust.", "Касса и интернет-магазин в одном месте. С картой клиента 1 € = 1 цент бонусов.", "Till and online shop in one place. With the customer card 1 € = 1 cent bonus.");
         L("Pole kontot? Registreeru — kliendikaart kohe", "Нет аккаунта? Регистрация — карта клиента сразу", "No account? Sign up — customer card right away");
+        L("Rohkem…", "Ещё…", "More…"); L("Ava e-pood", "Открыть магазин", "Open shop"); L("Ekspordi CSV", "Экспорт CSV", "Export CSV");
+        L("Tooteid", "Товаров", "Products"); L("Väike laoseis (alla 10 tk)", "Мало на складе (меньше 10 шт)", "Low stock (under 10 pcs)");
+        L("Müük täna", "Продажи сегодня", "Sales today"); L("+ Lisa uus", "+ Добавить", "+ Add new"); L("Kassa", "Касса", "Till"); L("Tooted", "Товары", "Products");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }

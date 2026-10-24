@@ -77,7 +77,13 @@ internal static class Program
             if (!login.EhitaUuesti) return;
         }
 
-        Application.Run(new Form1());
+        // Peaaken; moodsa disaini sisse/välja lülitamisel ehitatakse see uuesti (kasutaja jääb sisse)
+        Form1 peaaken;
+        do
+        {
+            peaaken = new Form1();
+            Application.Run(peaaken);
+        } while (peaaken.TaasAvada);
     }
 
     // Esimesed kasutajad luuakse käivitamisel, kui tabel on tühi.

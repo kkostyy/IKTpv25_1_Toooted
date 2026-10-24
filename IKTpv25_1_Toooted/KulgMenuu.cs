@@ -47,6 +47,10 @@ namespace IKTpv25_1_Toooted
             Visible = Teema.Umarad;
         }
 
+        // Moodsas disainis on peaaknal oma tume menüü – see külgmenüü peitu
+        private bool peidaMoodsas;
+        public bool PeidaMoodsas { get => peidaMoodsas; set { peidaMoodsas = value; Visible = Teema.Umarad && !(value && Teema.OnMoodne); } }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -61,7 +65,7 @@ namespace IKTpv25_1_Toooted
 
         private void TeemaMuutus()
         {
-            Visible = Teema.Umarad;   // seadetes "Ümarad nurgad ja külgmenüü"
+            Visible = Teema.Umarad && !(peidaMoodsas && Teema.OnMoodne);   // seadetes "Ümarad nurgad ja külgmenüü"
             Invalidate();
         }
 

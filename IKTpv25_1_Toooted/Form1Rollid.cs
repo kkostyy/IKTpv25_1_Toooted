@@ -197,7 +197,7 @@ namespace IKTpv25_1_Toooted
         // E-poe päis on nähtav ainult Rimi disainis; klassikalises on esimene (Wordi-laadne) vaade
         private void NaitaDisain()
         {
-            epoePais.Visible = epoeRiba.Visible = Teema.OnRimi;
+            epoePais.Visible = epoeRiba.Visible = Teema.OnRimi && !moodne;
             epoeRiba.BackColor = lblTere.BackColor = Teema.Teine;
             epoePealkiri.ForeColor = Teema.Teine;
             epoePais.Invalidate(true);
