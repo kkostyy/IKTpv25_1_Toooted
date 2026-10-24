@@ -109,6 +109,16 @@ public static partial class Keel
         L("Sisseostuhind € (marginaali jaoks)", "Закупочная цена € (для маржи)", "Purchase price € (for margin)");
         L("Pakendi tagatisraha € (pudel/purk 0.10)", "Залог за тару € (бутылка/банка 0.10)", "Bottle deposit € (bottle/can 0.10)");
         L("Sisseostuhind ja tagatisraha peavad olema arvud (nt 0.10) või tühjad.", "Закупочная цена и залог должны быть числами (напр. 0.10) или пустыми.", "Purchase price and deposit must be numbers (e.g. 0.10) or empty.");
+        // --- Partiid ---
+        L("Partiid ja säilivusaeg", "Партии и срок годности", "Batches and expiry"); L("Partiid ja säilivusaeg...", "Партии и срок годности...", "Batches and expiry..."); L("Partiid", "Партии", "Batches");
+        L("{0} päeva enne aegumist −{1} % · aegunud kantakse maha · müük FEFO", "За {0} дня до конца срока −{1} % · просроченное списывается · продажа FEFO", "{0} days before expiry −{1} % · expired is written off · FEFO sales");
+        L("Kogus", "Количество", "Quantity"); L("Aegub", "Годен до", "Expires"); L("Lisa partii", "Добавить партию", "Add batch"); L("Kanna valitud maha", "Списать выбранную", "Write off selected");
+        L("MAHA KANTUD", "СПИСАНО", "WRITTEN OFF"); L("Uus partii", "Новая партия", "New batch"); L("Ajatelg · 14 päeva", "Шкала · 14 дней", "Timeline · 14 days");
+        L("Partiid laos", "Партии на складе", "Batches in stock"); L("Aegunud", "Просрочено", "Expired"); L("−{0} % · {1} p", "−{0} % · {1} дн", "−{0} % · {1} d");
+        L("Aegunud kaupa maha kantud: {0} tk", "Списано просроченного товара: {0} шт", "Expired goods written off: {0} pcs"); L("Mahakandmisi pole.", "Списаний нет.", "No write-offs.");
+        L("Partii", "Партия", "Batch"); L("Partii lisatud: {0} · {1} tk", "Партия добавлена: {0} · {1} шт", "Batch added: {0} · {1} pcs"); L("Vali tabelist partii.", "Выберите партию в таблице.", "Select a batch in the table.");
+        L("Kas kannan maha {0} tk „{1}“?", "Списать {0} шт «{1}»?", "Write off {0} pcs of “{1}”?"); L("Toodet ei leitud.", "Товар не найден.", "Product not found.");
+        L("Aegub {0:dd.MM} −{1} %", "Годен до {0:dd.MM} −{1} %", "Expires {0:dd.MM} −{1} %"); L("−{0} % · aegub {1:dd.MM}", "−{0} % · годен до {1:dd.MM}", "−{0} % · expires {1:dd.MM}");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }

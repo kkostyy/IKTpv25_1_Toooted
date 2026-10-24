@@ -52,6 +52,7 @@ internal static class Program
 
             LooAlgkasutajad(db);
             Kampaaniad.Uuenda(db, DateTime.Now);   // alanud/lõppenud kampaaniate hinnad
+            Aegumine.Uuenda(db, DateTime.Now);     // aegunud partiid maha, −30 % allahindlused
         }
         catch (Exception ex)
         {
