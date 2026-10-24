@@ -16,6 +16,8 @@ namespace IKTpv25_1_Toooted
         private readonly Navigaator lehed;
         private readonly TagasiNupp tagasiNupp;
         private readonly FlowLayoutPanel leivapuru;
+        private readonly DieediKaart dieet = new() { Dock = DockStyle.Top };
+        private bool peidetiEnne;
         private FlowLayoutPanel sisu = new();          // praeguse poe lehe sisu
         private readonly Panel rail;
         private readonly TextBox txtOtsi;
@@ -253,7 +255,9 @@ namespace IKTpv25_1_Toooted
             navRiba.Resize += (s, e) => vihje.Location = new Point(navRiba.Width - vihje.Width - 24, 26);
             tagasiNupp.SizeChanged += (s, e) => leivapuru.Left = tagasiNupp.Right + 16;
             keskmine.Controls.Add(sisuAla);
+            keskmine.Controls.Add(dieet);
             keskmine.Controls.Add(navRiba);
+            dieet.SeaTooted(() => koikTooted);
 
             // ================= 7. Külgmenüü (ümar "pill" paremas servas) =================
             kulg = new KulgMenuu();
@@ -282,6 +286,8 @@ namespace IKTpv25_1_Toooted
 
             Ostukorv.Muutus += KorvMuutus;
             Lemmikud.Muutus += LemmikudMuutus;
+            MinuDieet.Muutus += DieetMuutus;
+            peidetiEnne = MinuDieet.Peida;
             PildiVahemalu.Laetud += PildidLaetud;
             Teema.Muutus += DisainMuutus;
             Load += (s, e) => { LaadiTooted(); NaitaAvaleht(); UuendaKokku(); };
@@ -343,6 +349,7 @@ namespace IKTpv25_1_Toooted
         {
             Ostukorv.Muutus -= KorvMuutus;
             Lemmikud.Muutus -= LemmikudMuutus;
+            MinuDieet.Muutus -= DieetMuutus;
             PildiVahemalu.Laetud -= PildidLaetud;
             Teema.Muutus -= DisainMuutus;
             base.OnFormClosed(e);
@@ -403,6 +410,22 @@ namespace IKTpv25_1_Toooted
             else foreach (var k in KoikKaardid()) k.Invalidate();
         }
 
+        // Dieedi valik muutus: sobimatud kaardid tuhmuvad (või peidetakse – siis joonistatakse uuesti)
+        private void DieetMuutus()
+        {
+            if (MinuDieet.Peida || peidetiEnne)
+            {
+                MargiAegunuks();
+                Varskenda();
+            }
+            else foreach (var k in KoikKaardid()) k.UuendaDieet();
+            peidetiEnne = MinuDieet.Peida;
+        }
+
+        // Peida sobimatud: ainult dieediga sobivad tooted
+        private static List<Toode> Filtreeri(IEnumerable<Toode> tooted) =>
+            MinuDieet.Peida ? tooted.Where(MinuDieet.Sobib).ToList() : tooted.ToList();
+
         private IEnumerable<TooteKaart> KoikKaardid()
         {
             foreach (Control c in sisu.Controls)
@@ -441,6 +464,7 @@ namespace IKTpv25_1_Toooted
             koikTooted = db.Toodetabel.Include(t => t.Kategooria).AsNoTracking().ToList();
             kategooriad = db.Kategooriatabel.AsNoTracking().ToList().OrderBy(k => k.Id).ToList();
             LooRail();
+            dieet.Uuenda();
         }
 
         private void LooRail()
@@ -492,13 +516,13 @@ namespace IKTpv25_1_Toooted
         private void JoonistaAvaleht()
         {
             TyhjendaSisu();
-            var soodus = koikTooted.Where(t => t.SoodusProtsent != null).OrderByDescending(t => t.SoodusProtsent).ToList();
+            var soodus = Filtreeri(koikTooted.Where(t => t.SoodusProtsent != null).OrderByDescending(t => t.SoodusProtsent));
             if (soodus.Count > 0)
                 sisu.Controls.Add(new Riiul("Parimad pakkumised", soodus, () => NaitaRuudustik(Vaade.Kampaaniad), Uhenda));
 
             foreach (var k in kategooriad)
             {
-                var tooted = koikTooted.Where(t => t.KategooriaId == k.Id).OrderBy(t => t.Toodenimetus).ToList();
+                var tooted = Filtreeri(koikTooted.Where(t => t.KategooriaId == k.Id).OrderBy(t => t.Toodenimetus));
                 if (tooted.Count == 0) continue;
                 int id = k.Id;
                 sisu.Controls.Add(new Riiul(k.Kategooria_nimetus, tooted, () => NaitaKategooria(id), Uhenda));
@@ -606,7 +630,7 @@ namespace IKTpv25_1_Toooted
                     3 => q.OrderByDescending(t => t.SoodusProtsent ?? 0).ThenBy(t => t.Toodenimetus),
                     _ => q.OrderBy(t => t.Toodenimetus)
                 };
-            var tooted = q.ToList();
+            var tooted = Filtreeri(q);
 
             string pealkiri = v switch
             {
@@ -725,6 +749,7 @@ namespace IKTpv25_1_Toooted
 
         private void NavMuutus()
         {
+            dieet.Visible = lehed.Praegune is PoeVaadeLeht;
             if (lehed.Praegune is PoeVaadeLeht p) sisu = p.Sisu;
             else
             {
@@ -1226,15 +1251,29 @@ namespace IKTpv25_1_Toooted
 
         private bool hover;
         private Point hiir;
+        private bool sobimatu;     // ei sobi "Minu dieet" valikuga
+        private double tuhm;       // 0 → 1 (tuhmumise animatsioon)
 
         public TooteKaart(Toode toode)
         {
             Toode = toode;
+            sobimatu = !MinuDieet.Sobib(toode);
+            tuhm = sobimatu ? 1 : 0;
             SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint |
                      ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
             Size = new Size(222, 390);
             Margin = new Padding(5);
             Cursor = Cursors.Hand;
+        }
+
+        // Dieet muutus: kaart tuhmub (0,38 läbipaistvus, hall) või tuleb tagasi, 450 ms
+        public void UuendaDieet()
+        {
+            bool uus = !MinuDieet.Sobib(Toode);
+            if (uus == sobimatu) { Invalidate(); return; }
+            sobimatu = uus;
+            double algus = tuhm, siht = uus ? 1 : 0;
+            Animatsioon.Kaivita(this, 450, t => { tuhm = algus + (siht - algus) * Animatsioon.Sujuv(t); Invalidate(); });
         }
 
         private RectangleF Kaart => new(1, 1, Width - 4, Height - 4);
@@ -1361,6 +1400,26 @@ namespace IKTpv25_1_Toooted
             Ikoonid.Joonista(g, lemmik ? "" : "", taht, lemmik ? Teema.Teine : Teema.TekstNork, 10f);
 
             JoonistaNupp(g, laos);
+
+            // Dieedi kiibid pildi vasakus ülanurgas
+            DieediMargid.Joonista(g, Toode, kaart.X + 12, kaart.Y + 12, kaart.Width - 70);
+
+            // Ei sobi: kaart tuhmub (taustavärvi kiht) ja keskel must silt
+            if (tuhm > 0.01)
+            {
+                using (var b = new SolidBrush(Color.FromArgb((int)(tuhm * 0.62 * 255), Teema.Taust)))
+                using (var path = Ymardus.Tee(kaart, 4))
+                    g.FillPath(b, path);
+                using var f = new Font("Segoe UI Semibold", 9F);
+                string tekst = Keel.T("Ei sobi");
+                int tw = TextRenderer.MeasureText(tekst, f).Width + 22;
+                var r = new RectangleF(kaart.X + (kaart.Width - tw) / 2, kaart.Y + 80, tw, 28);
+                using (var tee = Ymardus.Tee(r, 14))
+                using (var b = new SolidBrush(Color.FromArgb((int)(tuhm * 230), 27, 28, 31)))
+                    g.FillPath(b, tee);
+                TextRenderer.DrawText(g, tekst, f, Rectangle.Round(r), Color.FromArgb((int)(tuhm * 255), Color.White),
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix);
+            }
         }
 
         private static void JoonistaLipp(Graphics g, int x, int y)
