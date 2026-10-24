@@ -17,6 +17,7 @@ internal static class Program
         Keel.Lae();    // eesti / vene / inglise
         Application.AddMessageFilter(new DisainiKlahv());   // Ctrl+Shift+D igas aknas
         Application.AddMessageFilter(new TagasiHiir());     // hiire külgnupp = tagasi
+        ElementidePuu.Lisa();                               // F12 = elementide puu faili (ainult AKT_SILUMINE=1)
 
         try
         {
@@ -52,6 +53,7 @@ internal static class Program
 
             LooAlgkasutajad(db);
             Kampaaniad.Uuenda(db, DateTime.Now);   // alanud/lõppenud kampaaniate hinnad
+            Aegumine.Uuenda(db, DateTime.Now);     // aegunud partiid maha, −30 % allahindlused
         }
         catch (Exception ex)
         {
@@ -65,14 +67,24 @@ internal static class Program
         }
 
         // Kõigepealt sisselogimine; roll määrab, mida kasutaja näeb
-        using (var login = new LoginVorm())
+        // Sisselogimine; kui disain vahetati (Ctrl+Shift+M), avatakse aken uues disainis
+        while (true)
         {
+            using var login = new LoginVorm();
             login.StartPosition = FormStartPosition.CenterScreen;
             login.ShowInTaskbar = true;
-            if (login.ShowDialog() != DialogResult.OK) return;
+            var tulemus = login.ShowDialog();
+            if (tulemus == DialogResult.OK) break;
+            if (!login.EhitaUuesti) return;
         }
 
-        Application.Run(new Form1());
+        // Peaaken; moodsa disaini sisse/välja lülitamisel ehitatakse see uuesti (kasutaja jääb sisse)
+        Form1 peaaken;
+        do
+        {
+            peaaken = new Form1();
+            Application.Run(peaaken);
+        } while (peaaken.TaasAvada);
     }
 
     // Esimesed kasutajad luuakse käivitamisel, kui tabel on tühi.
@@ -113,6 +125,13 @@ internal sealed class DisainiKlahv : IMessageFilter
             Teema.VahetaDisain();
             Teade.Toast(Teema.OnRimi ? "Disain: e-pood (Rimi stiil)" : "Disain: klassikaline", TeateTyyp.Info, 1800);
             return true;   // klahvi rohkem edasi ei saadeta
+        }
+        if (m.Msg == WM_KEYDOWN && (Keys)(int)m.WParam == Keys.M &&
+            Control.ModifierKeys == (Keys.Control | Keys.Shift))
+        {
+            Teema.VahetaMoodne();
+            Teade.Toast(Teema.OnMoodne ? "Disain: moodne" : "Disain: e-pood (Rimi stiil)", TeateTyyp.Info, 1800);
+            return true;
         }
         return false;
     }

@@ -1,4 +1,4 @@
-namespace IKTpv25_1_Toooted
+﻿namespace IKTpv25_1_Toooted
 {
     // Menüü ja rollid: Omanik näeb vahelehti Tooted ja Kassa, Müüja ainult Kassa
     public partial class Form1
@@ -10,6 +10,10 @@ namespace IKTpv25_1_Toooted
         private readonly ToolStripMenuItem menuEmail = new("E-posti seaded...");
         private readonly ToolStripMenuItem menuKasutajad = new("Kasutajad...");
         private readonly ToolStripMenuItem menuKampaaniad = new("Kampaaniad...");
+        private readonly ToolStripMenuItem menuDemo = new("Demoandmed...");
+        private readonly ToolStripMenuItem menuMyygipaneel = new("Müügipaneel...");
+        private readonly ToolStripMenuItem menuPartiid = new("Partiid ja säilivusaeg...");
+        private readonly ToolStripMenuItem menuOhtu = new("Õhtune soodustus...");
         private readonly ToolStripStatusLabel lblKasutaja = new();
         private string? algneTiitel;
         private Point tabKassaAlgne;
@@ -36,6 +40,14 @@ namespace IKTpv25_1_Toooted
             menuKasutajad.Click += (s, e) => AvaVorm(new KasutajadVorm());
             haldus.DropDownItems.Add(menuKampaaniad);
             menuKampaaniad.Click += (s, e) => AvaKampaaniad();
+            haldus.DropDownItems.Add(menuMyygipaneel);
+            haldus.DropDownItems.Add(menuPartiid);
+            haldus.DropDownItems.Add(menuOhtu);
+            menuOhtu.Click += (s, e) => AvaVorm(new OhtuSeadedVorm());
+            menuPartiid.Click += (s, e) => AvaPartiid();
+            menuMyygipaneel.Click += (s, e) => AvaVorm(new MyygipaneelVorm());
+            haldus.DropDownItems.Add(menuDemo);
+            menuDemo.Click += (s, e) => AvaDemo();
             haldus.DropDownItems.Add(menuStatistika);
             haldus.DropDownItems.Add(menuEksport);
             haldus.DropDownItems.Add(menuEmail);
@@ -86,6 +98,10 @@ namespace IKTpv25_1_Toooted
             menuEmail.Visible = omanik;
             menuKasutajad.Visible = omanik;
             menuKampaaniad.Visible = omanik;
+            menuDemo.Visible = omanik;
+            menuMyygipaneel.Visible = omanik;
+            menuPartiid.Visible = omanik;
+            menuOhtu.Visible = omanik;
 
             // Ostja (klient) ei näe kassat ega ladu – talle avaneb kohe e-pood
             if (AktiivneKasutaja.OnOstja)
@@ -181,7 +197,7 @@ namespace IKTpv25_1_Toooted
         // E-poe päis on nähtav ainult Rimi disainis; klassikalises on esimene (Wordi-laadne) vaade
         private void NaitaDisain()
         {
-            epoePais.Visible = epoeRiba.Visible = Teema.OnRimi;
+            epoePais.Visible = epoeRiba.Visible = Teema.OnRimi && !moodne;
             epoeRiba.BackColor = lblTere.BackColor = Teema.Teine;
             epoePealkiri.ForeColor = Teema.Teine;
             epoePais.Invalidate(true);
@@ -194,6 +210,7 @@ namespace IKTpv25_1_Toooted
         private readonly ToolStripMenuItem menuDisainRimi = new("E-poe disain (Rimi)");
         private readonly List<ToolStripMenuItem> menuKeeled = new();
         private readonly ToolStripMenuItem menuDisainKlassik = new("Klassikaline disain");
+        private readonly ToolStripMenuItem menuDisainMoodne = new("Moodne disain") { ShortcutKeyDisplayString = "Ctrl+Shift+M" };
 
         private ToolStripMenuItem LooVaadeMenuu()
         {
@@ -225,10 +242,12 @@ namespace IKTpv25_1_Toooted
             vaade.DropDownItems.Add(new ToolStripSeparator());
             menuDisainRimi.ShortcutKeyDisplayString = "Ctrl+Shift+D";
             menuDisainKlassik.ShortcutKeyDisplayString = "Ctrl+Shift+D";
-            menuDisainRimi.Click += (s, e) => { if (!Teema.OnRimi) Teema.VahetaDisain(); };
-            menuDisainKlassik.Click += (s, e) => { if (Teema.OnRimi) Teema.VahetaDisain(); };
+            menuDisainRimi.Click += (s, e) => Teema.SeaDisain(Disain.Rimi);
+            menuDisainKlassik.Click += (s, e) => Teema.SeaDisain(Disain.Klassikaline);
+            menuDisainMoodne.Click += (s, e) => Teema.SeaDisain(Disain.Moodne);
             vaade.DropDownItems.Add(menuDisainRimi);
             vaade.DropDownItems.Add(menuDisainKlassik);
+            vaade.DropDownItems.Add(menuDisainMoodne);
             vaade.DropDownItems.Add(new ToolStripSeparator());
 
             // Keel: nimed alati oma keeles (Eesti / Русский / English)
@@ -253,8 +272,9 @@ namespace IKTpv25_1_Toooted
             menuHele.Checked = !Teema.Tume;
             menuTume.Checked = Teema.Tume;
             foreach (var m in menuVarvid) m.Checked = Equals(m.Tag, Teema.AktsendiNimi);
-            menuDisainRimi.Checked = Teema.OnRimi;
+            menuDisainRimi.Checked = Teema.Stiil == Disain.Rimi;
             menuDisainKlassik.Checked = !Teema.OnRimi;
+            menuDisainMoodne.Checked = Teema.OnMoodne;
             foreach (var m in menuKeeled) m.Checked = Equals(m.Tag, Keel.Praegu);
         }
 
@@ -289,8 +309,17 @@ namespace IKTpv25_1_Toooted
         // Kampaaniate haldus; pärast sulgemist on hinnad muutunud
         private void AvaKampaaniad()
         {
-            AvaVorm(new KampaaniadVorm());
-            LaadiTooted();
+            AvaVorm(new KampaaniadVorm(), LaadiTooted);
+        }
+
+        private void AvaPartiid()
+        {
+            AvaVorm(new AegumineVorm(), LaadiTooted);
+        }
+
+        private void AvaDemo()
+        {
+            AvaVorm(new DemoVorm(), LaadiTooted);
         }
 
         private void LooKulgMenuu()
@@ -305,6 +334,9 @@ namespace IKTpv25_1_Toooted
             kulg.Lisa("kliendid", "\uE716", "Kliendid", () => AvaVorm(new KliendidVorm()), nahtav: () => AktiivneKasutaja.OnOmanik);
             kulg.Lisa("kasutajad", "\uE77B", "Kasutajad", () => AvaVorm(new KasutajadVorm()), nahtav: () => AktiivneKasutaja.OnOmanik);
             kulg.Lisa("kampaaniad", "\uE8EC", "Kampaaniad", AvaKampaaniad, nahtav: () => AktiivneKasutaja.OnOmanik);
+            kulg.Lisa("myyk", "\uE9F9", "Müügipaneel", () => AvaVorm(new MyygipaneelVorm()), nahtav: () => AktiivneKasutaja.OnOmanik);
+            kulg.Lisa("partiid", "\uE823", "Partiid", AvaPartiid, nahtav: () => AktiivneKasutaja.OnOmanik);
+            kulg.Lisa("demo", "\uE7B8", "Demoandmed", AvaDemo, nahtav: () => AktiivneKasutaja.OnOmanik);
             kulg.Lisa("statistika", "\uE9D2", "Statistika", () => AvaVorm(new StatistikaVorm()), nahtav: () => AktiivneKasutaja.OnOmanik);
             kulg.Lisa("seaded", "\uE713", "Seaded", () => SeadedVorm.Ava(this));
             kulg.Valju = VahetaKasutajat;
@@ -321,11 +353,7 @@ namespace IKTpv25_1_Toooted
             kulg.UuendaMargid();
         }
 
-        private void AvaNimekiri()
-        {
-            using var vorm = new OstunimekiriVorm();
-            vorm.ShowDialog(this);
-        }
+        private void AvaNimekiri() => AvaVorm(new OstunimekiriVorm());
 
         private void VahetaKasutajat()
         {
@@ -337,18 +365,15 @@ namespace IKTpv25_1_Toooted
         // Ostude ajalugu: kõik näevad ja saavad tšeki printida, tagastada saab ainult omanik
         private void AvaAjalugu()
         {
-            using var vorm = new OstudVorm(lubaTagastus: AktiivneKasutaja.OnOmanik);
-            vorm.ShowDialog(this);
-            foreach (int id in vorm.TagastatudOstud) OstTagastati(id);
-            if (vorm.TagastatudOstud.Count > 0) LaadiTooted();
+            var vorm = new OstudVorm(lubaTagastus: AktiivneKasutaja.OnOmanik);
+            AvaVorm(vorm, () =>
+            {
+                foreach (int id in vorm.TagastatudOstud) OstTagastati(id);
+                if (vorm.TagastatudOstud.Count > 0) LaadiTooted();
+            });
         }
 
-        private void AvaVorm(Form vorm)
-        {
-            using (vorm)
-            {
-                vorm.ShowDialog(this);
-            }
-        }
+        // Moodsas disainis avaneb vorm peaakna sees, muidu dialoogina; "parast" pärast sulgemist
+        private void AvaVorm(Form vorm, Action? parast = null) => Aken.Ava(this, vorm, parast);
     }
 }

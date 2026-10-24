@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Drawing.Drawing2D;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,6 +31,13 @@ namespace IKTpv25_1_Toooted
                 catch (Exception ex) { Teade.Show("Viga:\n" + ex.Message); return; }
             }
 
+            // Moodne disain (lõuend 2.3): kujunduse valik, oma foto, vöötkood, ostud
+            if (Teema.OnMoodne)
+            {
+                Aken.Ava(omanik, new KliendikaartMoodneVorm());
+                return;
+            }
+
             using var vorm = new KliendikaartVorm();
             if (omanik != null) vorm.ShowDialog(omanik);
             else { vorm.StartPosition = FormStartPosition.CenterScreen; vorm.ShowDialog(); }
@@ -40,6 +47,11 @@ namespace IKTpv25_1_Toooted
 
         private readonly string nimi, number, ean;
         private readonly decimal boonus;
+        private readonly TaseInfo tase = Preemiad.TaseSummast(0);
+        private double kaardiAeg;      // läige/sädemed (sekundid)
+        private float holo = 0.5f;     // kuldkaardi hologramm hiire järgi
+        private RectangleF preemiadKoht => new(28, kaardiKoht.Bottom + 12, 404, 40);
+        private bool preemiadAll;
         private readonly List<Tehing> ajalugu = new();
 
         // Animatsioon
@@ -51,7 +63,7 @@ namespace IKTpv25_1_Toooted
         private bool poorab, tagusEes;  // kas praegu on tagakülg ees
         private long poordeAlgus;
 
-        private const int Laius = 460, Korgus = 650;
+        private const int Laius = 460, Korgus = 710;
         private readonly RectangleF kaardiKoht = new(28, 74, 404, 255);   // 1,586 : 1 nagu pangakaart
         private RectangleF sulgeKoht => new(Laius - 50, 18, 32, 32);
         private RectangleF tagasiKoht => new(22, 16, TextRenderer.MeasureText(Keel.T("Tagasi"), tagasiFont).Width + 50, 38);
@@ -75,6 +87,12 @@ namespace IKTpv25_1_Toooted
             nimi = (AktiivneKasutaja.TaisNimi ?? AktiivneKasutaja.Nimi).ToUpper();
             number = AktiivneKasutaja.Kaardinumber ?? "";
             boonus = AktiivneKasutaja.Boonus;
+            try
+            {
+                using var db0 = new ToodedContext();
+                if (AktiivneKasutaja.KlientId is int kid) tase = Preemiad.LeiaTase(db0, kid);
+            }
+            catch { }
             ean = Triipkood.Ean13Number(number);
 
             try
@@ -102,6 +120,9 @@ namespace IKTpv25_1_Toooted
         protected override void OnShown(EventArgs e)
         {
             base.OnShown(e);
+            // Hõbe- ja kuldkaardi läige ning sädemed liiguvad pidevalt
+            if (tase.Tase != Tase.Pronks)
+                Animatsioon.Tsykkel(this, s => { kaardiAeg = s; Invalidate(Rectangle.Ceiling(RectangleF.Inflate(kaardiKoht, 4, 4))); }, 40);
             kell.Start();
             taimer.Start();
         }
@@ -124,15 +145,25 @@ namespace IKTpv25_1_Toooted
         {
             base.OnMouseClick(e);
             if (sulgeKoht.Contains(e.Location) || tagasiKoht.Contains(e.Location)) Sulge();
+            else if (preemiadKoht.Contains(e.Location))
+            {
+                // Preemiad: kaart sulgub, preemiate leht avaneb (poes lehena, muidu aknana)
+                var omanik = Owner;
+                Sulge();
+                BeginInvoke(new Action(() => PreemiadLeht.Ava(omanik)));
+            }
             else if (kaardiKoht.Contains(e.Location)) Poora();
         }
 
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);
+            if (kaardiKoht.Contains(e.Location)) holo = (e.X - kaardiKoht.X) / kaardiKoht.Width;
+            bool pAll = preemiadKoht.Contains(e.Location);
+            if (pAll != preemiadAll) { preemiadAll = pAll; Invalidate(Rectangle.Ceiling(preemiadKoht)); }
             bool all = tagasiKoht.Contains(e.Location);
             if (all != tagasiAll) { tagasiAll = all; Invalidate(Rectangle.Ceiling(tagasiKoht)); }
-            Cursor = kaardiKoht.Contains(e.Location) || sulgeKoht.Contains(e.Location) || all ? Cursors.Hand : Cursors.Default;
+            Cursor = kaardiKoht.Contains(e.Location) || sulgeKoht.Contains(e.Location) || all || pAll ? Cursors.Hand : Cursors.Default;
         }
 
         private void Poora()
@@ -244,7 +275,18 @@ namespace IKTpv25_1_Toooted
             // Ostude ajalugu (ilmub pärast kaarti)
             int alfa = (int)(Math.Clamp((k - 0.4) / 0.6, 0, 1) * 255);
             if (alfa <= 0) return;
-            float y = kaardiKoht.Bottom + 34 + nihe * 0.5f;
+            // "Preemiad · Hõbe 1,5 %  ›" nupp kaardi all
+            var pk = preemiadKoht;
+            pk.Y += nihe * 0.5f;
+            using (var tee = Ymardus.Tee(pk, pk.Height / 2))
+            using (var b = new SolidBrush(Color.FromArgb(alfa * (preemiadAll ? 60 : 34) / 255, 255, 255, 255)))
+                g.FillPath(b, tee);
+            TaseKaart.Medal(g, new RectangleF(pk.X + 8, pk.Y + 7, 26, 26), tase.Tase);
+            using (var f = new Font("Segoe UI Semibold", 10F))
+                TextRenderer.DrawText(g, Keel.F("Preemiad · {0} {1} %", Keel.T(tase.Nimi), (tase.Protsent * 100).ToString("0.#", new System.Globalization.CultureInfo("et-EE"))) + "  ›",
+                    f, Rectangle.Round(new RectangleF(pk.X + 44, pk.Y, pk.Width - 50, pk.Height)), Color.FromArgb(alfa, Color.White), TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix);
+
+            float y = kaardiKoht.Bottom + 34 + 52 + nihe * 0.5f;
             using (var f = new Font("Segoe UI Semibold", 11F))
             using (var b = new SolidBrush(Color.FromArgb(alfa, Color.White)))
                 g.DrawString(Keel.T("Viimased ostud"), f, b, 28, y);
@@ -286,19 +328,12 @@ namespace IKTpv25_1_Toooted
         // ---- Kaardi esikülg: värviline, logo, boonus, nimi, number ----
         private void Esikulg(Graphics g, RectangleF r)
         {
+            // Taust taseme järgi: Pronks vask, Hõbe harjatud hõbe + läige, Kuld + hologramm ja sädemed
+            TaseKaart.JoonistaTaust(g, r, tase.Tase, kaardiAeg, holo);
             using var tee = Ymardus.Tee(r, 9);
-            var v1 = Teema.Teine;
-            var v2 = Ymardus.Segu(Teema.Aktsent, Color.Black, 0.35f);
-            using (var taust = new LinearGradientBrush(r, v1, v2, 35f))
-                g.FillPath(taust, tee);
 
             var olek = g.Save();
             g.SetClip(tee);
-            using (var ring = new SolidBrush(Color.FromArgb(28, Color.White)))
-            {
-                g.FillEllipse(ring, r.Width - 170, -110, 300, 300);
-                g.FillEllipse(ring, -80, r.Height - 90, 200, 200);
-            }
             // Läige
             using (var laige = new LinearGradientBrush(new RectangleF(0, 0, r.Width, r.Height),
                        Color.FromArgb(50, Color.White), Color.FromArgb(0, Color.White), 70f))
@@ -312,6 +347,11 @@ namespace IKTpv25_1_Toooted
             {
                 var sf = new StringFormat { Alignment = StringAlignment.Far };
                 g.DrawString(Keel.T("KLIENDIKAART"), f, b, new RectangleF(r.Width - 200, 24, 180, 16), sf);
+                // tase: väike medal + "Hõbe · 1,5 %"
+                string taseTekst = $"{Keel.T(tase.Nimi)} · {(tase.Protsent * 100).ToString("0.#", new System.Globalization.CultureInfo("et-EE"))} %";
+                g.DrawString(taseTekst, f, b, new RectangleF(r.Width - 200, 42, 180, 16), sf);
+                var tw = g.MeasureString(taseTekst, f).Width;
+                TaseKaart.Medal(g, new RectangleF(r.Width - 20 - tw - 20, 41, 16, 16), tase.Tase);
             }
 
             // Kiip

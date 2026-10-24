@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 
 namespace IKTpv25_1_Toooted;
 
@@ -96,7 +96,7 @@ public class KorviReaKontroll : Control
         this.rida = rida;
         SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint |
                  ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
-        Height = 72;
+        Height = Teema.OnMoodne && rida.Pant > 0 ? 96 : 72;   // moodne: pandi alarida (lõuend N8)
         BackColor = Teema.Pind;
 
         miinus = VaikeNupp("−");
@@ -178,8 +178,24 @@ public class KorviReaKontroll : Control
             TextRenderer.DrawText(g, Ostukorv.Eur(rida.Summa), summa, new Rectangle(Width - 110, 36, 102, 28), Teema.Tekst,
                 TextFormatFlags.Right | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix);
 
+        if (Teema.OnMoodne && rida.Pant > 0) Pandirida(g, 70, 70, Width - 8, rida.Kogus, rida.Pant);
+
         using var joon = new Pen(Teema.Joon);
         g.DrawLine(joon, 8, Height - 1, Width - 8, Height - 1);
+    }
+
+    // Roheline "P" münt + "Pakendi tagatisraha · 2 × 0,10 €" ja summa paremal
+    public static void Pandirida(Graphics g, int x, int y, int parem, int kogus, decimal pant)
+    {
+        var roheline = Color.FromArgb(17, 104, 58);
+        var myynt = new RectangleF(x, y, 18, 18);
+        using (var b = new SolidBrush(Color.FromArgb(20, 130, 70))) g.FillEllipse(b, myynt);
+        using var fp = new Font("Segoe UI", 6.5F, FontStyle.Bold);
+        TextRenderer.DrawText(g, "P", fp, Rectangle.Round(myynt), Color.White, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+        using var f = new Font("Segoe UI", 8F, FontStyle.Bold);
+        TextRenderer.DrawText(g, $"{Keel.T("Pakendi tagatisraha")} · {kogus} × {Ostukorv.Eur(pant)}", f, new Rectangle(x + 24, y, parem - x - 90, 18), roheline,
+            TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
+        TextRenderer.DrawText(g, Ostukorv.Eur(pant * kogus), f, new Rectangle(parem - 90, y, 90, 18), roheline, TextFormatFlags.Right | TextFormatFlags.VerticalCenter);
     }
 }
 

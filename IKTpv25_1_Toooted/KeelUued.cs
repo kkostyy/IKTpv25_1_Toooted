@@ -1,4 +1,4 @@
-namespace IKTpv25_1_Toooted;
+﻿namespace IKTpv25_1_Toooted;
 
 // Uute funktsioonide tõlked (eesti → vene, inglise)
 public static partial class Keel
@@ -59,6 +59,142 @@ public static partial class Keel
         L("Uus pere loodud. Kood {0} on kopeeritud – saada see pereliikmetele.", "Семья создана. Код {0} скопирован – отправьте его членам семьи.", "New family created. Code {0} is copied – send it to family members.");
         L("Pere kood on {0} märki.", "Код семьи – {0} символов.", "The family code has {0} characters.");
         L("Sellise koodiga peret ei leitud.", "Семья с таким кодом не найдена.", "No family with this code was found.");
+        // --- Preemiad ---
+        L("Preemiad", "Награды", "Rewards"); L("Pronks", "Бронза", "Bronze"); L("Hõbe", "Серебро", "Silver"); L("Kuld", "Золото", "Gold");
+        L("SINU TASE", "ВАШ УРОВЕНЬ", "YOUR LEVEL"); L("{0}-tasemeni veel {1} oste", "До уровня {0} ещё {1} покупок", "{1} more purchases to {0}");
+        L("Kõrgeim tase – aitäh!", "Высший уровень – спасибо!", "Top level – thank you!"); L("alates {0}", "от {0}", "from {0}");
+        L("Nädala väljakutsed", "Задания недели", "Weekly challenges"); L("Kleepsualbum  {0} / {1}", "Альбом наклеек  {0} / {1}", "Sticker album  {0} / {1}");
+        L("Eesti nädal: osta 5 Eesti toodet", "Эстонская неделя: купите 5 эстонских товаров", "Estonian week: buy 5 Estonian products");
+        L("Värske valik: 3 puu- või köögivilja", "Свежий выбор: 3 фрукта или овоща", "Fresh choice: 3 fruits or vegetables");
+        L("Kolm korda: tee 3 ostu", "Три раза: сделайте 3 покупки", "Three times: make 3 purchases");
+        L("Tehtud! ✓ · +{0} saadud", "Готово! ✓ · получено +{0}", "Done! ✓ · +{0} received");
+        L("Esimene ost", "Первая покупка", "First purchase"); L("Tee esimene ost", "Сделайте первую покупку", "Make your first purchase");
+        L("10 ostu", "10 покупок", "10 purchases"); L("Tee 10 ostu", "Сделайте 10 покупок", "Make 10 purchases");
+        L("Eesti patrioot", "Эстонский патриот", "Estonian patriot"); L("Osta 50 Eesti toodet", "Купите 50 эстонских товаров", "Buy 50 Estonian products");
+        L("Tervislik", "Здоровый", "Healthy"); L("Osta 20 puu- või köögivilja", "Купите 20 фруктов или овощей", "Buy 20 fruits or vegetables");
+        L("Säästja", "Экономный", "Saver"); L("Säästa soodustustega 10 €", "Сэкономьте 10 € на скидках", "Save 10 € with discounts");
+        L("Kogu ring", "Полный круг", "Full circle"); L("Osta igast kategooriast", "Купите из каждой категории", "Buy from every category");
+        L("Hommikune", "Утренний", "Early bird"); L("Tee ost enne kella 9", "Сделайте покупку до 9 утра", "Shop before 9 am");
+        L("Pere ostleja", "Семейный покупатель", "Family shopper"); L("Osta 10 rida pere nimekirjast", "Купите 10 строк из семейного списка", "Buy 10 rows from the family list");
+        L("Kogu kogu! +{0}", "Вся коллекция! +{0}", "Full set! +{0}"); L("Kogu kogu! Kõik kleebised koos · +{0}", "Вся коллекция! Все наклейки собраны · +{0}", "Full set! All stickers collected · +{0}");
+        L("Väljakutse tehtud: {0} · +{1}", "Задание выполнено: {0} · +{1}", "Challenge done: {0} · +{1}"); L("Uus kleeps: {0}", "Новая наклейка: {0}", "New sticker: {0}");
+        L("Uus tase: {0} · {1} %", "Новый уровень: {0} · {1} %", "New level: {0} · {1} %"); L("PÄEVA ÜLLATUS", "СЮРПРИЗ ДНЯ", "SURPRISE OF THE DAY");
+        L("Kord päevas – juhuslik soodustus ühele tootele", "Раз в день – случайная скидка на один товар", "Once a day – a random discount on one product");
+        L("Ava kingitus", "Открыть подарок", "Open the gift"); L("Avatud ✓", "Открыто ✓", "Opened ✓"); L("ainult täna", "только сегодня", "today only");
+        L("Täna pole üllatuseks sobivaid tooteid", "Сегодня нет подходящих товаров для сюрприза", "No products available for a surprise today");
+        L("Päeva üllatus −{0} %", "Сюрприз дня −{0} %", "Surprise of the day −{0} %"); L("Preemiad · {0} {1} %", "Награды · {0} {1} %", "Rewards · {0} {1} %");
+        L("Preemiate jaoks on vaja kliendikaarti. Ava „Kliendikaart“ ja loo see.", "Для наград нужна карта клиента. Откройте «Карта клиента» и создайте её.", "Rewards need a customer card. Open “Customer card” and create one.");
+        // --- Demoandmed ---
+        L("Demoandmed", "Демо-данные", "Demo data"); L("Demoandmed...", "Демо-данные...", "Demo data..."); L("toodet", "товаров", "products"); L("ostu", "покупок", "purchases");
+        L("Üks nupp lisab 50 toodet, 3 klienti ja 20 ostu viimase 30 päeva jooksul, et programm ei näeks esitlusel tühi välja. Demoandmed on märgitud ja neid saab hiljem korraga eemaldada.", "Одна кнопка добавляет 50 товаров, 3 клиентов и 20 покупок за последние 30 дней, чтобы программа не выглядела пустой на защите. Демо-данные помечены, их можно удалить разом.", "One button adds 50 products, 3 customers and 20 purchases from the last 30 days so the app does not look empty in a demo. Demo data is marked and can be removed at once.");
+        L("Lisa demoandmed", "Добавить демо-данные", "Add demo data"); L("Eemalda demoandmed", "Удалить демо-данные", "Remove demo data");
+        L("Loon demoandmeid...", "Создаю демо-данные...", "Creating demo data..."); L("Demoandmed lisatud", "Демо-данные добавлены", "Demo data added"); L("Demoandmed eemaldatud", "Демо-данные удалены", "Demo data removed");
+        L("Demoandmed on juba olemas.", "Демо-данные уже есть.", "Demo data already exists."); L("Demotoode esitluseks.", "Демо-товар для презентации.", "Demo product for presentation.");
+        L("Lisati {0} toodet, {1} klienti ja {2} ostu.", "Добавлено товаров: {0}, клиентов: {1}, покупок: {2}.", "Added {0} products, {1} customers and {2} purchases.");
+        L("Eemaldati {0} toodet, {1} klienti ja {2} ostu.", "Удалено товаров: {0}, клиентов: {1}, покупок: {2}.", "Removed {0} products, {1} customers and {2} purchases.");
+        L("Kas eemaldan kõik demoandmed (tooted, kliendid, ostud)?", "Удалить все демо-данные (товары, клиентов, покупки)?", "Remove all demo data (products, customers, purchases)?");
+        // --- Pant ---
+        L("Pakendi tagatisraha", "Залог за тару", "Bottle deposit"); L("Pakendi tagatisraha {0}", "Залог за тару {0}", "Bottle deposit {0}");
+        L("Pakendi tagatisraha ({0} tk) {1}", "Залог за тару ({0} шт) {1}", "Bottle deposit ({0} pcs) {1}"); L("{0} tk · {1}", "{0} шт · {1}", "{0} pcs · {1}");
+        L("Pakendi tagatisraha kokku ({0} tk)", "Залог за тару итого ({0} шт)", "Bottle deposit total ({0} pcs)"); L("Soodustus", "Скидка", "Discount");
+        L("Teenitud boonust ({0} %)", "Начислено бонусов ({0} %)", "Bonus earned ({0} %)");
+        // --- Müügipaneel ---
+        L("Müügipaneel", "Панель продаж", "Sales dashboard"); L("Müügipaneel...", "Панель продаж...", "Sales dashboard..."); L("{0} päeva", "{0} дней", "{0} days");
+        L("Ostud: tund × nädalapäev", "Покупки: час × день недели", "Purchases: hour × weekday"); L("Kõige kasumlikumad kategooriad", "Самые прибыльные категории", "Most profitable categories");
+        L("Käive", "Выручка", "Revenue"); L("Oste", "Покупок", "Purchases"); L("Keskmine ost", "Средний чек", "Average purchase"); L("Marginaal", "Маржа", "Margin");
+        L("eelmise perioodiga", "к прошлому периоду", "vs previous period"); L("eelmist perioodi pole", "нет прошлого периода", "no previous period");
+        L("Esmaspäev", "Понедельник", "Monday"); L("Teisipäev", "Вторник", "Tuesday"); L("Kolmapäev", "Среда", "Wednesday"); L("Neljapäev", "Четверг", "Thursday");
+        L("Reede", "Пятница", "Friday"); L("Laupäev", "Суббота", "Saturday"); L("Pühapäev", "Воскресенье", "Sunday"); L("{0} ostu", "{0} покупок", "{0} purchases");
+        L("käive {0}", "выручка {0}", "revenue {0}"); L("hinnanguline", "оценочно", "estimated"); L("Selles perioodis müüki pole.", "В этом периоде продаж нет.", "No sales in this period.");
+        L("Sisseostuhind € (marginaali jaoks)", "Закупочная цена € (для маржи)", "Purchase price € (for margin)");
+        L("Pakendi tagatisraha € (pudel/purk 0.10)", "Залог за тару € (бутылка/банка 0.10)", "Bottle deposit € (bottle/can 0.10)");
+        L("Sisseostuhind ja tagatisraha peavad olema arvud (nt 0.10) või tühjad.", "Закупочная цена и залог должны быть числами (напр. 0.10) или пустыми.", "Purchase price and deposit must be numbers (e.g. 0.10) or empty.");
+        // --- Partiid ---
+        L("Partiid ja säilivusaeg", "Партии и срок годности", "Batches and expiry"); L("Partiid ja säilivusaeg...", "Партии и срок годности...", "Batches and expiry..."); L("Partiid", "Партии", "Batches");
+        L("{0} päeva enne aegumist −{1} % · aegunud kantakse maha · müük FEFO", "За {0} дня до конца срока −{1} % · просроченное списывается · продажа FEFO", "{0} days before expiry −{1} % · expired is written off · FEFO sales");
+        L("Kogus", "Количество", "Quantity"); L("Aegub", "Годен до", "Expires"); L("Lisa partii", "Добавить партию", "Add batch"); L("Kanna valitud maha", "Списать выбранную", "Write off selected");
+        L("MAHA KANTUD", "СПИСАНО", "WRITTEN OFF"); L("Uus partii", "Новая партия", "New batch"); L("Ajatelg · 14 päeva", "Шкала · 14 дней", "Timeline · 14 days");
+        L("Partiid laos", "Партии на складе", "Batches in stock"); L("Aegunud", "Просрочено", "Expired"); L("−{0} % · {1} p", "−{0} % · {1} дн", "−{0} % · {1} d");
+        L("Aegunud kaupa maha kantud: {0} tk", "Списано просроченного товара: {0} шт", "Expired goods written off: {0} pcs"); L("Mahakandmisi pole.", "Списаний нет.", "No write-offs.");
+        L("Partii", "Партия", "Batch"); L("Partii lisatud: {0} · {1} tk", "Партия добавлена: {0} · {1} шт", "Batch added: {0} · {1} pcs"); L("Vali tabelist partii.", "Выберите партию в таблице.", "Select a batch in the table.");
+        L("Kas kannan maha {0} tk „{1}“?", "Списать {0} шт «{1}»?", "Write off {0} pcs of “{1}”?"); L("Toodet ei leitud.", "Товар не найден.", "Product not found.");
+        L("Aegub {0:dd.MM} −{1} %", "Годен до {0:dd.MM} −{1} %", "Expires {0:dd.MM} −{1} %"); L("−{0} % · aegub {1:dd.MM}", "−{0} % · годен до {1:dd.MM}", "−{0} % · expires {1:dd.MM}");
+        // --- Õhtune soodustus ---
+        L("Õhtune soodustus", "Вечерняя скидка", "Evening discount"); L("Õhtune soodustus...", "Вечерняя скидка...", "Evening discount...");
+        L("Õhtune soodustus −{0} %", "Вечерняя скидка −{0} %", "Evening discount −{0} %"); L("Õhtune küpsetiste tund", "Вечерний час выпечки", "Evening bakery hour");
+        L("KÄIB PRAEGU", "ИДЁТ СЕЙЧАС", "ON NOW"); L("TÄNA ÕHTUL", "СЕГОДНЯ ВЕЧЕРОМ", "TONIGHT"); L("Kehtib kuni 00:00", "Действует до 00:00", "Valid until 00:00");
+        L("Algab {0} pärast", "Начнётся через {0}", "Starts in {0}"); L("Sees", "Включено", "On"); L("Algab", "Начало", "Starts"); L("Soodustus %", "Скидка %", "Discount %"); L("Kategooria", "Категория", "Category");
+        L("Pärast kella {0:hh\\:mm} on kõik leivad, saiad ja saiakesed {1} % odavamad.", "После {0:hh\\:mm} весь хлеб, булки и выпечка дешевле на {1} %.", "After {0:hh\\:mm} all bread, buns and pastries are {1} % cheaper.");
+        L("Ei liitu kampaania ega säilivusaja soodustusega – kehtib suurim. Hind arvutatakse maksmise hetkel.", "Не суммируется с акцией и скидкой по сроку – действует большая. Цена считается в момент оплаты.", "Does not stack with campaign or expiry discounts – the larger applies. Price is set at payment.");
+        L("Õhtune küpsetiste tund algas: −{0} %", "Вечерний час выпечки начался: −{0} %", "Evening bakery hour started: −{0} %");
+        L("Hinnad uuenesid (soodustus algas või lõppes) – kontrolli summat", "Цены обновились (скидка началась или закончилась) – проверьте сумму", "Prices updated (a discount started or ended) – check the total");
+        // --- Moodne disain ---
+        L("Moodne disain", "Современный дизайн", "Modern design"); L("Disain: moodne", "Дизайн: современный", "Design: modern");
+        L("Logi sisse", "Войти", "Sign in"); L("Kassa ja e-pood ühes kohas. Kliendikaardiga 1 € = 1 sent boonust.", "Касса и интернет-магазин в одном месте. С картой клиента 1 € = 1 цент бонусов.", "Till and online shop in one place. With the customer card 1 € = 1 cent bonus.");
+        L("Pole kontot? Registreeru — kliendikaart kohe", "Нет аккаунта? Регистрация — карта клиента сразу", "No account? Sign up — customer card right away");
+        L("Rohkem…", "Ещё…", "More…"); L("Ava e-pood", "Открыть магазин", "Open shop"); L("Ekspordi CSV", "Экспорт CSV", "Export CSV");
+        L("Tooteid", "Товаров", "Products"); L("Väike laoseis (alla 10 tk)", "Мало на складе (меньше 10 шт)", "Low stock (under 10 pcs)");
+        L("Müük täna", "Продажи сегодня", "Sales today"); L("+ Lisa uus", "+ Добавить", "+ Add new"); L("Kassa", "Касса", "Till"); L("Tooted", "Товары", "Products");
+        L("Otsi toodet…", "Найти товар…", "Search products…"); L("NÄDALA PAKKUMINE", "ПРЕДЛОЖЕНИЕ НЕДЕЛИ", "DEAL OF THE WEEK");
+        L("Tasuta kojuveoni", "До бесплатной доставки", "Until free delivery"); L("Kojuvedu on tasuta", "Доставка бесплатна", "Delivery is free");
+        L("veel {0}", "ещё {0}", "{0} more"); L("Tasuta alates {0}", "Бесплатно от {0}", "Free from {0}"); L("Kategooriad", "Категории", "Categories");
+        L("Tooteinfo", "О товаре", "Product info"); L("Ostukorv", "Корзина", "Basket");
+        L("Vali vasakult ost, et näha tšekki.", "Выберите покупку слева, чтобы увидеть чек.", "Select a purchase on the left to see the receipt.");
+        L("TAGASTATUD", "ВОЗВРАЩЕНО", "RETURNED"); L("Vahesumma", "Промежуточная сумма", "Subtotal"); L("Tarne", "Доставка", "Delivery");
+        L("Kättesaamine", "Получение", "Delivery"); L("Klient ja tšekk", "Клиент и чек", "Customer and receipt"); L("Makse", "Оплата", "Payment"); L("Maksa", "Оплатить", "Pay");
+        L("+ veel {0}", "+ ещё {0}", "+ {0} more");
+        L("Profiil", "Профиль", "Profile"); L("Turvalisus", "Безопасность", "Security"); L("Välimus", "Внешний вид", "Appearance");
+        L("Hele", "Светлая", "Light"); L("Tume", "Тёмная", "Dark"); L("Klassik", "Классика", "Classic"); L("Moodne", "Современный", "Modern");
+        L("Punane", "Красная", "Red"); L("Ploom", "Сливовая", "Plum"); L("Valge ID", "Белая ID", "White ID"); L("Minu foto", "Моё фото", "My photo");
+        L("Lae oma foto", "Загрузить своё фото", "Upload your photo"); L("JPG või PNG · foto lõigatakse kaardi kujuliseks, all on tume toon, et tekst jääks loetav", "JPG или PNG · фото обрезается по форме карты, снизу тёмный тон, чтобы текст читался", "JPG or PNG · the photo is cropped to the card, with a dark tone below so text stays readable");
+        L("KASSAS", "НА КАССЕ", "AT THE TILL"); L("SKANNI", "СКАНИРУЙ", "SCAN"); L("Boonus", "Бонус", "Bonus"); L("BOONUS", "БОНУС", "BONUS"); L("Tase", "Уровень", "Level");
+        L("Ost nr {0}", "Покупка № {0}", "Purchase no. {0}"); L("Ostusid veel pole.", "Покупок пока нет.", "No purchases yet."); L("Preemiad ja tase  ›", "Награды и уровень  ›", "Rewards and level  ›");
+        L("Kasuta boonust maksmisel", "Использовать бонус при оплате", "Use bonus at checkout"); L("Foto lisatud kaardile", "Фото добавлено на карту", "Photo added to the card");
+        L("Maksmisel märgi „Kasuta boonust“ – boonus läheb allahindluseks.", "При оплате отметьте «Использовать бонус» – бонус пойдёт в скидку.", "At checkout tick “Use bonus” – the bonus becomes a discount.");
+        L("Ajatelg · {0:dd.MM} – {1:dd.MM}", "Шкала · {0:dd.MM} – {1:dd.MM}", "Timeline · {0:dd.MM} – {1:dd.MM}"); L("Mustand", "Черновик", "Draft");
+        L("Valik jääb meelde ja kehtib kogu poes", "Выбор запоминается и действует во всём магазине", "Your choice is remembered across the shop"); L("Kuidas?", "Как?", "How?");
+        L("Kuidas allergeenid leitakse", "Как находятся аллергены", "How allergens are found");
+        L("1. SUURTÄHED koostises = allergeen (EL reegel): PIIM, NISU, RUKIS, MUNA…\n2. „Võib sisaldada …“ lisainfos → hoiatus. Range režiimis peidetakse.\n3. Admin saab märgised ka käsitsi panna (Toote andmed → Märgised).\n4. Puu- ja köögiviljad sobivad vaikimisi kõigile dieetidele.", "1. ЗАГЛАВНЫЕ буквы в составе = аллерген (правило ЕС): PIIM, NISU, RUKIS, MUNA…\n2. «Может содержать …» в доп. информации → предупреждение. В строгом режиме скрывается.\n3. Админ может поставить метки вручную (Данные товара → Метки).\n4. Фрукты и овощи по умолчанию подходят всем диетам.", "1. CAPITALS in the ingredients = allergen (EU rule): PIIM, NISU, RUKIS, MUNA…\n2. “May contain …” in the extra info → warning. Hidden in strict mode.\n3. The admin can also set labels by hand (Product data → Labels).\n4. Fruit and vegetables suit every diet by default.");
+        L("{0} tk", "{0} шт", "{0} pcs");
+        L("päevanorm = 2000 kcal täiskasvanu", "дневная норма = 2000 ккал взрослого", "daily norm = 2000 kcal adult");
+        L("tk", "шт", "pcs");
+        L("Uued esmaspäeval · {0} päeva jäänud", "Новые в понедельник · осталось дней: {0}", "New on Monday · {0} days left"); L("Tehtud! ✓", "Готово! ✓", "Done! ✓");
+        L("{0} / {1} tehtud", "{0} / {1} сделано", "{0} / {1} done"); L("saadud", "получено", "received"); L("Kleepsualbum", "Альбом наклеек", "Sticker album");
+        L("Kaardi tasemed", "Уровни карты", "Card levels"); L("Mida rohkem ostad, seda suurem boonus ja ilusam kaart", "Чем больше покупаешь, тем больше бонус и красивее карта", "The more you buy, the bigger the bonus and the nicer the card");
+        L("Ostud viimase 12 kuu jooksul", "Покупки за последние 12 месяцев", "Purchases in the last 12 months"); L("KÕIK TASEMED", "ВСЕ УРОВНИ", "ALL LEVELS");
+        L("Tase arvutatakse viimase 12 kuu ostudest. Kõrgem tase = rohkem boonust igalt eurolt.", "Уровень считается по покупкам за 12 месяцев. Выше уровень = больше бонуса с каждого евро.", "The level is based on the last 12 months of purchases. Higher level = more bonus per euro.");
+        L("1 % boonust igalt eurolt", "1 % бонуса с каждого евро", "1 % bonus on every euro"); L("1,5 % boonust", "1,5 % бонуса", "1.5 % bonus"); L("2 % boonust", "2 % бонуса", "2 % bonus");
+        L("Päeva üllatus", "Сюрприз дня", "Surprise of the day"); L("Läikiv hõbekaart", "Блестящая серебряная карта", "Shiny silver card");
+        L("Nädala väljakutsed ja päeva üllatus", "Задания недели и сюрприз дня", "Weekly challenges and surprise of the day");
+        L("Hologramm-kaart sädelusega", "Голографическая карта с блёстками", "Hologram card with sparkles"); L("Kõik preemiad", "Все награды", "All rewards");
+        L("Demo-andmed", "Демо-данные", "Demo data"); L("Haldus · ainult omanikule", "Управление · только для владельца", "Admin · owner only");
+        L("Üks klõps täidab poe, et esitlusel ei oleks midagi tühja. Demo-read märgitakse sildiga DEMO ja need saab hiljem ühe nupuga eemaldada.", "Один клик заполняет магазин, чтобы на презентации ничего не было пустым. Демо-строки помечены DEMO, их можно потом удалить одной кнопкой.", "One click fills the shop so nothing is empty in a demo. Demo rows are tagged DEMO and can be removed later with one button.");
+        L("toodet", "товаров", "products"); L("ostu", "покупок", "purchases"); L("klienti", "клиентов", "customers"); L("toitumisteabega", "с пищевой ценностью", "with nutrition info"); L("tagastust", "возврата", "returns"); L("pandipakendit", "залоговых упаковок", "deposit packages");
+        L("kõik {0} kategooriat", "все {0} категорий", "all {0} categories"); L("viimased 30 päeva", "последние 30 дней", "last 30 days"); L("kaartide ja boonusega", "с картами и бонусом", "with cards and bonus");
+        L("toiteväärtuse jaoks", "для пищевой ценности", "for nutrition"); L("ostude ajaloos", "в истории покупок", "in purchase history"); L("joogid 0,10 €", "напитки 0,10 €", "drinks €0.10");
+        L("Loo demo-andmed", "Создать демо-данные", "Create demo data"); L("Eemalda demo", "Удалить демо", "Remove demo");
+        L("LOON ANDMEID…", "СОЗДАЮ ДАННЫЕ…", "CREATING DATA…"); L("MIS LUUAKSE", "ЧТО СОЗДАЁТСЯ", "WHAT IS CREATED");
+        L("Vajuta „Loo demo-andmed“.", "Нажмите «Создать демо-данные».", "Press “Create demo data”."); L("Võtab paar sekundit.", "Займёт пару секунд.", "Takes a couple of seconds.");
+        L("{0} toodet ja toiteväärtus", "{0} товаров и пищевая ценность", "{0} products and nutrition"); L("{1} klienti kliendikaardiga", "{1} клиента с картой клиента", "{1} customers with loyalty card");
+        L("{2} ostu 30 päeva peale", "{2} покупок за 30 дней", "{2} purchases over 30 days"); L("Statistika ja soojuskaart", "Статистика и тепловая карта", "Statistics and heat map");
+        L("Valmis!", "Готово!", "Done!"); L("Pood, ajalugu, statistika ja soojuskaart on täidetud.", "Магазин, история, статистика и тепловая карта заполнены.", "Shop, history, statistics and heat map are filled.");
+        L("Vähem", "Меньше", "Less"); L("Rohkem", "Больше", "More"); L("Tipp:", "Пик:", "Peak:");
+        L("Marginaal = (müügihind − sisseostuhind) / müügihind. Sisseostuhind lisatakse toote andmetesse.", "Маржа = (цена продажи − закупочная цена) / цена продажи. Закупочная цена указывается в данных товара.", "Margin = (sale price − purchase price) / sale price. The purchase price is set in the product data.");
+        L("NII NÄEB OSTJA", "ТАК ВИДИТ ПОКУПАТЕЛЬ", "WHAT THE SHOPPER SEES"); L("Varem aeguvat partiid müüakse esimesena (FEFO).", "Партия с более ранним сроком продаётся первой (FEFO).", "The batch expiring first is sold first (FEFO).");
+        L("Kassas ja tšekil: „Aegub … −{0} %“.", "На кассе и в чеке: «Истекает … −{0} %».", "At the till and on the receipt: “Expires … −{0} %”."); L("Aegunud partii eemaldatakse müügilt automaatselt.", "Просроченная партия автоматически снимается с продажи.", "An expired batch is removed from sale automatically.");
+        L("MAHA KANTUD", "СПИСАНО", "WRITTEN OFF"); L("Täna {0:dd.MM.yyyy}", "Сегодня {0:dd.MM.yyyy}", "Today {0:dd.MM.yyyy}"); L("+ Uus partii", "+ Новая партия", "+ New batch");
+        L("Partiisid pole. Lisa uus partii üleval paremal.", "Партий нет. Добавьте новую партию вверху справа.", "No batches. Add a new batch at the top right.");
+        L("aegunud", "просрочено", "expired"); L("täna viimane päev", "сегодня последний день", "last day today"); L("veel 1 päev", "ещё 1 день", "1 more day"); L("veel {0} päeva", "ещё {0} дн.", "{0} more days");
+        L("Automaatne allahindlus", "Автоматическая уценка", "Automatic markdown"); L("{0} päeva enne säilivusaja lõppu · müük FEFO", "за {0} дн. до конца срока · продажа FEFO", "{0} days before expiry · FEFO selling");
+        L("Partii", "Партия", "Batch"); L("Säilib kuni", "Годен до", "Best before"); L("Hind", "Цена", "Price"); L("Olek", "Статус", "Status"); L("Partii nr {0}", "Партия № {0}", "Batch no. {0}");
+        L("Varsti", "Скоро", "Soon"); L("Värske", "Свежее", "Fresh"); L("Soodustusega partiisid praegu pole.", "Партий со скидкой сейчас нет.", "No discounted batches right now.");
+        L("−{0} % · parim enne {1:dd.MM}", "−{0} % · лучше до {1:dd.MM}", "−{0} % · best before {1:dd.MM}"); L("Säilib: {0} · {1} tk", "Срок: {0} · {1} шт", "Keeps: {0} · {1} pcs");
+        L("Kehtib iga päev {0:hh\\:mm} kuni poe sulgemiseni (00:00).", "Действует каждый день с {0:hh\\:mm} до закрытия магазина (00:00).", "Valid every day from {0:hh\\:mm} until closing (00:00).");
+        L("Ei liitu kampaania ega säilivusaja soodustusega – rakendub suurim.", "Не суммируется с акцией и уценкой по сроку – действует наибольшая.", "Does not stack with campaigns or expiry discounts – the largest applies.");
+        L("Hind arvutatakse kassas ostu hetkel, mitte korvi lisamisel.", "Цена считается на кассе в момент покупки, а не при добавлении в корзину.", "The price is calculated at checkout, not when added to the basket."); L("TŠEKIL", "В ЧЕКЕ", "ON THE RECEIPT");
+        L("tagasi", "назад", "back");
+        L("Lisa korvi", "В корзину", "Add to basket"); L("Lemmikud", "Избранное", "Favourites");
+        L("Disain (Ctrl+Shift+M)", "Дизайн (Ctrl+Shift+M)", "Design (Ctrl+Shift+M)");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }

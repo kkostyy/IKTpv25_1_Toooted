@@ -5,7 +5,7 @@ namespace IKTpv25_1_Toooted;
 
 // Ostu vormistamine ühes aknas: kliendikaart + boonus, e-post tšeki jaoks, makseviis,
 // saadud summa ja tagasiraha. "Maksa" salvestab ostu (laoseis väheneb) ja loob PDF-tšeki.
-public class MaksmineVorm : Form
+public partial class MaksmineVorm : Form
 {
     // Tulemus (kui DialogResult == OK)
     public Ost? Tulemus { get; private set; }
@@ -141,6 +141,7 @@ public class MaksmineVorm : Form
         Controls.AddRange(new Control[] { korv, klient, tarne, makse, riba });
         AcceptButton = btnMaksa;
         CancelButton = tuhista;
+        if (Teema.OnMoodne) RakendaMoodne(korv, klient, tarne, makse, riba, tuhista);   // lõuend 2.2
 
         Arvuta();
     }
@@ -148,7 +149,9 @@ public class MaksmineVorm : Form
     protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
-        UiStiil.LisaTagasiNupp(this);   // ← Tagasi = tühista
+        if (Ostukorv.UuendaHinnad()) Arvuta();   // hind kehtib vormistamise hetkel
+        if (Teema.OnMoodne) MoodneStiil.Rakenda(this);
+        if (!Teema.OnMoodne) UiStiil.LisaTagasiNupp(this);   // ← Tagasi = tühista (moodsas disainis kaardil endal)
         Teema.Rakenda(this);
         txtSaadud.Text = Summa().ToString("0.00", CultureInfo.InvariantCulture);
 
@@ -267,7 +270,7 @@ public class MaksmineVorm : Form
 
     private decimal TarneHind() => rbKojuvedu != null && rbKojuvedu.Checked ? Tarne.Arvuta(Ostukorv.Kokku) : 0;
 
-    private decimal Summa() => Ostukorv.Kokku - Soodustus() + TarneHind();
+    private decimal Summa() => Ostukorv.Kokku - Soodustus() + Ostukorv.PantKokku + TarneHind();
 
     private bool LoeSaadud(out decimal saadud) =>
         decimal.TryParse(txtSaadud.Text.Trim().Replace(',', '.'), NumberStyles.AllowDecimalPoint,
@@ -289,6 +292,7 @@ public class MaksmineVorm : Form
         decimal soodustus = Soodustus();
         decimal summa = Summa();
         lblVahesumma.Text = Keel.F("Vahesumma: {0}", Ostukorv.Eur(Ostukorv.Kokku)) +
+            (Ostukorv.PantKokku > 0 ? "   ·   " + Keel.F("Pakendi tagatisraha ({0} tk) {1}", Ostukorv.PandiTk, Ostukorv.Eur(Ostukorv.PantKokku)) : "") +
             (rbKojuvedu.Checked ? "   ·   " + Keel.F("Tarne: {0}", TarneHind() == 0 ? Keel.T("TASUTA") : Ostukorv.Eur(TarneHind())) : "");
 
         // Kui palju on veel puudu tasuta tarneni
@@ -298,6 +302,7 @@ public class MaksmineVorm : Form
         tarneRiba.Osa = (float)(Ostukorv.Kokku / Tarne.TasutaAlates);
         lblSoodustus.Text = soodustus > 0 ? Keel.F("boonus −{0}", Ostukorv.Eur(soodustus)) : "";
         lblMaksta.Text = Ostukorv.Eur(summa);
+        kokkuvote?.Naita(soodustus, TarneHind(), summa);
 
         if (rbKaart.Checked)
         {
@@ -355,6 +360,13 @@ public class MaksmineVorm : Form
             return;
         }
 
+        // Hind fikseeritakse maksmise hetkel (nt korv kell 19:55, makse 20:01 → õhtune soodustus)
+        if (Ostukorv.UuendaHinnad())
+        {
+            Arvuta();
+            Teade.Toast("Hinnad uuenesid (soodustus algas või lõppes) – kontrolli summat", TeateTyyp.Info, 4000);
+            if (rbSularaha.Checked) return;
+        }
         decimal soodustus = Soodustus();
         decimal tarneHind = TarneHind();
         decimal summa = Summa();
@@ -380,7 +392,7 @@ public class MaksmineVorm : Form
             var ost = new Ost
             {
                 Aeg = DateTime.Now,
-                Vahesumma = Ostukorv.Kokku,
+                Vahesumma = Ostukorv.Kokku + Ostukorv.PantKokku,
                 Soodustus = soodustus,
                 Summa = summa,
                 Kasutaja = AktiivneKasutaja.OnOstja ? "e-pood" : AktiivneKasutaja.Nimi,
@@ -407,14 +419,21 @@ public class MaksmineVorm : Form
                     return;
                 }
                 toode.Kogus -= r.Kogus;
+                Aegumine.VotaPartiidest(db, r.Id, r.Kogus);   // FEFO: enne varem aeguv partii
                 if (toode.Kogus < Form1.VaikeLaoseis) VaheseLaoga.Add($"{toode.Toodenimetus}: {toode.Kogus} tk");
 
-                ost.Read.Add(new OstuRida { ToodeId = r.Id, Toodenimetus = r.Nimi, Kogus = r.Kogus, Hind = r.Hind });
+                ost.Read.Add(new OstuRida
+                {
+                    ToodeId = r.Id, Toodenimetus = r.Nimi, Kogus = r.Kogus, Hind = r.Hind, Pant = r.Pant,
+                    TavaHind = r.TavaHind > r.Hind ? r.TavaHind : null,
+                    Soodus = r.TavaHind > r.Hind ? r.Soodus : null
+                });
             }
 
             if (klient != null)
             {
-                ost.BoonusLisatud = Tarne.Boonus(ost.Summa - ost.TarneHind);   // 1 € = 1 sent
+                decimal protsent = Preemiad.LeiaTase(db, klient.Id).Protsent;   // Pronks 1 %, Hõbe 1,5 %, Kuld 2 %
+                ost.BoonusLisatud = Tarne.Boonus(ost.Summa - ost.TarneHind - Ostukorv.PantKokku, protsent);   // pant boonust ei anna
                 klient.Boonus = klient.Boonus - soodustus + ost.BoonusLisatud;
                 if (string.IsNullOrEmpty(klient.Email) && ost.Email != null) klient.Email = ost.Email;   // jätame meelde
             }

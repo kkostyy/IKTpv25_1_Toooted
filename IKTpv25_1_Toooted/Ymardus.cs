@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 
 namespace IKTpv25_1_Toooted
 {
@@ -10,7 +10,7 @@ namespace IKTpv25_1_Toooted
         public static GraphicsPath Tee(RectangleF r, float radius)
         {
             var path = new GraphicsPath();
-            if (Teema.Umarad && radius > 0) radius = Math.Max(radius * 2, radius + 10);   // "pehme" stiil
+            if (Teema.Umarad && !Teema.OnMoodne && radius > 0) radius = Math.Max(radius * 2, radius + 10);   // "pehme" stiil (moodsas disainis on raadiused juba õiged)
             float d = Math.Min(radius * 2, Math.Min(r.Width, r.Height));
             if (d <= 0)
             {
@@ -38,7 +38,31 @@ namespace IKTpv25_1_Toooted
     public class RoundedPanel : Panel
     {
         public int Radius { get; set; } = 12;
-        public Color FillColor { get; set; } = Color.White;
+        private Color taide = Color.White;
+        public Color FillColor
+        {
+            get => taide;
+            set { if (taide == value) return; taide = value; OnBackColorChanged(EventArgs.Empty); Invalidate(); }
+        }
+
+        // Lapsed (sildid, joonistatud elemendid) võtavad tausta paneeli täitevärvist, mitte hallist alusest
+        public override Color BackColor { get => taide; set { } }
+
+        // Moodne: madal element (väli, nupp) = "pill", kaardid kuni 28 px (suurem nägi välja nagu sidrun)
+        private int MoodneRaadius => Height <= 56 ? Height / 2 : Math.Min(Math.Min(Math.Max(Radius * 2, 16), 28), Math.Min(Width, Height) / 2);
+
+        // Moodne: suured ümarad nurgad – sisu nihkub nii palju sissepoole, et nurgad seda ei lõikaks
+        public override Rectangle DisplayRectangle
+        {
+            get
+            {
+                var r = base.DisplayRectangle;
+                if (!Teema.OnMoodne || MoodneRaadius < 24) return r;
+                int vaja = MoodneRaadius * 3 / 10;
+                int l = Math.Max(0, vaja - Padding.Left), t = Math.Max(0, vaja - Padding.Top), p = Math.Max(0, vaja - Padding.Right), a = Math.Max(0, vaja - Padding.Bottom);
+                return new Rectangle(r.X + l, r.Y + t, Math.Max(0, r.Width - l - p), Math.Max(0, r.Height - t - a));
+            }
+        }
         public Color BorderColor { get; set; } = Color.FromArgb(210, 214, 220);
 
         public RoundedPanel()
@@ -61,9 +85,12 @@ namespace IKTpv25_1_Toooted
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             var r = new Rectangle(0, 0, Width - 1, Height - 1);
-            using (var path = Ymardus.Tee(r, Radius))
+            // Moodne: kaks korda suurem ümarus (väljad = "pill"), raam vaevu nähtav
+            int raadius = Teema.OnMoodne ? MoodneRaadius : Radius;
+            Color raam = Teema.OnMoodne ? Ymardus.Segu(BorderColor, FillColor, 0.55f) : BorderColor;
+            using (var path = Ymardus.Tee(r, raadius))
             using (var brush = new SolidBrush(FillColor))
-            using (var pen = new Pen(BorderColor))
+            using (var pen = new Pen(raam))
             {
                 e.Graphics.FillPath(brush, path);
                 e.Graphics.DrawPath(pen, path);
@@ -122,6 +149,13 @@ namespace IKTpv25_1_Toooted
                 border = Teema.Aktsent;
                 tekst = Color.White;
             }
+            else if (Teema.OnMoodne)
+            {
+                // Moodne: teisene nupp on hall "pill" ilma raamita
+                fill = Teema.Paneel2;
+                border = Teema.Paneel2;
+                tekst = Teema.Tekst;
+            }
             else
             {
                 fill = Teema.Pind;
@@ -146,7 +180,21 @@ namespace IKTpv25_1_Toooted
             }
 
             var r = new Rectangle(0, 0, Width - 1, Height - 1);
-            using (var path = Ymardus.Tee(r, Radius))
+            int raadius = Radius;
+            if (Teema.OnMoodne)
+            {
+                raadius = r.Height / 2;                                 // "pill"
+                if (_down) r = Rectangle.Inflate(r, -3, -2);            // vajutus: nupp väheneb
+                else if (_hover && Enabled)
+                {
+                    // hõljumisel pehme vari all
+                    using var vari = new SolidBrush(Color.FromArgb(28, 0, 0, 0));
+                    using var vt = Ymardus.Tee(new Rectangle(r.X + 2, r.Y + 3, r.Width - 4, r.Height - 2), raadius);
+                    g.FillPath(vari, vt);
+                    r = new Rectangle(r.X, r.Y, r.Width, r.Height - 2);
+                }
+            }
+            using (var path = Ymardus.Tee(r, raadius))
             using (var brush = new SolidBrush(fill))
             using (var pen = new Pen(border))
             {
