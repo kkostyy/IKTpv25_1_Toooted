@@ -27,6 +27,7 @@ namespace IKTpv25_1_Toooted
         private readonly RoundedButton btnMaksma;
         private readonly KorviNupp korviNupp;
         private readonly List<IkoonTekst> navLingid = new();
+        private readonly OtsinguSoovitused soovitused;
         private readonly IkoonTekst lnkSalvesta, lnkTyhjenda, lnkToit;
         private readonly ToolTip vihjed = new();
 
@@ -121,6 +122,7 @@ namespace IKTpv25_1_Toooted
                 if (e.KeyCode == Keys.Escape) { txtOtsi.Clear(); e.SuppressKeyPress = true; }
                 if (e.KeyCode == Keys.Enter) e.SuppressKeyPress = true;
             };
+            soovitused = new OtsinguSoovitused(txtOtsi, () => koikTooted, AvaToode, () => { if (txtOtsi.Text.Trim().Length > 0) NaitaRuudustik(Vaade.Otsing); });
 
             var kasutaja = new IkoonTekst("", AktiivneKasutaja.Nimi, Teema.Teine, new Font("Segoe UI Semibold", 10.5F));
             vihjed.SetToolTip(kasutaja, Keel.F("Sisse logitud: {0} ({1})", AktiivneKasutaja.Nimi, Keel.T(AktiivneKasutaja.Roll)) + "\n" + Keel.T("Klõps: seaded"));

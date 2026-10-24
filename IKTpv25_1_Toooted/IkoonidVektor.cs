@@ -13,7 +13,7 @@ public static partial class Ikoonid
         {
             '' => (g, p, b) => { g.DrawLine(p, 8, 2, 8, 14); g.DrawLine(p, 2, 8, 14, 8); },
             '' => (g, p, b) => { g.DrawLine(p, 3, 3, 13, 13); g.DrawLine(p, 13, 3, 3, 13); },
-            '' => (g, p, b) => { Tapp(g, b, 3, 8, 1.2f); Tapp(g, b, 8, 8, 1.2f); Tapp(g, b, 13, 8, 1.2f); },
+            '' => (g, p, b) => { Tapp(g, b, 3, 8, 1.4f); Tapp(g, b, 8, 8, 1.4f); Tapp(g, b, 13, 8, 1.4f); },
             '' => Hammasratas,
             '' => (g, p, b) =>
             {
@@ -48,6 +48,7 @@ public static partial class Ikoonid
             },
             '' => (g, p, b) => g.DrawPolygon(p, Taht()),
             '' => (g, p, b) => { g.FillPolygon(b, Taht()); g.DrawPolygon(p, Taht()); },
+            '\u2713' => (g, p, b) => g.DrawLines(p, new[] { P(2.5f, 8.5f), P(6, 12), P(13.5f, 4) }),
             '' => (g, p, b) => g.DrawLine(p, 2, 8, 14, 8),
             '' => (g, p, b) =>
             {
