@@ -261,8 +261,8 @@ public static class Teema
         dgv.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
         dgv.RowHeadersVisible = false;
         dgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-        dgv.ColumnHeadersHeight = 36;
-        dgv.RowTemplate.Height = 32;
+        dgv.ColumnHeadersHeight = OnMoodne ? 42 : 36;
+        dgv.RowTemplate.Height = OnMoodne ? 44 : 32;   // moodne: õhulisemad read
 
         var pais = dgv.ColumnHeadersDefaultCellStyle;
         pais.BackColor = Paneel;
@@ -283,7 +283,15 @@ public static class Teema
         dgv.AlternatingRowsDefaultCellStyle.SelectionBackColor = AktsentHele;
         dgv.AlternatingRowsDefaultCellStyle.SelectionForeColor = Tekst;
 
-        foreach (DataGridViewRow r in dgv.Rows) r.Height = 32;
+        if (OnMoodne)
+        {
+            dgv.GridColor = Pind;                                   // jooni pole, ainult vaheldumisi taust
+            pais.BackColor = pais.SelectionBackColor = Pind;
+            rida.SelectionBackColor = Paneel2;
+            dgv.AlternatingRowsDefaultCellStyle.BackColor = Ymardus.Segu(Pind, Paneel2, 0.5f);
+            dgv.AlternatingRowsDefaultCellStyle.SelectionBackColor = Paneel2;
+        }
+        foreach (DataGridViewRow r in dgv.Rows) r.Height = OnMoodne ? 44 : 32;
         dgv.Invalidate();
     }
 

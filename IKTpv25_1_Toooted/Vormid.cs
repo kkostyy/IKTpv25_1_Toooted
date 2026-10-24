@@ -121,7 +121,7 @@ namespace IKTpv25_1_Toooted
                 Text = tekst,
                 AutoSize = true,
                 Location = new Point(18, 14),
-                Font = UiStiil.PealkirjaFont,
+                Font = Teema.OnMoodne ? new Font("Segoe UI", 17F, FontStyle.Bold) : UiStiil.PealkirjaFont,
                 ForeColor = Teema.Tekst
             };
             Controls.Add(l);

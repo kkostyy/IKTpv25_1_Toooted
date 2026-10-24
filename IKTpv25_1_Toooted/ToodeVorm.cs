@@ -92,6 +92,30 @@ public class ToodeVorm : Form
     // ---------------------------------------------------------------
     //  Lehe ehitamine (ka siis, kui avatakse soovitatud toode)
     // ---------------------------------------------------------------
+    // Moodne (lõuend 1.4): tume ülemine kaart, toode valgel ümaral alusel, valge tekst
+    private static void MoodneYlemine(RoundedPanel kaart)
+    {
+        var tume = Color.FromArgb(27, 28, 31);
+        kaart.FillColor = kaart.BorderColor = kaart.BackColor = tume;
+        foreach (Control c in kaart.Controls)
+        {
+            if (c is PictureBox p)
+            {
+                p.BackColor = Color.White;
+                p.Bounds = Rectangle.Inflate(p.Bounds, -6, -6);
+                var alus = new RoundedPanel { Bounds = Rectangle.Inflate(p.Bounds, 12, 12), Radius = 14, FillColor = Color.White, BorderColor = Color.White, BackColor = tume };
+                kaart.Controls.Add(alus);
+                alus.SendToBack();
+                continue;
+            }
+            if (c is RoundedButton) continue;
+            c.BackColor = tume;
+            if (c is LinkLabel ll) { ll.LinkColor = Color.FromArgb(246, 179, 214); continue; }
+            if (c is Label l && l.ForeColor != Teema.Edu) l.ForeColor = l.Font.Size >= 14 ? Color.White : Color.FromArgb(185, 189, 196);
+        }
+        kaart.Invalidate(true);
+    }
+
     private void Ehita()
     {
         Text = toode.Toodenimetus;
@@ -124,6 +148,7 @@ public class ToodeVorm : Form
     private RoundedPanel YlemineKaart()
     {
         var kaart = new RoundedPanel { Size = new Size(Laius, 280), Radius = 6, Margin = new Padding(0) };
+        if (Teema.OnMoodne) kaart.HandleCreated += (s, e) => MoodneYlemine(kaart);
 
         var pilt = new PictureBox
         {
@@ -156,8 +181,10 @@ public class ToodeVorm : Form
         hind.Paint += (s, e) =>
         {
             var g = e.Graphics;
-            bool soodus = toode.SoodusProtsent != null;
-            int w = Ikoonid.JoonistaHind(g, toode.Hind, "tk", 0, 0, soodus ? Teema.Aktsent : Teema.Tekst, 24f);
+            var h = Hinnad.Lopphind(toode);   // ka õhtune / säilivusaja / üllatuse soodustus
+            bool soodus = h.Soodus;
+            bool tume = Teema.OnMoodne;
+            int w = Ikoonid.JoonistaHind(g, h.Hind, "tk", 0, 0, soodus ? (tume ? Color.FromArgb(255, 110, 120) : Teema.Aktsent) : (tume ? Color.White : Teema.Tekst), 24f);
             string lisa = "";
             if (toode.UhikuHind is decimal uh && toode.Uhik is string u && u != "tk") lisa = $"{Ikoonid.Hind(uh)}/{u}";
             using var v = new Font("Segoe UI", 9F);
@@ -165,8 +192,8 @@ public class ToodeVorm : Form
             if (soodus)
             {
                 using var vana = new Font("Segoe UI Semibold", 9.5F, FontStyle.Strikeout);
-                TextRenderer.DrawText(g, Ikoonid.Hind(toode.VanaHind!.Value), vana, new Point(lx, 12), Teema.TekstNork);
-                lx += TextRenderer.MeasureText(Ikoonid.Hind(toode.VanaHind!.Value), vana).Width + 6;
+                TextRenderer.DrawText(g, Ikoonid.Hind(h.TavaHind), vana, new Point(lx, 12), Teema.TekstNork);
+                lx += TextRenderer.MeasureText(Ikoonid.Hind(h.TavaHind), vana).Width + 6;
             }
             TextRenderer.DrawText(g, lisa, v, new Point(lx, 13), Teema.TekstNork);
             TextRenderer.DrawText(g, toode.Kogus > 0 ? Keel.F("Laos {0} tk", toode.Kogus) : Keel.T("Pole laos"), v, new Point(lx, 34),
