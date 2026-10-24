@@ -59,6 +59,31 @@ public static partial class Keel
         L("Uus pere loodud. Kood {0} on kopeeritud – saada see pereliikmetele.", "Семья создана. Код {0} скопирован – отправьте его членам семьи.", "New family created. Code {0} is copied – send it to family members.");
         L("Pere kood on {0} märki.", "Код семьи – {0} символов.", "The family code has {0} characters.");
         L("Sellise koodiga peret ei leitud.", "Семья с таким кодом не найдена.", "No family with this code was found.");
+        // --- Preemiad ---
+        L("Preemiad", "Награды", "Rewards"); L("Pronks", "Бронза", "Bronze"); L("Hõbe", "Серебро", "Silver"); L("Kuld", "Золото", "Gold");
+        L("SINU TASE", "ВАШ УРОВЕНЬ", "YOUR LEVEL"); L("{0}-tasemeni veel {1} oste", "До уровня {0} ещё {1} покупок", "{1} more purchases to {0}");
+        L("Kõrgeim tase – aitäh!", "Высший уровень – спасибо!", "Top level – thank you!"); L("alates {0}", "от {0}", "from {0}");
+        L("Nädala väljakutsed", "Задания недели", "Weekly challenges"); L("Kleepsualbum  {0} / {1}", "Альбом наклеек  {0} / {1}", "Sticker album  {0} / {1}");
+        L("Eesti nädal: osta 5 Eesti toodet", "Эстонская неделя: купите 5 эстонских товаров", "Estonian week: buy 5 Estonian products");
+        L("Värske valik: 3 puu- või köögivilja", "Свежий выбор: 3 фрукта или овоща", "Fresh choice: 3 fruits or vegetables");
+        L("Kolm korda: tee 3 ostu", "Три раза: сделайте 3 покупки", "Three times: make 3 purchases");
+        L("Tehtud! ✓ · +{0} saadud", "Готово! ✓ · получено +{0}", "Done! ✓ · +{0} received");
+        L("Esimene ost", "Первая покупка", "First purchase"); L("Tee esimene ost", "Сделайте первую покупку", "Make your first purchase");
+        L("10 ostu", "10 покупок", "10 purchases"); L("Tee 10 ostu", "Сделайте 10 покупок", "Make 10 purchases");
+        L("Eesti patrioot", "Эстонский патриот", "Estonian patriot"); L("Osta 50 Eesti toodet", "Купите 50 эстонских товаров", "Buy 50 Estonian products");
+        L("Tervislik", "Здоровый", "Healthy"); L("Osta 20 puu- või köögivilja", "Купите 20 фруктов или овощей", "Buy 20 fruits or vegetables");
+        L("Säästja", "Экономный", "Saver"); L("Säästa soodustustega 10 €", "Сэкономьте 10 € на скидках", "Save 10 € with discounts");
+        L("Kogu ring", "Полный круг", "Full circle"); L("Osta igast kategooriast", "Купите из каждой категории", "Buy from every category");
+        L("Hommikune", "Утренний", "Early bird"); L("Tee ost enne kella 9", "Сделайте покупку до 9 утра", "Shop before 9 am");
+        L("Pere ostleja", "Семейный покупатель", "Family shopper"); L("Osta 10 rida pere nimekirjast", "Купите 10 строк из семейного списка", "Buy 10 rows from the family list");
+        L("Kogu kogu! +{0}", "Вся коллекция! +{0}", "Full set! +{0}"); L("Kogu kogu! Kõik kleebised koos · +{0}", "Вся коллекция! Все наклейки собраны · +{0}", "Full set! All stickers collected · +{0}");
+        L("Väljakutse tehtud: {0} · +{1}", "Задание выполнено: {0} · +{1}", "Challenge done: {0} · +{1}"); L("Uus kleeps: {0}", "Новая наклейка: {0}", "New sticker: {0}");
+        L("Uus tase: {0} · {1} %", "Новый уровень: {0} · {1} %", "New level: {0} · {1} %"); L("PÄEVA ÜLLATUS", "СЮРПРИЗ ДНЯ", "SURPRISE OF THE DAY");
+        L("Kord päevas – juhuslik soodustus ühele tootele", "Раз в день – случайная скидка на один товар", "Once a day – a random discount on one product");
+        L("Ava kingitus", "Открыть подарок", "Open the gift"); L("Avatud ✓", "Открыто ✓", "Opened ✓"); L("ainult täna", "только сегодня", "today only");
+        L("Täna pole üllatuseks sobivaid tooteid", "Сегодня нет подходящих товаров для сюрприза", "No products available for a surprise today");
+        L("Päeva üllatus −{0} %", "Сюрприз дня −{0} %", "Surprise of the day −{0} %"); L("Preemiad · {0} {1} %", "Награды · {0} {1} %", "Rewards · {0} {1} %");
+        L("Preemiate jaoks on vaja kliendikaarti. Ava „Kliendikaart“ ja loo see.", "Для наград нужна карта клиента. Откройте «Карта клиента» и создайте её.", "Rewards need a customer card. Open “Customer card” and create one.");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }

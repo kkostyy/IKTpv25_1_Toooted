@@ -270,6 +270,7 @@ namespace IKTpv25_1_Toooted
             kulg.Lisa("lemmikud", "\uEB51", "Minu lemmikud", () => NaitaRuudustik(Vaade.Lemmikud));
             kulg.Lisa("kampaaniad", "\uE8EC", "Kampaaniad", () => NaitaRuudustik(Vaade.Kampaaniad));
             kulg.Lisa("kaart", "\uE8C7", "Kliendikaart", () => KliendikaartVorm.Ava(this));
+            kulg.Lisa("preemiad", "\uE734", "Preemiad", () => { if (lehed.Praegune is not PreemiadLeht) AvaLeht(new PreemiadLeht()); });
             kulg.Lisa("nimekiri", "\uE8FD", "Ostunimekiri", AvaNimekiri, Ostunimekiri.OstmataArv);
             kulg.Lisa("korv", "\uE7BF", "Maksma", Vormista, () => Ostukorv.Ridad.Sum(r => r.Kogus));
             kulg.Lisa("seaded", "\uE713", "Seaded", () => SeadedVorm.Ava(this));

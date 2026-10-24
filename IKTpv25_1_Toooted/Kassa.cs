@@ -113,6 +113,19 @@ namespace IKTpv25_1_Toooted
                 AktiivneKasutaja.Uuenda();   // boonus muutus
             }
 
+            // Kliendikaardi preemiad: väljakutsed, kleebised, uus tase
+            if (ost.KlientId != null)
+            {
+                try
+                {
+                    using var db = new ToodedContext();
+                    foreach (var tekst in Preemiad.KontrolliPealeOstu(db, ost))
+                        Teade.Toast(tekst, TeateTyyp.Edu, 5000);
+                    AktiivneKasutaja.Uuenda();
+                }
+                catch { }
+            }
+
             if (vorm.VaheseLaoga.Count > 0 && !AktiivneKasutaja.OnOstja)
                 Teade.Toast("Väike laoseis:\n" + string.Join("\n", vorm.VaheseLaoga), TeateTyyp.Hoiatus, 6000);
 

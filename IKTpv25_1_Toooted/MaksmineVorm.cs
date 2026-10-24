@@ -414,7 +414,8 @@ public class MaksmineVorm : Form
 
             if (klient != null)
             {
-                ost.BoonusLisatud = Tarne.Boonus(ost.Summa - ost.TarneHind);   // 1 € = 1 sent
+                decimal protsent = Preemiad.LeiaTase(db, klient.Id).Protsent;   // Pronks 1 %, Hõbe 1,5 %, Kuld 2 %
+                ost.BoonusLisatud = Tarne.Boonus(ost.Summa - ost.TarneHind, protsent);
                 klient.Boonus = klient.Boonus - soodustus + ost.BoonusLisatud;
                 if (string.IsNullOrEmpty(klient.Email) && ost.Email != null) klient.Email = ost.Email;   // jätame meelde
             }
