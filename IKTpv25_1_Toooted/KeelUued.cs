@@ -158,6 +158,15 @@ public static partial class Keel
         L("{0} tk", "{0} шт", "{0} pcs");
         L("päevanorm = 2000 kcal täiskasvanu", "дневная норма = 2000 ккал взрослого", "daily norm = 2000 kcal adult");
         L("tk", "шт", "pcs");
+        L("Uued esmaspäeval · {0} päeva jäänud", "Новые в понедельник · осталось дней: {0}", "New on Monday · {0} days left"); L("Tehtud! ✓", "Готово! ✓", "Done! ✓");
+        L("{0} / {1} tehtud", "{0} / {1} сделано", "{0} / {1} done"); L("saadud", "получено", "received"); L("Kleepsualbum", "Альбом наклеек", "Sticker album");
+        L("Kaardi tasemed", "Уровни карты", "Card levels"); L("Mida rohkem ostad, seda suurem boonus ja ilusam kaart", "Чем больше покупаешь, тем больше бонус и красивее карта", "The more you buy, the bigger the bonus and the nicer the card");
+        L("Ostud viimase 12 kuu jooksul", "Покупки за последние 12 месяцев", "Purchases in the last 12 months"); L("KÕIK TASEMED", "ВСЕ УРОВНИ", "ALL LEVELS");
+        L("Tase arvutatakse viimase 12 kuu ostudest. Kõrgem tase = rohkem boonust igalt eurolt.", "Уровень считается по покупкам за 12 месяцев. Выше уровень = больше бонуса с каждого евро.", "The level is based on the last 12 months of purchases. Higher level = more bonus per euro.");
+        L("1 % boonust igalt eurolt", "1 % бонуса с каждого евро", "1 % bonus on every euro"); L("1,5 % boonust", "1,5 % бонуса", "1.5 % bonus"); L("2 % boonust", "2 % бонуса", "2 % bonus");
+        L("Päeva üllatus", "Сюрприз дня", "Surprise of the day"); L("Läikiv hõbekaart", "Блестящая серебряная карта", "Shiny silver card");
+        L("Nädala väljakutsed ja päeva üllatus", "Задания недели и сюрприз дня", "Weekly challenges and surprise of the day");
+        L("Hologramm-kaart sädelusega", "Голографическая карта с блёстками", "Hologram card with sparkles"); L("Kõik preemiad", "Все награды", "All rewards");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }
