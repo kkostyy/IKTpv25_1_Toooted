@@ -49,6 +49,7 @@ namespace IKTpv25_1_Toooted
             moodneMenuu.Lisa("kampaaniad", "", "Kampaaniad", AvaKampaaniad, () => AktiivneKasutaja.OnOmanik);
             moodneMenuu.Lisa("myyk", "", "Müügipaneel", () => AvaVorm(new MyygipaneelVorm()), () => AktiivneKasutaja.OnOmanik);
             moodneMenuu.Lisa("partiid", "", "Partiid", AvaPartiid, () => AktiivneKasutaja.OnOmanik);
+            moodneMenuu.Lisa("tellimus", "\uE7B8", "Autotellimus", () => AvaVorm(new AutotellimusVorm()), () => AktiivneKasutaja.OnOmanik);
             moodneMenuu.Lisa("kliendid", "", "Kliendid", () => AvaVorm(new KliendidVorm()), () => AktiivneKasutaja.OnOmanik);
             moodneMenuu.Lisa("ajalugu", "", "Ostude ajalugu", AvaAjalugu);
             moodneMenuu.Lisa("nimekiri", "", "Ostunimekiri", AvaNimekiri);

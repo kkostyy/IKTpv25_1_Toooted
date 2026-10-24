@@ -229,6 +229,32 @@ public static partial class Keel
         L("Täna", "Сегодня", "Today");
         L("Homme", "Завтра", "Tomorrow");
         L("Tarneaeg:", "Время доставки:", "Delivery time:");
+        L("Autotellimus", "Автозаказ", "Auto-order");
+        L("Autotellimus →", "Автозаказ →", "Auto-order →");
+        L("Müügitempo viimase {0} päeva järgi + {1} päeva varu. Kogust saab tabelis muuta.", "По темпу продаж за последние {0} дней + запас {1} дня. Количество можно изменить в таблице.", "Based on sales pace over the last {0} days + {1} days of reserve. Quantities can be edited in the table.");
+        L("Kaup peab jätkuma", "Товара должно хватить на", "Stock should last");
+        L("Ekspordi CSV", "Экспорт CSV", "Export CSV");
+        L("Ekspordi PDF", "Экспорт PDF", "Export PDF");
+        L("Tarnija", "Поставщик", "Supplier");
+        L("Müük päevas", "Продажи в день", "Sales per day");
+        L("Jätkub (päeva)", "Хватит (дней)", "Lasts (days)");
+        L("Telli (tk)", "Заказать (шт)", "Order (pcs)");
+        L("Ostuhind", "Закупочная цена", "Purchase price");
+        L("Kõik tarnijad", "Все поставщики", "All suppliers");
+        L("Kogus peab olema täisarv (0 või rohkem).", "Количество должно быть целым числом (0 или больше).", "Quantity must be a whole number (0 or more).");
+        L("Praegu pole midagi vaja tellida – laost jätkub.", "Сейчас ничего заказывать не нужно – запасов хватает.", "Nothing to order right now – stock will last.");
+        L("{0} toodet · {1} tk · tellimuse summa {2}", "{0} товаров · {1} шт · сумма заказа {2}", "{0} products · {1} pcs · order total {2}");
+        L("Tellimuses pole ühtegi toodet.", "В заказе нет ни одного товара.", "The order has no products.");
+        L("Tellimus tarnijale", "Заказ поставщику", "Purchase order");
+        L("Kuupäev: {0}", "Дата: {0}", "Date: {0}");
+        L("AKT pood · IKTpv25 · Tallinn", "Магазин AKT · IKTpv25 · Таллин", "AKT shop · IKTpv25 · Tallinn");
+        L("Kogus", "Количество", "Quantity");
+        L("Hind", "Цена", "Price");
+        L("{0} tk", "{0} шт", "{0} pcs");
+        L("KOKKU: {0} tk · {1} €", "ИТОГО: {0} шт · {1} €", "TOTAL: {0} pcs · {1} €");
+        L("Palume kinnitada tellimus ja tarneaeg e-postiga.", "Просим подтвердить заказ и срок поставки по электронной почте.", "Please confirm the order and delivery date by e-mail.");
+        L("PDF-i loomine ebaõnnestus:", "Не удалось создать PDF:", "Creating the PDF failed:");
+        L("Muu tarnija", "Другой поставщик", "Other supplier");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }

@@ -91,3 +91,41 @@ public class PrognoosiTestid
         Assert.Null(Myygianalyys.Muutus(10m, 0m));
     }
 }
+
+public class AutotellimuseTestid
+{
+    private static Ost Ost(params (int Id, int Kogus)[] read) => new()
+    {
+        Aeg = DateTime.Today,
+        Read = read.Select(r => new OstuRida { ToodeId = r.Id, Kogus = r.Kogus, Hind = 1m }).ToList()
+    };
+
+    [Fact]
+    public void Tellib_kaetuse_jaoks_puuduva_koguse()
+    {
+        var tooted = new[]
+        {
+            new Toode { Id = 1, Toodenimetus = "Piim", Kogus = 5, Tootja = "Farmi" },      // 1 päevas, jätkub 5 p → 14+3−5 = 12
+            new Toode { Id = 2, Toodenimetus = "Sool", Kogus = 100, Tootja = "Salvest" },  // jätkub 100 p → ei telli
+            new Toode { Id = 3, Toodenimetus = "Leib", Kogus = 0, Kaubamark = "Leibur" },  // 2 päevas, otsas → 34
+        };
+        var r = Autotellimus.Arvuta(new[] { Ost((1, 28), (2, 28), (3, 56)) }, tooted, kate: 14);
+        Assert.Equal(2, r.Count);
+        var piim = r.Single(x => x.Toode.Id == 1);
+        Assert.Equal(12, piim.Soovitus);
+        Assert.Equal("Farmi", piim.Tarnija);
+        var leib = r.Single(x => x.Toode.Id == 3);
+        Assert.Equal(34, leib.Soovitus);
+        Assert.Equal("Leibur", leib.Tarnija);   // tootja puudub → kaubamärk
+    }
+
+    [Fact]
+    public void Pikem_kate_tellib_rohkem()
+    {
+        var t = new[] { new Toode { Id = 1, Toodenimetus = "Piim", Kogus = 5 } };
+        var ostud = new[] { Ost((1, 28)) };
+        Assert.Equal(5, Autotellimus.Arvuta(ostud, t, kate: 7).Single().Soovitus);    // 7+3−5
+        Assert.Equal(28, Autotellimus.Arvuta(ostud, t, kate: 30).Single().Soovitus);  // 30+3−5
+        Assert.Equal(Autotellimus.MuuTarnija, Autotellimus.Arvuta(ostud, t).Single().Tarnija);
+    }
+}
