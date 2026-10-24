@@ -195,6 +195,8 @@ public static partial class Keel
         L("tagasi", "назад", "back");
         L("Lisa korvi", "В корзину", "Add to basket"); L("Lemmikud", "Избранное", "Favourites");
         L("Disain (Ctrl+Shift+M)", "Дизайн (Ctrl+Shift+M)", "Design (Ctrl+Shift+M)");
+        L("„{0}“ – vasteid pole", "«{0}» – ничего не найдено", "“{0}” – no matches");
+        L("Näita kõiki tulemusi ({0})", "Показать все результаты ({0})", "Show all results ({0})");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }

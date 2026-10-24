@@ -18,6 +18,9 @@ public static partial class Ikoonid
 
     private static readonly CultureInfo Eesti = new("et-EE");
 
+    private static bool? emojiFont;
+    private static bool EmojiFont => emojiFont ??= FontFamily.Families.Any(f => f.Name == "Segoe UI Emoji");
+
     public static void Joonista(Graphics g, string glyph, Rectangle r, Color varv, float suurus = 12f)
     {
         if (JoonistaVektor(g, glyph, r, varv, suurus)) return;
@@ -47,6 +50,8 @@ public static partial class Ikoonid
 
     public static void JoonistaEmoji(Graphics g, string emoji, Rectangle r, Color varv, float suurus = 13f)
     {
+        // Emoji-fondita arvutis (nt vanem Windows) kastikeste asemel kotiikoon
+        if (!EmojiFont) { Joonista(g, emoji == "✓" ? "\u2713" : "\uE719", r, varv, suurus * 0.9f); return; }
         using var f = new Font("Segoe UI Emoji", suurus);
         TextRenderer.DrawText(g, emoji, f, r, varv,
             TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix);
