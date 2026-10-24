@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted;
@@ -7,7 +7,7 @@ namespace IKTpv25_1_Toooted;
 //  Partiid ja säilivusaeg (omanik): ajatelg 14 päeva, partiide tabel
 //  (roheline / kollane ≤ 2 päeva / punane aegunud), uus partii, mahakandmine.
 // ===================================================================
-public class AegumineVorm : KujundusVorm
+public partial class AegumineVorm : KujundusVorm
 {
     private readonly PartiiTelg telg = new() { Dock = DockStyle.Fill };
     private readonly DataGridView vork;
@@ -17,12 +17,25 @@ public class AegumineVorm : KujundusVorm
     private readonly Label lblMaha;
     private List<Partii> partiid = new();
 
-    public AegumineVorm() : base("Partiid ja säilivusaeg", 1120, 720)
+    protected override bool TagasiNupuga => !Teema.OnMoodne;   // moodne: Tagasi on valge kaardi sees
+
+    public AegumineVorm() : base("Partiid ja säilivusaeg", Teema.OnMoodne ? 1320 : 1120, Teema.OnMoodne ? 800 : 720)
     {
         FormBorderStyle = FormBorderStyle.Sizable;
         MaximizeBox = true;
         MinimumSize = new Size(960, 600);
         BackColor = Teema.Taust;
+        if (Teema.OnMoodne)
+        {
+            vork = new DataGridView();
+            cmbToode = new ComboBox();
+            numKogus = new NumericUpDown();
+            dtAegub = new DateTimePicker();
+            lblMaha = new Label();
+            EhitaMoodne();
+            Load += (s, e) => LaadiMoodne();
+            return;
+        }
 
         var yla = new Panel { Dock = DockStyle.Top, Height = 64, BackColor = Teema.Taust };
         yla.Controls.Add(new Label { Text = "Partiid ja säilivusaeg", Location = new Point(18, 14), AutoSize = true, Font = UiStiil.PealkirjaFont, ForeColor = Teema.Tekst, BackColor = Teema.Taust });

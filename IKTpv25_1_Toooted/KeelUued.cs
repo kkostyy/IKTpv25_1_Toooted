@@ -180,6 +180,15 @@ public static partial class Keel
         L("Valmis!", "Готово!", "Done!"); L("Pood, ajalugu, statistika ja soojuskaart on täidetud.", "Магазин, история, статистика и тепловая карта заполнены.", "Shop, history, statistics and heat map are filled.");
         L("Vähem", "Меньше", "Less"); L("Rohkem", "Больше", "More"); L("Tipp:", "Пик:", "Peak:");
         L("Marginaal = (müügihind − sisseostuhind) / müügihind. Sisseostuhind lisatakse toote andmetesse.", "Маржа = (цена продажи − закупочная цена) / цена продажи. Закупочная цена указывается в данных товара.", "Margin = (sale price − purchase price) / sale price. The purchase price is set in the product data.");
+        L("NII NÄEB OSTJA", "ТАК ВИДИТ ПОКУПАТЕЛЬ", "WHAT THE SHOPPER SEES"); L("Varem aeguvat partiid müüakse esimesena (FEFO).", "Партия с более ранним сроком продаётся первой (FEFO).", "The batch expiring first is sold first (FEFO).");
+        L("Kassas ja tšekil: „Aegub … −{0} %“.", "На кассе и в чеке: «Истекает … −{0} %».", "At the till and on the receipt: “Expires … −{0} %”."); L("Aegunud partii eemaldatakse müügilt automaatselt.", "Просроченная партия автоматически снимается с продажи.", "An expired batch is removed from sale automatically.");
+        L("MAHA KANTUD", "СПИСАНО", "WRITTEN OFF"); L("Täna {0:dd.MM.yyyy}", "Сегодня {0:dd.MM.yyyy}", "Today {0:dd.MM.yyyy}"); L("+ Uus partii", "+ Новая партия", "+ New batch");
+        L("Partiisid pole. Lisa uus partii üleval paremal.", "Партий нет. Добавьте новую партию вверху справа.", "No batches. Add a new batch at the top right.");
+        L("aegunud", "просрочено", "expired"); L("täna viimane päev", "сегодня последний день", "last day today"); L("veel 1 päev", "ещё 1 день", "1 more day"); L("veel {0} päeva", "ещё {0} дн.", "{0} more days");
+        L("Automaatne allahindlus", "Автоматическая уценка", "Automatic markdown"); L("{0} päeva enne säilivusaja lõppu · müük FEFO", "за {0} дн. до конца срока · продажа FEFO", "{0} days before expiry · FEFO selling");
+        L("Partii", "Партия", "Batch"); L("Säilib kuni", "Годен до", "Best before"); L("Hind", "Цена", "Price"); L("Olek", "Статус", "Status"); L("Partii nr {0}", "Партия № {0}", "Batch no. {0}");
+        L("Varsti", "Скоро", "Soon"); L("Värske", "Свежее", "Fresh"); L("Soodustusega partiisid praegu pole.", "Партий со скидкой сейчас нет.", "No discounted batches right now.");
+        L("−{0} % · parim enne {1:dd.MM}", "−{0} % · лучше до {1:dd.MM}", "−{0} % · best before {1:dd.MM}"); L("Säilib: {0} · {1} tk", "Срок: {0} · {1} шт", "Keeps: {0} · {1} pcs");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }
