@@ -51,7 +51,7 @@ public class KampaaniadVorm : KujundusVorm
         }
 
         // ---- Paremal: uus / muudetav kampaania ----
-        var parem = new Panel { Dock = DockStyle.Right, Width = 380, Padding = new Padding(0, 0, 16, 16), BackColor = Teema.Taust };
+        var parem = new Panel { Dock = DockStyle.Right, Width = Teema.OnMoodne ? 430 : 380, Padding = new Padding(0, 0, 16, 16), BackColor = Teema.Taust };
         var vorm = new Panel { BackColor = Teema.Pind };
         int x = 4, w = 330, y = 0;
         lblVorm = new Label { Text = "Uus kampaania", Location = new Point(x, y), AutoSize = true, Font = new Font("Segoe UI Semibold", 13F), ForeColor = Teema.Tekst, BackColor = Teema.Pind };

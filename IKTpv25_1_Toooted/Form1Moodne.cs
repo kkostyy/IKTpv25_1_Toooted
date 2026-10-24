@@ -11,6 +11,12 @@ namespace IKTpv25_1_Toooted
     public partial class Form1
     {
         private bool moodne;
+        private Label? moodneKokku;
+
+        private void UuendaMoodneKokku()
+        {
+            if (moodneKokku != null && !moodneKokku.IsDisposed) moodneKokku.Text = Ostukorv.Eur(Ostukorv.Kokku + Ostukorv.PantKokku);
+        }
         private MoodneMenuu? moodneMenuu;
         private Label? moodnePealkiri;
         private MoodneKpi? kpiTooteid, kpiVahe, kpiMyyk;
@@ -105,15 +111,44 @@ namespace IKTpv25_1_Toooted
 
             kaartKorv.Dock = DockStyle.Right;
             kaartKorv.Width = 380;
-            var kassaNupud = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 150, WrapContents = true, BackColor = Teema.Pind, Padding = new Padding(14, 8, 14, 14) };
-            foreach (var rida in new[] { ridaKokku, ridaOst, ridaArve, ridaPood })
-                foreach (Control c in rida.Controls.Cast<Control>().ToList())
-                {
-                    rida.Controls.Remove(c);
-                    c.Margin = new Padding(0, 0, 8, 8);
-                    kassaNupud.Controls.Add(c);
-                }
+            kaartKorv.Radius = 14;
+            kaartKorv.BorderColor = kaartKorv.FillColor;
+            foreach (var sisemine in kaartKorv.Controls.OfType<RoundedPanel>()) sisemine.BorderColor = sisemine.FillColor;
+            // Kassa all: "Kokku" + summa, suur punane "Maksta", väiksemad nupud ühel real
+            var kassaNupud = new RoundedPanel { Dock = DockStyle.Bottom, Height = 172, Radius = 0, FillColor = Teema.Pind, BorderColor = Teema.Pind };
+            var kokkuSilt = new Label { Text = "Kokku", AutoSize = true, Location = new Point(18, 12), Font = new Font("Segoe UI", 13F, FontStyle.Bold), ForeColor = Teema.Tekst, BackColor = Teema.Pind };
+            moodneKokku = new Label { AutoSize = false, TextAlign = ContentAlignment.MiddleRight, Font = new Font("Segoe UI", 20F, FontStyle.Bold), ForeColor = Teema.Tekst, BackColor = Teema.Pind };
+            foreach (var rida in new[] { ridaKokku, ridaOst, ridaArve, ridaPood }) rida.Visible = false;
+            foreach (var b in new[] { btnValin, btnOstan, btnMaksta, btnSaadaArve, btnPood }) b.Parent?.Controls.Remove(b);
+            btnMaksta.AutoSize = false;
+            btnMaksta.Bounds = new Rectangle(18, 54, 344, 52);
+            btnMaksta.Peamine = true;
+            btnMaksta.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            btnMaksta.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+            int bx = 18;
+            foreach (var b in new[] { btnValin, btnSaadaArve, btnPood })
+            {
+                b.AutoSize = false;
+                b.Peamine = false;
+                b.Font = new Font("Segoe UI Semibold", 9.5F);
+                b.Size = new Size(TextRenderer.MeasureText(Keel.T(b.Text), b.Font).Width + 30, 40);
+                b.Location = new Point(bx, 116);
+                bx += b.Width + 8;
+            }
+            kassaNupud.Controls.AddRange(new Control[] { kokkuSilt, moodneKokku, btnMaksta, btnValin, btnSaadaArve, btnPood });
+            foreach (Control c in kassaNupud.Controls) { c.Anchor = AnchorStyles.Top | AnchorStyles.Left; if (c is not RoundedButton) c.BackColor = Teema.Pind; }
+            void PaigutaKassa()
+            {
+                int w = kassaNupud.ClientSize.Width - 36;
+                moodneKokku.Bounds = new Rectangle(kassaNupud.ClientSize.Width - 18 - 220, 4, 220, 44);
+                btnMaksta.Bounds = new Rectangle(18, 56, Math.Max(100, w), 52);
+            }
+            kassaNupud.Resize += (s, e) => PaigutaKassa();
+            PaigutaKassa();
             kaartKorv.Controls.Add(kassaNupud);
+            UuendaMoodneKokku();
+            Ostukorv.Muutus += UuendaMoodneKokku;
+            FormClosed += (s, e) => Ostukorv.Muutus -= UuendaMoodneKokku;
 
             pnlSisu.Controls.Add(kesk);
             kesk.BringToFront();   // Fill dokitakse viimasena
@@ -175,7 +210,7 @@ namespace IKTpv25_1_Toooted
 
         protected override CreateParams CreateParams
         {
-            get { var cp = base.CreateParams; if (Teema.OnMoodne) cp.ExStyle |= 0x02000000; return cp; }
+            get { var cp = base.CreateParams; if (Teema.Komposiit) cp.ExStyle |= 0x02000000; return cp; }
         }
 
         private void MoodneVaheleht(bool tooted)
@@ -305,7 +340,7 @@ namespace IKTpv25_1_Toooted
             for (int i = 0; i < n.Count; i++)
                 if (PunktiKoht(i).Contains(e.Location))
                 {
-                    if (n[i].Votti is "tooted" or "kassa") valitud = n[i].Votti;
+                    if (n[i].Votti != "rohkem") valitud = n[i].Votti;   // ka avatud vorm (Kampaaniad jne) on märgitud
                     Invalidate();
                     n[i].Tegevus();
                 }

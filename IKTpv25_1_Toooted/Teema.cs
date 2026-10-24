@@ -1,4 +1,4 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 
@@ -34,6 +34,9 @@ public static class Teema
     public static bool OnRimi => Stiil != Disain.Klassikaline;   // e-poe disain (ka Moodne põhineb sellel)
     // Moodne: kaardid ilma raamita, suured ümarused, nupud "pillid", vajutus väikseks (Ctrl+Shift+M)
     public static bool OnMoodne => Stiil == Disain.Moodne;
+
+    // WS_EX_COMPOSITED (kogu aken joonistatakse korraga, animatsioonid ei rebene); AKT_KOMPOSIIT=0 lülitab välja
+    public static bool Komposiit => OnMoodne && Environment.GetEnvironmentVariable("AKT_KOMPOSIIT") != "0";
     public static string AktsendiNimi { get; private set; } = "Punane";
 
     // Ümarad nurgad (suuremad raadiused) ja külgmenüü

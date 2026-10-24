@@ -803,7 +803,7 @@ namespace IKTpv25_1_Toooted
         // Kompositsioon: lapselemendid joonistatakse koos (animatsioonid ei vilgu ega rebene)
         protected override CreateParams CreateParams
         {
-            get { var cp = base.CreateParams; if (Teema.OnMoodne) cp.ExStyle |= 0x02000000; return cp; }
+            get { var cp = base.CreateParams; if (Teema.Komposiit) cp.ExStyle |= 0x02000000; return cp; }
         }
 
         public void AvaLeht(Leht leht)

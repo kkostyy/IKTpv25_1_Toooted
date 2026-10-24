@@ -10,7 +10,7 @@ namespace IKTpv25_1_Toooted
         public static GraphicsPath Tee(RectangleF r, float radius)
         {
             var path = new GraphicsPath();
-            if (Teema.Umarad && radius > 0) radius = Math.Max(radius * 2, radius + 10);   // "pehme" stiil
+            if (Teema.Umarad && !Teema.OnMoodne && radius > 0) radius = Math.Max(radius * 2, radius + 10);   // "pehme" stiil (moodsas disainis on raadiused juba õiged)
             float d = Math.Min(radius * 2, Math.Min(r.Width, r.Height));
             if (d <= 0)
             {
@@ -48,7 +48,8 @@ namespace IKTpv25_1_Toooted
         // Lapsed (sildid, joonistatud elemendid) võtavad tausta paneeli täitevärvist, mitte hallist alusest
         public override Color BackColor { get => taide; set { } }
 
-        private int MoodneRaadius => Math.Min(Math.Max(Radius * 2, 16), Math.Min(Width, Height) / 2);
+        // Moodne: madal element (väli, nupp) = "pill", kaardid kuni 28 px (suurem nägi välja nagu sidrun)
+        private int MoodneRaadius => Height <= 56 ? Height / 2 : Math.Min(Math.Min(Math.Max(Radius * 2, 16), 28), Math.Min(Width, Height) / 2);
 
         // Moodne: suured ümarad nurgad – sisu nihkub nii palju sissepoole, et nurgad seda ei lõikaks
         public override Rectangle DisplayRectangle
