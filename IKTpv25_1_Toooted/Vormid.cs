@@ -12,6 +12,9 @@ namespace IKTpv25_1_Toooted
         // Kas aknal on nupp "← Tagasi" (sisselogimisel pole kuhugi tagasi minna)
         protected virtual bool TagasiNupuga => true;
 
+        // Manustatud poe lehena: oma "Tagasi" nuppu pole vaja (poe ribal on)
+        public bool IlmaTagasita { get; set; }
+
         // Muutmisvormid: kas sulgemisel küsida, kui midagi on muudetud
         protected bool KysiSulgemisel { get; set; }
         protected bool Muudetud { get; set; }
@@ -34,7 +37,7 @@ namespace IKTpv25_1_Toooted
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);          // Load-sündmused (andmete laadimine) enne
-            if (TagasiNupuga)
+            if (TagasiNupuga && !IlmaTagasita)
             {
                 UiStiil.LisaTagasiNupp(this, pealkirjaSilt);
                 KeyPreview = true;
@@ -55,6 +58,11 @@ namespace IKTpv25_1_Toooted
         }
 
         // ← Tagasi, Esc, Alt+←, hiire külgnupp: aken sulgub (muudatuste korral küsib enne)
+        protected override CreateParams CreateParams
+        {
+            get { var cp = base.CreateParams; if (Teema.OnMoodne && TopLevel) cp.ExStyle |= 0x02000000; return cp; }
+        }
+
         public bool MineTagasi()
         {
             if (Modal) DialogResult = DialogResult.Cancel;

@@ -138,18 +138,6 @@ public class DieediKaart : Panel
         if (Teema.OnMoodne) lblSobib.Left = Math.Max(360, (lblSobib.Parent?.Width ?? 900) / 2 - 140);
         lblTeada.Left = lblSobib.Left + 2;
         lblTeada.Text = Keel.F("Koostis on teada {0} tootel", teada);
-        if (viimaneArv >= 0 && viimaneArv != sobib)
-        {
-            // loendur "hüppab"
-            var alg = lblSobib.Font;
-            Animatsioon.Kaivita(lblSobib, 300, t =>
-            {
-                float k = (Teema.OnMoodne ? 15F : 10.5F) * (float)(1 + 0.16 * Math.Sin(Math.PI * t));
-                var vana = lblSobib.Font;
-                lblSobib.Font = Teema.OnMoodne ? new Font("Segoe UI", k, FontStyle.Bold) : new Font("Segoe UI Semibold", k);
-                if (!ReferenceEquals(vana, alg)) vana.Dispose();
-            });
-        }
         viimaneArv = sobib;
         foreach (var k in kiibid.Controls.OfType<DieediKiip>()) k.Invalidate();
     }

@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted;
@@ -113,8 +113,7 @@ public class KaardiTasemedVorm : Form, ITagasi
 
     public static void Ava(IWin32Window? omanik)
     {
-        using var v = new KaardiTasemedVorm();
-        if (omanik != null) v.ShowDialog(omanik); else { v.StartPosition = FormStartPosition.CenterScreen; v.ShowDialog(); }
+        Aken.Ava(omanik, new KaardiTasemedVorm());
     }
 }
 

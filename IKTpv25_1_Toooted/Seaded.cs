@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted
 {
@@ -21,13 +21,11 @@ namespace IKTpv25_1_Toooted
         // Avab seaded ja rakendab pärast sulgemist disaini vahetuse
         public static void Ava(IWin32Window? omanik)
         {
-            Disain? disain;
-            using (var vorm = new SeadedVorm())
+            var vorm = new SeadedVorm();
+            Aken.Ava(omanik, vorm, () =>
             {
-                if (omanik != null) vorm.ShowDialog(omanik); else vorm.ShowDialog();
-                disain = vorm.UusDisain;
-            }
-            if (disain is Disain d && d != Teema.Stiil) Teema.SeaDisain(d);
+                if (vorm.UusDisain is Disain d && d != Teema.Stiil) Teema.SeaDisain(d);
+            });
         }
 
         public SeadedVorm() : base("Seaded", 580, 752)

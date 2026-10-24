@@ -1,4 +1,4 @@
-namespace IKTpv25_1_Toooted
+﻿namespace IKTpv25_1_Toooted
 {
     // Menüü ja rollid: Omanik näeb vahelehti Tooted ja Kassa, Müüja ainult Kassa
     public partial class Form1
@@ -309,20 +309,17 @@ namespace IKTpv25_1_Toooted
         // Kampaaniate haldus; pärast sulgemist on hinnad muutunud
         private void AvaKampaaniad()
         {
-            AvaVorm(new KampaaniadVorm());
-            LaadiTooted();
+            AvaVorm(new KampaaniadVorm(), LaadiTooted);
         }
 
         private void AvaPartiid()
         {
-            AvaVorm(new AegumineVorm());
-            LaadiTooted();
+            AvaVorm(new AegumineVorm(), LaadiTooted);
         }
 
         private void AvaDemo()
         {
-            AvaVorm(new DemoVorm());
-            LaadiTooted();
+            AvaVorm(new DemoVorm(), LaadiTooted);
         }
 
         private void LooKulgMenuu()
@@ -356,11 +353,7 @@ namespace IKTpv25_1_Toooted
             kulg.UuendaMargid();
         }
 
-        private void AvaNimekiri()
-        {
-            using var vorm = new OstunimekiriVorm();
-            vorm.ShowDialog(this);
-        }
+        private void AvaNimekiri() => AvaVorm(new OstunimekiriVorm());
 
         private void VahetaKasutajat()
         {
@@ -372,18 +365,15 @@ namespace IKTpv25_1_Toooted
         // Ostude ajalugu: kõik näevad ja saavad tšeki printida, tagastada saab ainult omanik
         private void AvaAjalugu()
         {
-            using var vorm = new OstudVorm(lubaTagastus: AktiivneKasutaja.OnOmanik);
-            vorm.ShowDialog(this);
-            foreach (int id in vorm.TagastatudOstud) OstTagastati(id);
-            if (vorm.TagastatudOstud.Count > 0) LaadiTooted();
+            var vorm = new OstudVorm(lubaTagastus: AktiivneKasutaja.OnOmanik);
+            AvaVorm(vorm, () =>
+            {
+                foreach (int id in vorm.TagastatudOstud) OstTagastati(id);
+                if (vorm.TagastatudOstud.Count > 0) LaadiTooted();
+            });
         }
 
-        private void AvaVorm(Form vorm)
-        {
-            using (vorm)
-            {
-                vorm.ShowDialog(this);
-            }
-        }
+        // Moodsas disainis avaneb vorm peaakna sees, muidu dialoogina; "parast" pärast sulgemist
+        private void AvaVorm(Form vorm, Action? parast = null) => Aken.Ava(this, vorm, parast);
     }
 }

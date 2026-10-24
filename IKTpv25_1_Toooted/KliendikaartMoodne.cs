@@ -215,7 +215,13 @@ namespace IKTpv25_1_Toooted
             var paremAll = new RoundedPanel { Bounds = new Rectangle(720, 310, 264, 394), Radius = 14, FillColor = Teema.Pind, BorderColor = Teema.Pind, BackColor = Teema.Taust };
             paremAll.Controls.Add(new Label { Text = "Viimased ostud", Location = new Point(18, 16), AutoSize = true, Font = new Font("Segoe UI", 12F, FontStyle.Bold), ForeColor = Teema.Tekst, BackColor = Teema.Pind });
             paremAll.Controls.Add(new OstuRead(ostud) { Bounds = new Rectangle(12, 48, 240, 200) });
-            var preemiad = UiStiil.LooSuurNupp("Preemiad ja tase  ›", (s, e) => { var o = Owner; Close(); BeginInvoke(new Action(() => PreemiadLeht.Ava(o))); });
+            var preemiad = UiStiil.LooSuurNupp("Preemiad ja tase  ›", (s, e) =>
+            {
+                Control? o = TopLevel ? Owner : TopLevelControl;   // manustatud: peaaken
+                Close();
+                if (o != null && !o.IsDisposed) o.BeginInvoke(new Action(() => PreemiadLeht.Ava(o)));
+                else PreemiadLeht.Ava(null);
+            });
             preemiad.Bounds = new Rectangle(18, 266, 228, 50);
             var boonus = UiStiil.LooSuurNupp("Kasuta boonust maksmisel", (s, e) => Teade.Toast("Maksmisel märgi „Kasuta boonust“ – boonus läheb allahindluseks.", TeateTyyp.Info, 4000));
             boonus.Bounds = new Rectangle(18, 326, 228, 50);

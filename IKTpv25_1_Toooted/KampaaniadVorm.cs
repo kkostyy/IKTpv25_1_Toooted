@@ -95,7 +95,7 @@ public class KampaaniadVorm : KujundusVorm
         lblProtsent = new Label { Text = "−30%", Location = new Point(x + w - 120, y - 6), Size = new Size(120, 44), TextAlign = ContentAlignment.MiddleRight, Font = new Font("Segoe UI", 24F, FontStyle.Bold), ForeColor = Teema.Aktsent, BackColor = Teema.Pind };
         vorm.Controls.Add(lblProtsent);
         riba = new TrackBar { Location = new Point(x - 4, y + 38), Width = w + 8, Minimum = 5, Maximum = 70, Value = 30, TickFrequency = 5, SmallChange = 1, LargeChange = 5, BackColor = Teema.Pind };
-        riba.ValueChanged += (s, e) => { lblProtsent.Text = $"−{riba.Value}%"; Pop(lblProtsent); Eelvaade(); };
+        riba.ValueChanged += (s, e) => { lblProtsent.Text = $"−{riba.Value}%"; Eelvaade(); };
         vorm.Controls.Add(riba);
 
         y += 92;
