@@ -135,6 +135,10 @@ public static partial class Keel
         L("Rohkem…", "Ещё…", "More…"); L("Ava e-pood", "Открыть магазин", "Open shop"); L("Ekspordi CSV", "Экспорт CSV", "Export CSV");
         L("Tooteid", "Товаров", "Products"); L("Väike laoseis (alla 10 tk)", "Мало на складе (меньше 10 шт)", "Low stock (under 10 pcs)");
         L("Müük täna", "Продажи сегодня", "Sales today"); L("+ Lisa uus", "+ Добавить", "+ Add new"); L("Kassa", "Касса", "Till"); L("Tooted", "Товары", "Products");
+        L("Otsi toodet…", "Найти товар…", "Search products…"); L("NÄDALA PAKKUMINE", "ПРЕДЛОЖЕНИЕ НЕДЕЛИ", "DEAL OF THE WEEK");
+        L("Tasuta kojuveoni", "До бесплатной доставки", "Until free delivery"); L("Kojuvedu on tasuta", "Доставка бесплатна", "Delivery is free");
+        L("veel {0}", "ещё {0}", "{0} more"); L("Tasuta alates {0}", "Бесплатно от {0}", "Free from {0}"); L("Kategooriad", "Категории", "Categories");
+        L("Tooteinfo", "О товаре", "Product info"); L("Ostukorv", "Корзина", "Basket");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }

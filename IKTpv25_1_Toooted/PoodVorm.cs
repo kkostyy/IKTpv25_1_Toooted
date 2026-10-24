@@ -7,7 +7,7 @@ namespace IKTpv25_1_Toooted
     //  ülal lilla riba, päis (logo, otsing, kasutaja, ostukorvi nupp), menüüriba (Tooted, Kampaaniad, ...),
     //  vasakul kategooriate ikoonid, keskel avaleht (riiulid "Parimad pakkumised" jne) või tooteruudustik,
     //  paremal "Sinu ostukorv".
-    public class PoodVorm : Form, ITagasi
+    public partial class PoodVorm : Form, ITagasi
     {
         private enum Vaade { Avaleht, Kategooria, Kampaaniad, Odav, Lemmikud, Otsing, Muu }
 
@@ -291,6 +291,7 @@ namespace IKTpv25_1_Toooted
             Controls.Add(nav);
             Controls.Add(pais);
             Controls.Add(lilla);
+            if (moodne) RakendaMoodne(lilla, pais, nav, keskmine, korv, korviPais);   // Ctrl+Shift+M
             keskmine.BringToFront();
 
             Ostukorv.Muutus += KorvMuutus;
@@ -400,7 +401,7 @@ namespace IKTpv25_1_Toooted
         // Ctrl+Shift+D: pood suletakse ja Form1 avab klassikalise poe
         private void DisainMuutus()
         {
-            if (!Teema.OnRimi && IsHandleCreated)
+            if ((!Teema.OnRimi || Teema.OnMoodne != moodne) && IsHandleCreated)
             {
                 Tag = "disain";
                 BeginInvoke(new Action(Close));
@@ -516,6 +517,7 @@ namespace IKTpv25_1_Toooted
 
         private void MargiValik()
         {
+            MoodneValik();
             foreach (var l in navLingid)
             {
                 l.Valitud = Equals(l.Tag, vaade);
@@ -548,6 +550,7 @@ namespace IKTpv25_1_Toooted
         private void JoonistaAvaleht()
         {
             TyhjendaSisu();
+            if (moodne) sisu.Controls.Add(LooBento());
             if (OhtuSoodustus.S.Sees) sisu.Controls.Add(new OhtuBanner());
             var soodus = Filtreeri(koikTooted.Where(t => t.SoodusProtsent != null).OrderByDescending(t => t.SoodusProtsent));
             if (soodus.Count > 0)
@@ -1323,7 +1326,9 @@ namespace IKTpv25_1_Toooted
         }
 
         private RectangleF Kaart => new(1, 1, Width - 4, Height - 4);
-        private Rectangle Nupp => new((int)Kaart.X + 16, (int)Kaart.Bottom - 50, (int)Kaart.Width - 32, 34);
+        private Rectangle Nupp => !Teema.OnMoodne ? new((int)Kaart.X + 16, (int)Kaart.Bottom - 50, (int)Kaart.Width - 32, 34)
+            : Ostukorv.KorvisKogus(Toode.Id) > 0 ? new((int)Kaart.Right - 122, (int)Kaart.Bottom - 56, 110, 44)
+            : new((int)Kaart.Right - 56, (int)Kaart.Bottom - 56, 44, 44);   // moodne: ümar "+" või tume stepper
         private Rectangle Taht => new((int)Kaart.Right - 50, (int)Kaart.Bottom - 104, 32, 32);
 
         protected override void OnMouseEnter(EventArgs e) { hover = true; Invalidate(); base.OnMouseEnter(e); }
@@ -1373,6 +1378,22 @@ namespace IKTpv25_1_Toooted
             var kaart = Kaart;
             bool laos = Toode.Kogus > 0;
 
+            if (Teema.OnMoodne)
+            {
+                // Moodne: hall ümar kaart (raadius 24), pilt valgel ümaral alusel; hiire all tõuseb
+                if (hover)
+                    using (var vari = new SolidBrush(Color.FromArgb(22, 0, 0, 0)))
+                    using (var vt = Ymardus.Tee(new RectangleF(kaart.X + 2, kaart.Y + 6, kaart.Width - 4, kaart.Height - 4), 24))
+                        g.FillPath(vari, vt);
+                if (hover) kaart.Offset(0, -3);
+                using (var path = Ymardus.Tee(kaart, 24))
+                using (var b = new SolidBrush(Teema.Paneel2))
+                    g.FillPath(b, path);
+                using (var path = Ymardus.Tee(new RectangleF(kaart.X + 10, kaart.Y + 10, kaart.Width - 20, 162), 18))
+                using (var b = new SolidBrush(Teema.Pind))
+                    g.FillPath(b, path);
+            }
+            else
             using (var path = Ymardus.Tee(kaart, 4))
             using (var b = new SolidBrush(Teema.Pind))
             using (var p = new Pen(hover ? Ymardus.Segu(Teema.Joon, Teema.Tekst, 0.15f) : Teema.Joon))
@@ -1517,6 +1538,34 @@ namespace IKTpv25_1_Toooted
             var r = Nupp;
             bool hiirPeal = hover && r.Contains(hiir);
             int korvis = Ostukorv.KorvisKogus(Toode.Id);
+
+            if (Teema.OnMoodne)
+            {
+                // ümar punane "+" või tume stepper "− N +"
+                if (!laos)
+                {
+                    using var b0 = new SolidBrush(Teema.Joon);
+                    g.FillEllipse(b0, r);
+                    Ikoonid.Joonista(g, Ikoonid.Sulge, r, Teema.TekstNork, 9f);
+                    return;
+                }
+                if (korvis == 0)
+                {
+                    using var b1 = new SolidBrush(hiirPeal ? Teema.AktsentTume : Teema.Aktsent);
+                    var rr = hiirPeal ? Rectangle.Inflate(r, 2, 2) : r;
+                    g.FillEllipse(b1, rr);
+                    Ikoonid.Joonista(g, Ikoonid.Pluss, r, Color.White, 12f);
+                    return;
+                }
+                using (var tp = Ymardus.Tee(r, r.Height / 2))
+                using (var b2 = new SolidBrush(Color.FromArgb(27, 28, 31)))
+                    g.FillPath(b2, tp);
+                Ikoonid.Joonista(g, Ikoonid.Miinus, new Rectangle(r.X, r.Y, 40, r.Height), Color.White, 10f);
+                Ikoonid.Joonista(g, Ikoonid.Pluss, new Rectangle(r.Right - 40, r.Y, 40, r.Height), Color.White, 10f);
+                using (var f = new Font("Segoe UI", 10.5F, FontStyle.Bold))
+                    TextRenderer.DrawText(g, korvis.ToString(), f, r, Color.White, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                return;
+            }
 
             using var path = Ymardus.Tee(r, 5);
             if (!laos)
