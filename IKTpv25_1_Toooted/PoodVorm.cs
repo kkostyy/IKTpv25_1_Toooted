@@ -300,6 +300,13 @@ namespace IKTpv25_1_Toooted
             PildiVahemalu.Laetud += PildidLaetud;
             Teema.Muutus += DisainMuutus;
             Load += (s, e) => { LaadiTooted(); NaitaAvaleht(); UuendaKokku(); };
+
+            // Kord minutis: kas õhtune soodustus algas/lõppes → korvi hinnad ja kaartide "tempel"
+            ohtuKaib = OhtuSoodustus.Kaib(Hinnad.Kell());
+            var minut = new System.Windows.Forms.Timer { Interval = 30_000 };
+            minut.Tick += (s, e) => KellMuutus();
+            minut.Start();
+            FormClosed += (s, e) => { minut.Stop(); minut.Dispose(); };
         }
 
         // ---------------------------------------------------------------
@@ -362,6 +369,19 @@ namespace IKTpv25_1_Toooted
             PildiVahemalu.Laetud -= PildidLaetud;
             Teema.Muutus -= DisainMuutus;
             base.OnFormClosed(e);
+        }
+
+        private bool ohtuKaib;
+
+        private void KellMuutus()
+        {
+            bool kaib = OhtuSoodustus.Kaib(Hinnad.Kell());
+            Ostukorv.UuendaHinnad();
+            if (kaib == ohtuKaib) return;
+            ohtuKaib = kaib;
+            foreach (var k in KoikKaardid())
+                if (OhtuSoodustus.S.KategooriaId == k.Toode.KategooriaId) { if (kaib) k.Tempel(); else k.Invalidate(); }
+            if (kaib) Teade.Toast(Keel.F("Õhtune küpsetiste tund algas: −{0} %", OhtuSoodustus.S.Protsent), TeateTyyp.Info, 4000);
         }
 
         private void KorvMuutus()
@@ -528,6 +548,7 @@ namespace IKTpv25_1_Toooted
         private void JoonistaAvaleht()
         {
             TyhjendaSisu();
+            if (OhtuSoodustus.S.Sees) sisu.Controls.Add(new OhtuBanner());
             var soodus = Filtreeri(koikTooted.Where(t => t.SoodusProtsent != null).OrderByDescending(t => t.SoodusProtsent));
             if (soodus.Count > 0)
                 sisu.Controls.Add(new Riiul("Parimad pakkumised", soodus, () => NaitaRuudustik(Vaade.Kampaaniad), Uhenda));
@@ -654,6 +675,8 @@ namespace IKTpv25_1_Toooted
             };
 
             TyhjendaSisu();
+            if (v == Vaade.Kategooria && valitudKategooria == OhtuSoodustus.S.KategooriaId && OhtuSoodustus.S.Sees)
+                sisu.Controls.Add(new OhtuBanner());
             sisu.Controls.Add(RuudustikuPais(pealkiri, tooted.Count, v != Vaade.Odav));
 
             var ruudustik = new FlowLayoutPanel
@@ -1270,6 +1293,7 @@ namespace IKTpv25_1_Toooted
 
         private bool hover;
         private Point hiir;
+        private double tempel = 1;  // õhtuse soodustuse "tempel" (0 → 1)
         private bool sobimatu;     // ei sobi "Minu dieet" valikuga
         private double tuhm;       // 0 → 1 (tuhmumise animatsioon)
 
@@ -1284,6 +1308,9 @@ namespace IKTpv25_1_Toooted
             Margin = new Padding(5);
             Cursor = Cursors.Hand;
         }
+
+        // Õhtune soodustus algas: "−50%" tempel lendab peale ja hind kukub
+        public void Tempel() => Animatsioon.Kaivita(this, 650, t => { tempel = t; Invalidate(); });
 
         // Dieet muutus: kaart tuhmub (0,38 läbipaistvus, hall) või tuleb tagasi, 450 ms
         public void UuendaDieet()
@@ -1362,15 +1389,24 @@ namespace IKTpv25_1_Toooted
                 Ikoonid.JoonistaEmoji(g, Ikoonid.KategooriaIkoon(Toode.Kategooria?.Kategooria_nimetus),
                     Rectangle.Round(pildiKast), Teema.Joon, 40f);
 
-            // Soodustus: lilla ring paremal üleval (nagu "UUS")
-            if (Toode.SoodusProtsent is int pr)
+            // Soodustus: lilla ring paremal üleval (õhtune soodustus punane "tempel", mis lendab peale)
+            var h = Hinnad.Lopphind(Toode);
+            if (h.Soodus)
             {
+                bool ohtu = OhtuSoodustus.Kehtib(Toode, Hinnad.Kell());
+                float s = (float)(ohtu ? 1 + 1.2 * (1 - Animatsioon.Pop(tempel)) : 1);
                 var ring = new RectangleF(kaart.Right - 50, kaart.Y + 14, 36, 36);
-                using var b = new SolidBrush(Teema.Teine);
+                var olek0 = g.Save();
+                g.TranslateTransform(ring.X + 18, ring.Y + 18);
+                g.ScaleTransform(s, s);
+                if (ohtu) g.RotateTransform((float)(-20 * (1 - tempel)) - 6);
+                g.TranslateTransform(-(ring.X + 18), -(ring.Y + 18));
+                using var b = new SolidBrush(Color.FromArgb((int)(255 * Math.Clamp(tempel * 1.5, 0, 1)), ohtu ? Teema.Aktsent : Teema.Teine));
                 g.FillEllipse(b, ring);
                 using var f = new Font("Segoe UI Semibold", 7.5F);
-                TextRenderer.DrawText(g, $"-{pr}%", f, Rectangle.Round(ring), Color.White,
+                TextRenderer.DrawText(g, $"-{h.Protsent}%", f, Rectangle.Round(ring), Color.White,
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
+                g.Restore(olek0);
             }
 
             // Lipp + laoseis pildi all
@@ -1393,13 +1429,14 @@ namespace IKTpv25_1_Toooted
                     TextFormatFlags.WordBreak | TextFormatFlags.HorizontalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
 
             // Hind
-            bool soodus = Toode.SoodusProtsent != null;
-            int hinnaY = (int)kaart.Bottom - 108;
-            int laius = Ikoonid.JoonistaHind(g, Toode.Hind, "tk", x, hinnaY, soodus ? Teema.Aktsent : Teema.Tekst, 25f);
+            // Hind (uus hind "kukub" ülalt, kui soodustus just algas)
+            bool soodus = h.Soodus;
+            int hinnaY = (int)kaart.Bottom - 108 - (int)((1 - Animatsioon.Pop(tempel)) * 14);
+            int laius = Ikoonid.JoonistaHind(g, h.Hind, "tk", x, hinnaY, soodus ? Teema.Aktsent : Teema.Tekst, 25f);
             if (soodus)
             {
                 using var vana = new Font("Segoe UI Semibold", 9.5F, FontStyle.Strikeout);
-                TextRenderer.DrawText(g, Ikoonid.Hind(Toode.VanaHind!.Value), vana, new Point(x + laius + 4, hinnaY + 21), Teema.Tekst2);
+                TextRenderer.DrawText(g, Ikoonid.Hind(h.TavaHind), vana, new Point(x + laius + 4, hinnaY + 21), Teema.Tekst2);
             }
             string? alumine = Toode.Pant > 0
                 ? "+ " + Keel.F("Pakendi tagatisraha {0}", Ostukorv.Eur(Toode.Pant))

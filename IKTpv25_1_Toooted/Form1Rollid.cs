@@ -13,6 +13,7 @@ namespace IKTpv25_1_Toooted
         private readonly ToolStripMenuItem menuDemo = new("Demoandmed...");
         private readonly ToolStripMenuItem menuMyygipaneel = new("Müügipaneel...");
         private readonly ToolStripMenuItem menuPartiid = new("Partiid ja säilivusaeg...");
+        private readonly ToolStripMenuItem menuOhtu = new("Õhtune soodustus...");
         private readonly ToolStripStatusLabel lblKasutaja = new();
         private string? algneTiitel;
         private Point tabKassaAlgne;
@@ -41,6 +42,8 @@ namespace IKTpv25_1_Toooted
             menuKampaaniad.Click += (s, e) => AvaKampaaniad();
             haldus.DropDownItems.Add(menuMyygipaneel);
             haldus.DropDownItems.Add(menuPartiid);
+            haldus.DropDownItems.Add(menuOhtu);
+            menuOhtu.Click += (s, e) => AvaVorm(new OhtuSeadedVorm());
             menuPartiid.Click += (s, e) => AvaPartiid();
             menuMyygipaneel.Click += (s, e) => AvaVorm(new MyygipaneelVorm());
             haldus.DropDownItems.Add(menuDemo);
@@ -98,6 +101,7 @@ namespace IKTpv25_1_Toooted
             menuDemo.Visible = omanik;
             menuMyygipaneel.Visible = omanik;
             menuPartiid.Visible = omanik;
+            menuOhtu.Visible = omanik;
 
             // Ostja (klient) ei näe kassat ega ladu – talle avaneb kohe e-pood
             if (AktiivneKasutaja.OnOstja)
