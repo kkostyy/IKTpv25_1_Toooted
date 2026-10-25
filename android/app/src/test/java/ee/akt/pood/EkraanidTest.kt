@@ -54,13 +54,16 @@ class EkraanidTest {
         PereKorv.lisa(pood, PereKorv.loe(pood), 1, 2, "Jaan", aeg()); PereKorv.lisa(pood, PereKorv.loe(pood), 4, 1, "Mari", aeg())
         ava(Ekraan.PereKorv)
     })
-    private fun omanik() = AppOlek(MaluPood(kell), { kell }).apply { logiSisse("admin", "admin123"); Demo.loo(pood, tooted, kell); varskendaTooted() }
+    private fun omanik() = AppOlek(MaluPood(kell), { kell }).apply { logiSisse("admin", "admin123"); Demo.loo(pood, tooted, kell); varskendaTooted(); varskendaPartiid() }
     @Test fun seaded() = pilt(olek().apply { ava(Ekraan.Seaded) })
     @Test fun seadedTume() { Teema.tume = true; try { pilt(olek().apply { ava(Ekraan.Seaded) }) } finally { Teema.tume = false } }
     @Test fun avalehtTume() { Teema.tume = true; try { pilt(olek()) } finally { Teema.tume = false } }
     @Test fun myygipaneel() = pilt(omanik().apply { ava(Ekraan.Myygipaneel) })
     @Test fun autotellimus() = pilt(omanik().apply { ava(Ekraan.Autotellimus) })
     @Test fun koos() = pilt(omanik().apply { ava(Ekraan.Koos) })
+    @Test fun kassa() = pilt(omanik().apply { ava(Ekraan.Kassa) })
+    @Test fun partiid() = pilt(omanik().apply { ava(Ekraan.Partiid) })
+    @Test fun korvSalvestatud() = pilt(olek().apply { lisaKorvi(toode(1)!!); lisaKorvi(toode(4)!!); salvestaKorv("Nädalavarud"); vaheleht(Ekraan.Korv) })
     @Test fun kliendid() = pilt(omanik().apply { ava(Ekraan.Kliendid) })
     @Test fun raiskamine() = pilt(olek().apply { ava(Ekraan.Ruudustik("Ilma raiskamiseta", vaade = "raiskamine")) })
     @Test fun admin() = pilt(AppOlek(MaluPood(kell), { kell }).apply { logiSisse("admin", "admin123") })
@@ -111,6 +114,14 @@ class MaluPood(private val kell: LocalDateTime) : Pood {
     override fun kasutajad() = kasutajad.values.map { it.first }
     override fun muudaProfiili(nimi: String, taisNimi: String, email: String?) { kasutajad[nimi]?.let { kasutajad[nimi] = it.first.copy(taisNimi = taisNimi, email = email) to it.second } }
     override fun muudaParooli(nimi: String, vana: String, uus: String): String? = null
+    private val partiid = mutableListOf<Partii>()
+    override fun partiid() = partiid.sortedBy { it.aegub }
+    override fun lisaPartii(toodeId: Int, kogus: Int, aegub: LocalDate) { partiid.add(Partii(partiid.size + 1, toodeId, kogus, aegub, kell.toLocalDate())) }
+    override fun kannaMaha(partiiId: Int) { partiid.removeAll { it.id == partiiId } }
+    override fun lisaKategooria(nimi: String): Int = 99
+    override fun kustutaKategooria(id: Int): String? = null
+    override fun muudaRolli(nimi: String, roll: Roll) {}
+    override fun kustutaKasutaja(nimi: String) {}
     override fun ostud(kasutaja: String?) = ostud.filter { kasutaja == null || it.kasutaja == kasutaja }.sortedByDescending { it.aeg }
     override fun lisaOst(ost: Ost): Ost { val o = ost.copy(id = ostud.size + 1); ostud.add(o); return o }
     override fun tagasta(ostId: Int) {}

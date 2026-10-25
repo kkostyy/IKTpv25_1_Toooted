@@ -42,6 +42,14 @@ interface Pood {
     fun kampaaniad(): List<Kampaania>
     fun lisaKampaania(k: Kampaania)
 
+    fun partiid(): List<Partii>
+    fun lisaPartii(toodeId: Int, kogus: Int, aegub: LocalDate)
+    fun kannaMaha(partiiId: Int)
+    fun lisaKategooria(nimi: String): Int
+    fun kustutaKategooria(id: Int): String?          // veateade või null
+    fun muudaRolli(nimi: String, roll: Roll)
+    fun kustutaKasutaja(nimi: String)
+
     fun seade(voti: String): String?
     fun seaSeade(voti: String, vaartus: String?)
 }
@@ -60,7 +68,7 @@ object Parool {
     private fun uusSool(): String = ByteArray(8).also { SecureRandom().nextBytes(it) }.joinToString("") { "%02x".format(it) }
 }
 
-class SqlPood(private val context: Context) : SQLiteOpenHelper(context, "akt.db", null, 1), Pood {
+class SqlPood(private val context: Context) : SQLiteOpenHelper(context, "akt.db", null, 2), Pood {
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL("CREATE TABLE kategooriad(id INTEGER PRIMARY KEY, nimi TEXT)")
@@ -79,10 +87,16 @@ class SqlPood(private val context: Context) : SQLiteOpenHelper(context, "akt.db"
         db.execSQL("CREATE TABLE lemmikud(toodeId INTEGER PRIMARY KEY)")
         db.execSQL("CREATE TABLE kampaaniad(id INTEGER PRIMARY KEY AUTOINCREMENT, toodeId INTEGER, protsent INTEGER, algus TEXT, lopp TEXT)")
         db.execSQL("CREATE TABLE seaded(voti TEXT PRIMARY KEY, vaartus TEXT)")
+        looPartiid(db)
         algandmed(db)
     }
 
-    override fun onUpgrade(db: SQLiteDatabase, vana: Int, uus: Int) {}
+    override fun onUpgrade(db: SQLiteDatabase, vana: Int, uus: Int) {
+        if (vana < 2) looPartiid(db)
+    }
+
+    private fun looPartiid(db: SQLiteDatabase) =
+        db.execSQL("CREATE TABLE IF NOT EXISTS partiid(id INTEGER PRIMARY KEY AUTOINCREMENT, toodeId INTEGER, kogus INTEGER, aegub TEXT, lisatud TEXT)")
 
     // Uuem kataloog (rakenduse uuendus): tooted laaditakse uuesti, kasutajad ja ostud jäävad alles.
     // Vanad osturead jäävad tšekile nime ja hinnaga; lemmikud ja kampaaniad viitasid vanadele id-dele.
@@ -97,6 +111,7 @@ class SqlPood(private val context: Context) : SQLiteOpenHelper(context, "akt.db"
             db.execSQL("UPDATE ostuRead SET toodeId = NULL")
             db.execSQL("DELETE FROM lemmikud")
             db.execSQL("DELETE FROM kampaaniad")
+            db.execSQL("DELETE FROM partiid")
             db.execSQL("DELETE FROM tooted")
             db.execSQL("DELETE FROM kategooriad")
             Rimi.laadi(context, db)
@@ -207,6 +222,41 @@ class SqlPood(private val context: Context) : SQLiteOpenHelper(context, "akt.db"
         })
         return null
     }
+
+    override fun partiid() = paring("SELECT * FROM partiid ORDER BY aegub") { c ->
+        Partii(c.i("id")!!, c.i("toodeId")!!, c.i("kogus") ?: 0, LocalDate.parse(c.s("aegub")), LocalDate.parse(c.s("lisatud")))
+    }
+
+    // Uus partii suurendab laoseisu
+    override fun lisaPartii(toodeId: Int, kogus: Int, aegub: LocalDate) {
+        val db = writableDatabase
+        db.insert("partiid", null, ContentValues().apply { put("toodeId", toodeId); put("kogus", kogus); put("aegub", aegub.toString()); put("lisatud", LocalDate.now().toString()) })
+        db.execSQL("UPDATE tooted SET kogus = kogus + ? WHERE id=?", arrayOf<Any>(kogus, toodeId))
+    }
+
+    // Mahakandmine: partii kaob ja laoseis väheneb
+    override fun kannaMaha(partiiId: Int) {
+        val p = partiid().firstOrNull { it.id == partiiId } ?: return
+        val db = writableDatabase
+        db.delete("partiid", "id=?", arrayOf(partiiId.toString()))
+        db.execSQL("UPDATE tooted SET kogus = MAX(0, kogus - ?) WHERE id=?", arrayOf<Any>(p.kogus, p.toodeId))
+    }
+
+    override fun lisaKategooria(nimi: String): Int =
+        writableDatabase.insert("kategooriad", null, ContentValues().apply { put("nimi", nimi.trim()) }).toInt()
+
+    override fun kustutaKategooria(id: Int): String? {
+        val arv = paring("SELECT COUNT(*) n FROM tooted WHERE kat=?", id.toString()) { it.i("n") }.firstOrNull() ?: 0
+        if (arv > 0) return "Kategoorias on tooteid – kustuta või liiguta need enne."
+        writableDatabase.delete("kategooriad", "id=?", arrayOf(id.toString()))
+        return null
+    }
+
+    override fun muudaRolli(nimi: String, roll: Roll) {
+        writableDatabase.update("kasutajad", ContentValues().apply { put("roll", roll.name) }, "nimi=?", arrayOf(nimi))
+    }
+
+    override fun kustutaKasutaja(nimi: String) { writableDatabase.delete("kasutajad", "nimi=?", arrayOf(nimi)) }
 
     override fun kasutajad() = paring("SELECT * FROM kasutajad ORDER BY nimi") { loeKasutaja(it) }
 

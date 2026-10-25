@@ -190,7 +190,7 @@ fun AvalehtEkraan(olek: AppOlek) {
         TarneKaart(olek)
         Vahe(12.dp)
         RaiskamiseRiba(olek)
-        if (Reeglid.ohtuKaib(olek.aeg()) || olek.aeg().hour >= 17) {
+        if (Reeglid.OHTU_SEES && (Reeglid.ohtuKaib(olek.aeg()) || olek.aeg().hour >= 17)) {
             Vahe(12.dp)
             OhtuRiba(olek)
         }
@@ -292,7 +292,7 @@ private fun OhtuRiba(olek: AppOlek) {
         Column(Modifier.weight(1f)) {
             T(Keel.t(if (kaib) "KÄIB PRAEGU" else "TÄNA ÕHTUL"), 10.sp, Color(0xFFF5D76E), FontWeight.ExtraBold)
             T(Keel.t("Küpsetiste tund"), 17.sp, Color.White, FontWeight.ExtraBold)
-            T(Keel.t("Pärast 20:00 kõik küpsetised −50 %"), 12.sp, Color(0xFFD9CDE6))
+            T(Keel.f("Pärast {0} kõik küpsetised −{1} %", Reeglid.OHTU_ALGUS.toString(), Reeglid.OHTU_PROTSENT), 12.sp, Color(0xFFD9CDE6))
         }
         Ikoon(Ik.Kuu, Color(0xFFF5D76E), 36.dp, 2.2f)
     }
@@ -506,6 +506,7 @@ fun ToodeEkraan(olek: AppOlek, id: Int) {
                     })
                 }
                 SarnasedJaSoodsamad(olek, t)
+                SageliKoos(olek, t)
                 t.kirjeldus?.takeIf { it.isNotBlank() }?.let { Vahe(14.dp); T(it, 14.sp, V.Tekst2, reavahe = 20.sp) }
                 t.koostis?.takeIf { it.isNotBlank() }?.let {
                     Vahe(14.dp)
