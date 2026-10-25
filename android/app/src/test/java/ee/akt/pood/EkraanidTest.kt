@@ -44,6 +44,15 @@ class EkraanidTest {
     @Test fun ohtu() = pilt(olek().apply { ava(Ekraan.Ohtu) })
     @Test fun toitevaartus() = pilt(olek().apply { lisaKorvi(toode(1)!!); lisaKorvi(toode(4)!!); ava(Ekraan.Toitevaartus) })
     @Test fun pere() = pilt(olek().apply { ava(Ekraan.Pere) })
+    @Test fun kulutused() = pilt(olek().apply {
+        lisaKorvi(toode(1)!!, 2); lisaKorvi(toode(4)!!); lisaKorvi(toode(6)!!); vormista(false, null, "Kaart", false); ava(Ekraan.Kulutused)
+    })
+    @Test fun pereKorv() = pilt(olek().apply {
+        pood.seaSeade("pere", "AKT7Q2K")
+        PereKorv.lisa(pood, PereKorv.loe(pood), 1, 2, "Jaan", aeg()); PereKorv.lisa(pood, PereKorv.loe(pood), 4, 1, "Mari", aeg())
+        ava(Ekraan.PereKorv)
+    })
+    @Test fun raiskamine() = pilt(olek().apply { ava(Ekraan.Ruudustik("Ilma raiskamiseta", vaade = "raiskamine")) })
     @Test fun admin() = pilt(AppOlek(MaluPood(kell), { kell }).apply { logiSisse("admin", "admin123") })
     @Test fun toodeMuuda() = pilt(AppOlek(MaluPood(kell), { kell }).apply { logiSisse("admin", "admin123"); ava(Ekraan.ToodeMuuda(1)) })
     @Test fun kampaaniad() = pilt(AppOlek(MaluPood(kell), { kell }).apply { logiSisse("admin", "admin123"); ava(Ekraan.Kampaaniad) })
@@ -69,6 +78,7 @@ class MaluPood(private val kell: LocalDateTime) : Pood {
         Toode(8, "Šokolaad Kalev Mesikäpp 100g", 0, 179, 229, kategooriaId = 6, kaubamark = "Kalev", pakend = "0.1 kg", uhik = "kg", uhikuKogus = 0.1, koostis = "suhkur, kakaovõi, täisPIIMApulber"),
         Toode(9, "Sai Perenaise suur Eesti Pagar 500g", 30, 125, kategooriaId = 2, pakend = "0.5 kg", uhik = "kg", uhikuKogus = 0.5, koostis = "NISUJAHU, vesi"),
         Toode(10, "Kohv jahvatatud Löfbergs 450g", 31, 699, 899, kategooriaId = 5, pakend = "0.45 kg", uhik = "kg", uhikuKogus = 0.45),
+        Toode(11, "Juust Gouda viilutatud Rimi 500g", 25, 249, kategooriaId = 1, kaubamark = "Rimi", pakend = "0.5 kg", uhik = "kg", uhikuKogus = 0.5),
     )
     private val kasutajad = mutableMapOf(
         "admin" to (Kasutaja("admin", "Admin Omanik", Roll.Omanik, "100000", 0) to "admin123"),

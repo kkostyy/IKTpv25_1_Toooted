@@ -130,6 +130,8 @@ fun Ekraanid(olek: AppOlek, e: Ekraan) {
         Ekraan.Ohtu -> OhtuEkraan(olek)
         Ekraan.Toitevaartus -> ToitevaartusEkraan(olek)
         Ekraan.Pere -> PereEkraan(olek)
+        Ekraan.Kulutused -> KulutusedEkraan(olek)
+        Ekraan.PereKorv -> PereKorvEkraan(olek)
     }
 }
 

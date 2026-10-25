@@ -376,6 +376,8 @@ fun ProfiilEkraan(olek: AppOlek) {
                 add(Triple(Ik.Leht, "Minu dieet", { olek.ava(Ekraan.Dieet) }))
                 add(Triple(Ik.Syda, "Minu lemmikud", { olek.ava(Ekraan.Ruudustik("Minu lemmikud", vaade = "lemmikud")) }))
                 add(Triple(Ik.Kasutajad, "Pere", { olek.ava(Ekraan.Pere) }))
+                add(Triple(Ik.Korv, "Pere korv", { olek.ava(Ekraan.PereKorv) }))
+                add(Triple(Ik.Graafik, "Minu kulutused", { olek.ava(Ekraan.Kulutused) }))
                 add(Triple(Ik.Taht, "Preemiad", { olek.ava(Ekraan.Preemiad()) }))
                 add(Triple(Ik.Kuu, "Õhtune soodustus", { olek.ava(Ekraan.Ohtu) }))
                 if (k.roll == Roll.Omanik) add(Triple(Ik.Pliiats, "Halda tooteid", { olek.ava(Ekraan.Admin) }))
