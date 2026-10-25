@@ -287,7 +287,7 @@ object Demo {
         val paarid = listOf(leia("õlu") to leia("krõps"), leia("pasta", "makaron") to leia("tomatikaste", "pastakaste"),
             leia("kohv") to leia("koor"), leia("rukkileib", "leib") to leia("või "), leia("banaan") to leia("jogurt"))
             .mapNotNull { (a, b) -> if (a != null && b != null) a to b else null }
-        val populaarsed = (0 until 150).map { toit[juhus.nextInt(toit.size)] }
+        val populaarsed = (0 until 40).map { toit[juhus.nextInt(toit.size)] }.distinctBy { it.id }
         val ostjad = listOf("mari") + kliendid.map { it.first }
         var n = 0
         for (i in 0 until 60) {
@@ -303,6 +303,8 @@ object Demo {
                 if (juhus.nextBoolean()) "Kaart" else "Sularaha", if (kodu) "Kojuvedu" else "Kaasa", if (kodu) "Tartu mnt 87, Tallinn" else null, read))
             n++
         }
+        // osa populaarseid on peaaegu otsas – autotellimusel on siis, mida soovitada
+        for (t in populaarsed.take(12)) pood.salvestaToode(t.copy(kogus = 1 + juhus.nextInt(5)))
         return n
     }
 }

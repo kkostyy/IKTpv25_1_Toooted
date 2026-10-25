@@ -104,7 +104,7 @@ fun KulutusedEkraan(olek: AppOlek) {
     val summad = kuud.map { k -> Kulutused.kuu(ostud, nimi, k.year, k.monthValue) }
     val osad = summad[valitud]
     val kokku = osad.sumOf { it.summa }
-    val eelvaade = LocalInspectionMode.current   // ekraanipildi testis kohe täis
+    val eelvaade = (LocalInspectionMode.current || Eelvaade.kohe)   // ekraanipildi testis kohe täis
     val kasv = remember { Animatable(if (eelvaade) 1f else 0f) }
     LaunchedEffect(valitud) { if (!eelvaade) { kasv.snapTo(0f); kasv.animateTo(1f, tween(700)) } }
 
