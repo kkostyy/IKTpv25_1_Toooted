@@ -85,8 +85,8 @@ public class OhtuBanner : Control
 public class OhtuSeadedVorm : KujundusVorm
 {
     private readonly CheckBox chkSees;
-    private readonly DateTimePicker dtAlgus;
-    private readonly NumericUpDown numProtsent;
+    private readonly MoodneSamm dtAlgus;   // minutid keskööst, 30 min kaupa
+    private readonly MoodneSamm numProtsent;
     private readonly ComboBox cmbKat;
 
     public OhtuSeadedVorm() : base("Õhtune soodustus", 440, 330)
@@ -96,10 +96,10 @@ public class OhtuSeadedVorm : KujundusVorm
         chkSees = new CheckBox { Text = "Sees", Location = new Point(20, 60), AutoSize = true, Checked = s.Sees };
         Controls.Add(chkSees);
         Silt("Algab", 20, 96);
-        dtAlgus = new DateTimePicker { Location = new Point(20, 116), Width = 120, Format = DateTimePickerFormat.Custom, CustomFormat = "HH:mm", ShowUpDown = true, Value = DateTime.Today + s.Algus };
+        dtAlgus = new MoodneSamm { Location = new Point(20, 112), Width = 140, Minimum = 0, Maximum = 23 * 60 + 30, Samm = 30, Formaat = v => TimeSpan.FromMinutes((double)v).ToString(@"hh\:mm"), Value = (decimal)s.Algus.TotalMinutes };
         Controls.Add(dtAlgus);
         Silt("Soodustus %", 170, 96);
-        numProtsent = new NumericUpDown { Location = new Point(170, 116), Width = 90, Minimum = 5, Maximum = 90, Value = s.Protsent };
+        numProtsent = new MoodneSamm { Location = new Point(170, 112), Width = 130, Minimum = 5, Maximum = 90, Samm = 5, Formaat = v => $"−{v:0} %", Value = s.Protsent };
         Controls.Add(numProtsent);
         Silt("Kategooria", 20, 156);
         cmbKat = new ComboBox { Location = new Point(20, 176), Width = 400, DropDownStyle = ComboBoxStyle.DropDownList };
@@ -152,7 +152,7 @@ public class OhtuSeadedVorm : KujundusVorm
         OhtuSoodustus.Salvesta(new OhtuSoodustus.Seaded
         {
             Sees = chkSees.Checked,
-            Algus = new TimeSpan(dtAlgus.Value.Hour, dtAlgus.Value.Minute, 0),
+            Algus = TimeSpan.FromMinutes((double)dtAlgus.Value),
             Protsent = (int)numProtsent.Value,
             KategooriaId = cmbKat.SelectedItem is KeyValuePair<int, string> kv ? kv.Key : 2
         });

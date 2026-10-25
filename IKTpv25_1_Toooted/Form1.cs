@@ -37,7 +37,8 @@ namespace IKTpv25_1_Toooted
             var viimati = DateTime.MinValue;
             KataloogiEdenemine.Kuula(this, () =>
             {
-                if (RimiKataloog.Kaib && (DateTime.Now - viimati).TotalSeconds < 4) return;
+                // 18 000 rida tabelisse on aeglane – vahepeal ainult üks kord (et midagi oleks näha), siis lõpus
+                if (RimiKataloog.Kaib && viimati != DateTime.MinValue) return;
                 viimati = DateTime.Now;
                 try { LaadiKategooriad(); LaadiTooted(); } catch { }
             });
