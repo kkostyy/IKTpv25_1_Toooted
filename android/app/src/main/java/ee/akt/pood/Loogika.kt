@@ -33,6 +33,13 @@ object Reeglid {
                 soodus = "Õhtune soodustus −$OHTU_PROTSENT %"
             }
         }
+        if (Raiskamine.aegub(t, aeg.toLocalDate()) != null) {
+            val r = soodusHind(tava, Raiskamine.PROTSENT)
+            if (r < hind) {
+                hind = r
+                soodus = "Ilma raiskamiseta −${Raiskamine.PROTSENT} %"
+            }
+        }
         return Hind(hind, tava, soodus)
     }
 
@@ -128,5 +135,70 @@ object Toitevaartus {
         val k = kcal100(t) ?: return null
         val g = grammid(t) ?: return null
         return k * g / 100
+    }
+}
+
+// "Sarnased ja soodsamad" (sama mis arvutis, SarnasedLoogika.cs): sama kategooria ja ühik,
+// kilo-/liitrihind vähemalt 3 % madalam ja nimes vähemalt üks ühine sõna (ka liitsõna lõpp: toorjuust ~ juust)
+object Sarnased {
+    private val tyhisonad = setOf("eesti", "suur", "väike", "klassikaline", "maitseline")
+
+    fun sonad(t: Toode): Set<String> = t.nimi.split(' ', ',', '-', '/', '(', ')')
+        .map { o -> o.filter { it.isLetter() }.lowercase() }
+        .filter { it.length >= 4 && it !in tyhisonad && !it.equals(t.kaubamark ?: "", true) }
+        .toSet()
+
+    fun sarnane(a: String, b: String) = a == b || (b.length >= 4 && a.endsWith(b)) || (a.length >= 4 && b.endsWith(a))
+
+    fun leia(toode: Toode, koik: List<Toode>, max: Int = 3): List<Toode> {
+        val minu = toode.uhikuHind ?: return emptyList()
+        if (toode.uhik != "kg" && toode.uhik != "l") return emptyList()
+        val minuSonad = sonad(toode)
+        if (minuSonad.isEmpty()) return emptyList()
+        return koik.asSequence()
+            .filter { it.id != toode.id && it.laos && it.kategooriaId == toode.kategooriaId && it.uhik == toode.uhik && (it.uhikuHind ?: Int.MAX_VALUE) < minu * 0.97 }
+            .map { t -> t to sonad(t).count { w -> minuSonad.any { sarnane(w, it) } } }
+            .filter { it.second > 0 }
+            .sortedWith(compareByDescending<Pair<Toode, Int>> { it.second }.thenBy { it.first.uhikuHind })
+            .take(max).map { it.first }.toList()
+    }
+
+    fun odavam(alus: Toode, t: Toode): Int {
+        val a = alus.uhikuHind ?: return 0
+        val b = t.uhikuHind ?: return 0
+        return if (a > 0) Math.round((1 - b.toDouble() / a) * 100).toInt() else 0
+    }
+}
+
+// "Ilma raiskamiseta": kiiresti riknevad tooted, mille säilivusaeg lõpeb 0–2 päeva pärast, on −30 %.
+// Telefonis partiisid pole – valik sõltub päevast ja toote id-st (iga päev erinev, kõigil sama).
+object Raiskamine {
+    const val PROTSENT = 30
+    private val kategooriad = setOf(1, 2, 4, 9)
+
+    // Mitme päeva pärast aegub (0 = täna) või null
+    fun aegub(t: Toode, paev: LocalDate): Int? {
+        if (t.kategooriaId !in kategooriad || !t.laos) return null
+        val h = Math.floorMod(t.id * 31 + paev.dayOfYear * 17, 61)
+        return if (h < 3) h else null
+    }
+
+    fun tekst(paevi: Int): String = when (paevi) { 0 -> Keel.t("aegub täna"); 1 -> Keel.t("aegub homme"); else -> Keel.f("aegub {0} päeva pärast", paevi) }
+}
+
+// Kulutused kuude ja kategooriate kaupa (sama mis arvutis, Kulutused.cs)
+object Kulutused {
+    data class Osa(val nimi: String, val summa: Int)
+
+    fun kuu(ostud: List<Ost>, kategooria: (Int?) -> String, aasta: Int, kuu: Int): List<Osa> {
+        val k = mutableMapOf<String, Int>()
+        for (o in ostud) if (!o.tagastatud && o.aeg.year == aasta && o.aeg.monthValue == kuu)
+            for (r in o.read) { val n = kategooria(r.toodeId); k[n] = (k[n] ?: 0) + r.summa }
+        val koik = k.values.sum()
+        if (koik <= 0) return emptyList()
+        val jarjest = k.entries.sortedByDescending { it.value }
+        val suured = jarjest.take(5).filter { it.value * 25 >= koik }
+        val muu = koik - suured.sumOf { it.value }
+        return suured.map { Osa(it.key, it.value) } + (if (muu > 0) listOf(Osa("Muu", muu)) else emptyList())
     }
 }

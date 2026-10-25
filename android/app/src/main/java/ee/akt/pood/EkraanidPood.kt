@@ -186,6 +186,8 @@ fun AvalehtEkraan(olek: AppOlek) {
         tooted.filter { it.laos }.maxByOrNull { it.soodusProtsent ?: 0 }?.let { NadalaPakkumine(olek, it) }
         Vahe(12.dp)
         TarneKaart(olek)
+        Vahe(12.dp)
+        RaiskamiseRiba(olek)
         if (Reeglid.ohtuKaib(olek.aeg()) || olek.aeg().hour >= 17) {
             Vahe(12.dp)
             OhtuRiba(olek)
@@ -259,6 +261,25 @@ private fun TarneKaart(olek: AppOlek) {
     }
 }
 
+// "Ilma raiskamiseta": aeguvad tooted −30 %
+@Composable
+private fun RaiskamiseRiba(olek: AppOlek) {
+    val arv = remember(olek.tooted) { olek.tooted.count { Raiskamine.aegub(it, olek.aeg().toLocalDate()) != null } }
+    if (arv == 0) return
+    Row(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(V.Roheline)
+            .vajuta { olek.ava(Ekraan.Ruudustik("Ilma raiskamiseta", vaade = "raiskamine")) }.padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(Modifier.weight(1f)) {
+            T(Keel.t("ILMA RAISKAMISETA"), 10.sp, Color(0xFFD5EFDF), FontWeight.ExtraBold)
+            T(Keel.f("{0} toodet −{1} %", arv, Raiskamine.PROTSENT), 17.sp, Color.White, FontWeight.ExtraBold)
+            T(Keel.t("Säilivusaeg lõpeb peagi – päästa toit"), 12.sp, Color(0xFFD5EFDF))
+        }
+        Ikoon(Ik.Leht, Color.White, 34.dp, 2.2f)
+    }
+}
+
 @Composable
 private fun OhtuRiba(olek: AppOlek) {
     val kaib = Reeglid.ohtuKaib(olek.aeg())
@@ -300,6 +321,7 @@ fun ToodeKaart(olek: AppOlek, t: Toode, modifier: Modifier = Modifier) {
             t.soodusProtsent?.let { VaikeKiip("−$it%", V.Punane, Color.White, Modifier.align(Alignment.TopStart)) }
             if (t.id in olek.lemmikud) Box(Modifier.align(Alignment.TopEnd)) { Ikoon(Ik.Syda, V.Ploom, 18.dp) }
             if (!sobib && olek.dieet.isNotEmpty()) VaikeKiip(Keel.t("Ei sobi"), V.Tume, Color.White, Modifier.align(Alignment.BottomStart))
+            else Raiskamine.aegub(t, olek.aeg().toLocalDate())?.let { VaikeKiip(Raiskamine.tekst(it), V.Roheline, Color.White, Modifier.align(Alignment.BottomStart)) }
         }
         Vahe(6.dp)
         T(t.nimi, 13.sp, V.Tekst, FontWeight.Bold, read = 2, reavahe = 16.sp, modifier = Modifier.height(34.dp))
@@ -397,6 +419,7 @@ fun RuudustikEkraan(olek: AppOlek, e: Ekraan.Ruudustik) {
         "kampaaniad" -> olek.tooted.filter { it.soodusProtsent != null }
         "lemmikud" -> olek.tooted.filter { it.id in olek.lemmikud }
         "koik" -> olek.tooted
+        "raiskamine" -> olek.tooted.filter { Raiskamine.aegub(it, olek.aeg().toLocalDate()) != null }
         else -> olek.tooted.filter { it.kategooriaId == e.kategooriaId }
     }.filter { Dieet.sobib(it, olek.dieet) }
     val tooted = when (jarjestus) {
@@ -472,6 +495,15 @@ fun ToodeEkraan(olek: AppOlek, id: Int) {
                     Vahe(12.dp)
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) { for (m in margid) VaikeKiip("✓ " + Keel.t(m.nimi), V.RohelineHele, V.Roheline) }
                 }
+                Raiskamine.aegub(t, olek.aeg().toLocalDate())?.let { Vahe(8.dp); VaikeKiip(Raiskamine.tekst(it), V.RohelineHele, V.Roheline) }
+                if (olek.pood.seade("pere") != null) {
+                    Vahe(10.dp)
+                    T("+ " + Keel.t("Lisa pere korvi"), 14.sp, V.Ploom, FontWeight.Bold, Modifier.vajuta {
+                        PereKorv.lisa(olek.pood, PereKorv.loe(olek.pood), t.id, kogus, olek.kasutaja?.eesnimi ?: "Mina", olek.aeg())
+                        olek.teade = Keel.f("„{0}“ lisatud pere korvi", t.nimi)
+                    })
+                }
+                SarnasedJaSoodsamad(olek, t)
                 t.kirjeldus?.takeIf { it.isNotBlank() }?.let { Vahe(14.dp); T(it, 14.sp, V.Tekst2, reavahe = 20.sp) }
                 t.koostis?.takeIf { it.isNotBlank() }?.let {
                     Vahe(14.dp)
