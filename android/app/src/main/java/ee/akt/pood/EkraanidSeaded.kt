@@ -177,9 +177,10 @@ fun MyygipaneelEkraan(olek: AppOlek) {
     val paevad = remember { Myyk.paevad(ostud, nyyd) }
     val tana = paevad.last().second
     val kuu = ostud.filter { it.aeg.isAfter(nyyd.minusDays(30)) }
-    val eelvaade = LocalInspectionMode.current
+    val eelvaade = (LocalInspectionMode.current || Eelvaade.kohe)
     val kasv = remember { Animatable(if (eelvaade) 1f else 0f) }
     LaunchedEffect(Unit) { if (!eelvaade) kasv.animateTo(1f, tween(800)) }
+    val osa = if (eelvaade) 1f else kasv.value   // ekraanipildis kohe lõppseis
     val lopevad = remember { Autotellimus.arvuta(ostud, olek.tooted, nyyd, 7).take(5) }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp).padding(bottom = 40.dp)) {
@@ -204,7 +205,7 @@ fun MyygipaneelEkraan(olek: AppOlek) {
                 val w = size.width / paevad.size
                 drawLine(joon, Offset(0f, size.height), Offset(size.width, size.height), 2f)
                 paevad.forEachIndexed { i, (_, s) ->
-                    val h = (size.height - 4) * s / max * kasv.value
+                    val h = (size.height - 4) * s / max * osa
                     drawRoundRect(if (i == paevad.lastIndex) tanaV else tulp, Offset(i * w + w * 0.18f, size.height - h), Size(w * 0.64f, h), CornerRadius(8f, 8f))
                 }
             }
@@ -225,7 +226,7 @@ fun MyygipaneelEkraan(olek: AppOlek) {
                 Row(Modifier.padding(vertical = 5.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
                         T(n, 13.sp, V.Tekst, FontWeight.SemiBold, read = 1)
-                        Box(Modifier.padding(top = 4.dp).fillMaxWidth(tk.toFloat() / maxTk * kasv.value).height(5.dp).clip(RoundedCornerShape(3.dp)).background(V.Ploom))
+                        Box(Modifier.padding(top = 4.dp).fillMaxWidth((tk.toFloat() / maxTk * osa).coerceAtLeast(0.02f)).height(5.dp).clip(RoundedCornerShape(3.dp)).background(V.Ploom))
                     }
                     Spacer(Modifier.width(10.dp))
                     Column(horizontalAlignment = Alignment.End) {

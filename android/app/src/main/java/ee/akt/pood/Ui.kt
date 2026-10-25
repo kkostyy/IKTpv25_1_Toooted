@@ -61,6 +61,11 @@ import coil.compose.AsyncImage
 
 // ---- Värvid (lõuendi "Moodne" palett) ----
 // Teema: hele / tume / nagu süsteemis (Seadetes). Compose jälgib "tume" väärtust – värvid vahetuvad kõikjal.
+// Ekraanipildi testides (Paparazzi) näidatakse animatsioonide lõppseisu
+object Eelvaade {
+    var kohe = false
+}
+
 object Teema {
     var tume by mutableStateOf(false)
     var valik by mutableStateOf(0)        // 0 = nagu süsteemis, 1 = hele, 2 = tume

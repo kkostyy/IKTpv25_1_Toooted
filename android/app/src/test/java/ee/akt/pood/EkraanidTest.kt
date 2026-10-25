@@ -14,6 +14,8 @@ class EkraanidTest {
 
     private val kell = LocalDateTime.of(2026, 10, 24, 18, 25)
 
+    init { Eelvaade.kohe = true }
+
     private fun olek(sisse: Boolean = true): AppOlek {
         val o = AppOlek(MaluPood(kell), { kell })
         if (sisse) o.logiSisse("mari", "mari123")
