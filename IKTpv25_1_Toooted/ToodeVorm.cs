@@ -153,9 +153,10 @@ public class ToodeVorm : Form
                 Padding = new Padding(0, 8, 0, 8), Margin = new Padding(0)
             };
             var veerg = new FlowLayoutPanel { FlowDirection = FlowDirection.TopDown, WrapContents = false, AutoSize = true, Location = new Point(1, 8), BackColor = Teema.Pind, Margin = new Padding(0) };
+            int jrk = 0;
             foreach (var t in soodsamad)
             {
-                var rida = new SoodsamRida(toode, t, Laius - 2);
+                var rida = new SoodsamRida(toode, t, Laius - 2, jrk++);
                 rida.Ava += x => { toode = x; soovitatud = false; EhitaHiljem(); };
                 rida.Lisa += x =>
                 {

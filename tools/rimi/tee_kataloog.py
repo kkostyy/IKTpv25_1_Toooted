@@ -42,6 +42,10 @@ def kogus(t):
         return t['uhik'], round(t['hind'] / t['uhikuHind'], 3)
     return 'tk', 1.0
 
+# Rimi täidab puuduva välja sõnaga "Määramata" – seda ei näita
+def puhas(v):
+    return None if not v or v.strip().lower() in ('määramata', 'maaramata', '-') else v
+
 tooted = []
 for rida in open(SISSE, encoding='utf-8'):
     t = json.loads(rida)
@@ -54,7 +58,7 @@ for rida in open(SISSE, encoding='utf-8'):
     tooted.append({
         'n': t['nimi'], 'h': round(t['hind'], 2), 'v': round(vana, 2) if vana and vana > t['hind'] else None,
         'k': kat, 'p': PILT.format(t['sku']),
-        'b': t.get('kaubamark'), 't': t.get('tootja'), 'm': t.get('maa'),
+        'b': puhas(t.get('kaubamark')), 't': puhas(t.get('tootja')), 'm': puhas(t.get('maa')),
         'pk': t.get('kogus'), 'u': uhik, 'uk': uk,
         'ki': t.get('kirjeldus'), 'ko': t.get('koostis'), 'li': t.get('lisainfo'), 'tv': t.get('toitevaartus'),
         'pa': pant,

@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 
 namespace IKTpv25_1_Toooted;
 
@@ -7,10 +7,15 @@ public class SoodsamRida : Control
 {
     private readonly Toode alus, toode;
     private bool hover, plussHover;
+    private readonly SujuvOlek hoverSujuv, plussSujuv;
+    private readonly Ilmumine ilm;
     public event Action<Toode>? Ava, Lisa;
 
-    public SoodsamRida(Toode alus, Toode toode, int laius)
+    public SoodsamRida(Toode alus, Toode toode, int laius, int jrk = 0)
     {
+        hoverSujuv = new SujuvOlek(this);
+        plussSujuv = new SujuvOlek(this);
+        ilm = new Ilmumine(this, 80 + jrk * 70);
         this.alus = alus;
         this.toode = toode;
         Size = new Size(laius, 68);
@@ -34,11 +39,11 @@ public class SoodsamRida : Control
     protected override void OnMouseMove(MouseEventArgs e)
     {
         bool p = Pluss.Contains(e.Location);
-        if (!hover || p != plussHover) { hover = true; plussHover = p; Invalidate(); }
+        if (!hover || p != plussHover) { hover = true; plussHover = p; hoverSujuv.Siht = true; plussSujuv.Siht = p; }
         base.OnMouseMove(e);
     }
 
-    protected override void OnMouseLeave(EventArgs e) { hover = plussHover = false; Invalidate(); base.OnMouseLeave(e); }
+    protected override void OnMouseLeave(EventArgs e) { hover = plussHover = false; hoverSujuv.Siht = plussSujuv.Siht = false; base.OnMouseLeave(e); }
 
     protected override void OnMouseClick(MouseEventArgs e)
     {
@@ -52,8 +57,8 @@ public class SoodsamRida : Control
         var g = e.Graphics;
         g.SmoothingMode = SmoothingMode.AntiAlias;
         g.Clear(Teema.Pind);
-        if (hover)
-            using (var tee = Ymardus.Tee(new Rectangle(6, 2, Width - 12, Height - 4), 12)) using (var b = new SolidBrush(Teema.Paneel2)) g.FillPath(b, tee);
+        if (hoverSujuv.V > 0)
+            using (var tee = Ymardus.Tee(new Rectangle(6, 2, Width - 12, Height - 4), 12)) using (var b = new SolidBrush(Ymardus.Segu(Teema.Pind, Teema.Paneel2, (float)hoverSujuv.V))) g.FillPath(b, tee);
 
         var pk = new Rectangle(16, 10, 48, 48);
         using (var tee = Ymardus.Tee(pk, 10)) using (var b = new SolidBrush(Teema.PildiTaust)) g.FillPath(b, tee);
@@ -82,7 +87,8 @@ public class SoodsamRida : Control
             TextFormatFlags.Right | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix);
 
         var p = Pluss;
-        using (var b = new SolidBrush(plussHover ? Teema.AktsentTume : Teema.Aktsent)) g.FillEllipse(b, p);
+        using (var b = new SolidBrush(Ymardus.Segu(Teema.Aktsent, Teema.AktsentTume, (float)plussSujuv.V))) g.FillEllipse(b, p);
         Ikoonid.Joonista(g, Ikoonid.Pluss, p, Color.White, 10f);
+        ilm.Kata(g);
     }
 }

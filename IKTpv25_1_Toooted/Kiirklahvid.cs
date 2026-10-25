@@ -124,6 +124,9 @@ public class KiirklahvideAken : Form
         KeyDown += (s, e) => { if (e.KeyCode is Keys.Escape or Keys.F1 or Keys.Enter) Close(); };
         Click += (s, e) => Close();
         Deactivate += (s, e) => Close();
+        // ilmub sujuvalt
+        Opacity = 0;
+        Shown += (s, e) => Animatsioon.Kaivita(this, 180, t => Opacity = Animatsioon.Sujuv(t));
     }
 
     protected override void OnPaint(PaintEventArgs e)

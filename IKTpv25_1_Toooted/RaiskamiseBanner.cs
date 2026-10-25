@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 
 namespace IKTpv25_1_Toooted;
 
@@ -7,6 +7,7 @@ public class RaiskamiseBanner : Control
 {
     private readonly int arv;
     private readonly decimal saast;
+    private double kasv = 1, faas;   // numbrid loendavad üles; ringid hõljuvad aeglaselt
 
     public RaiskamiseBanner(int arv, decimal saast)
     {
@@ -16,6 +17,11 @@ public class RaiskamiseBanner : Control
         Margin = new Padding(0, 0, 0, 16);
         Tag = "omavarv";
         SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
+        HandleCreated += (s, e) =>
+        {
+            Animatsioon.Kaivita(this, 700, t => { kasv = Animatsioon.Sujuv(t); Invalidate(); });
+            Animatsioon.Tsykkel(this, sek => { faas = sek; Invalidate(); }, 40);
+        };
     }
 
     protected override void OnPaint(PaintEventArgs e)
@@ -30,12 +36,14 @@ public class RaiskamiseBanner : Control
         // dekoratiivsed ringid paremal
         using (var b = new SolidBrush(Color.FromArgb(28, 255, 255, 255)))
         {
-            g.FillEllipse(b, Width - 190, -60, 220, 220);
-            g.FillEllipse(b, Width - 330, 70, 120, 120);
+            float d1 = (float)(Math.Sin(faas * 0.6) * 8), d2 = (float)(Math.Cos(faas * 0.8) * 6);
+            g.FillEllipse(b, Width - 190 + d2, -60 + d1, 220, 220);
+            g.FillEllipse(b, Width - 330 - d1, 70 + d2, 120, 120);
         }
 
         var ring = new Rectangle(26, (Height - 64) / 2, 64, 64);
-        using (var b = new SolidBrush(Color.FromArgb(40, 255, 255, 255))) g.FillEllipse(b, ring);
+        float pulss = (float)(Math.Sin(faas * 2) * 2);   // leht "hingab"
+        using (var b = new SolidBrush(Color.FromArgb(40, 255, 255, 255))) g.FillEllipse(b, RectangleF.Inflate(ring, pulss, pulss));
         Ikoonid.Joonista(g, "", ring, Color.White, 20f);   // leht
 
         using var fp = new Font("Segoe UI", 17F, FontStyle.Bold);
@@ -50,9 +58,9 @@ public class RaiskamiseBanner : Control
         if (Width - x > paremal + 220)
         {
             int px = Width - paremal;
-            TextRenderer.DrawText(g, arv.ToString(), fa, new Point(px, 20), Color.White);
+            TextRenderer.DrawText(g, ((int)Math.Round(arv * kasv)).ToString(), fa, new Point(px, 20), Color.White);
             TextRenderer.DrawText(g, Keel.T("toodet −30 %"), fs, new Point(px + 4, 60), Color.FromArgb(220, 240, 228));
-            TextRenderer.DrawText(g, Keel.F("säästad kuni {0}", Ostukorv.Eur(saast)), new Font("Segoe UI Semibold", 10F), new Point(px + 4, 82), Color.White);
+            TextRenderer.DrawText(g, Keel.F("säästad kuni {0}", Ostukorv.Eur(Math.Round(saast * (decimal)kasv, 2))), new Font("Segoe UI Semibold", 10F), new Point(px + 4, 82), Color.White);
         }
     }
 }

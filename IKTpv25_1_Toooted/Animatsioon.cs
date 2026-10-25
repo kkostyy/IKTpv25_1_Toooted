@@ -87,3 +87,50 @@ public static class Animatsioon
         return taimer;
     }
 }
+
+// Isejoonistatud elemendi sujuv ilmumine: OnPaint lõpus kutsu Kata(g) – element tuleb esile
+// taustavärvist (läbipaistvus). Mitu elementi järjest: viivitus = järjekord × 60 ms.
+public sealed class Ilmumine
+{
+    private readonly Control c;
+    public double T { get; private set; }
+
+    public Ilmumine(Control c, int viivitus = 0)
+    {
+        this.c = c;
+        if (!Animatsioon.Lubatud) { T = 1; return; }
+        c.HandleCreated += (s, e) => Animatsioon.Kaivita(c, 260, t => { T = Animatsioon.Sujuv(t); c.Invalidate(); }, null, viivitus);
+    }
+
+    public void Kata(Graphics g)
+    {
+        if (T >= 1) return;
+        using var b = new SolidBrush(Color.FromArgb((int)(255 * (1 - T)), c.Parent?.BackColor ?? Teema.Taust));
+        g.FillRectangle(b, c.ClientRectangle);
+    }
+}
+
+// Sujuv sees/väljas olek (hiir kohal, valitud): V liigub 0 ↔ 1 umbes 120 ms jooksul, element joonistub ise uuesti
+public sealed class SujuvOlek
+{
+    private readonly Control c;
+    private readonly int ms;
+    private bool siht;
+    private System.Windows.Forms.Timer? taimer;
+    public double V { get; private set; }
+
+    public SujuvOlek(Control c, int ms = 120) { this.c = c; this.ms = ms; }
+
+    public bool Siht
+    {
+        get => siht;
+        set
+        {
+            if (value == siht) return;
+            siht = value;
+            double algus = V, lopp = value ? 1 : 0;
+            taimer?.Stop();
+            taimer = Animatsioon.Kaivita(c, ms, t => { V = algus + (lopp - algus) * Animatsioon.Sujuv(t); c.Invalidate(); });
+        }
+    }
+}
