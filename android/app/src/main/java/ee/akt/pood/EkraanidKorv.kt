@@ -143,8 +143,8 @@ private fun KorviRida(olek: AppOlek, r: KorvRida) {
 // ---------------------------------------------------------------
 @Composable
 fun MaksmineEkraan(olek: AppOlek) {
-    var kojuvedu by remember { mutableStateOf(true) }
-    var aadress by remember { mutableStateOf("") }
+    var kojuvedu by remember { mutableStateOf(olek.pood.seade("kojuvedu") != "0") }
+    var aadress by remember { mutableStateOf(olek.pood.seade("aadress") ?: "") }
     var boonus by remember { mutableStateOf(false) }
     var makse by remember { mutableStateOf("Kaart") }
     var aken by remember { mutableStateOf(Tarneaknad.aknad(olek.aeg()).firstOrNull()) }

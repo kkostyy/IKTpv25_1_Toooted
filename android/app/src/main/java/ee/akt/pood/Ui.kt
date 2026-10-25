@@ -29,6 +29,8 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,23 +60,31 @@ import androidx.compose.foundation.text.BasicText
 import coil.compose.AsyncImage
 
 // ---- Värvid (lõuendi "Moodne" palett) ----
+// Teema: hele / tume / nagu süsteemis (Seadetes). Compose jälgib "tume" väärtust – värvid vahetuvad kõikjal.
+object Teema {
+    var tume by mutableStateOf(false)
+    var valik by mutableStateOf(0)        // 0 = nagu süsteemis, 1 = hele, 2 = tume
+    var salvesta: (Int) -> Unit = {}      // MainActivity salvestab valiku (SharedPreferences)
+}
+
 object V {
-    val Taust = Color(0xFFE9EDEF)
-    val Pind = Color.White
-    val Tekst = Color(0xFF1B1C1F)
-    val Tekst2 = Color(0xFF5C6168)
-    val Nork = Color(0xFF8A9099)
-    val Joon = Color(0xFFE2E6E8)
-    val Paneel = Color(0xFFF1F3F4)
-    val Punane = Color(0xFFE2061A)
-    val Ploom = Color(0xFFA0236E)
-    val Roosa = Color(0xFFF6E6EF)
-    val Roheline = Color(0xFF148246)
-    val RohelineHele = Color(0xFFE6F4EC)
-    val Kreem = Color(0xFFFFF2D6)
-    val Oranz = Color(0xFFB26200)
-    val Tume = Color(0xFF1B1C1F)
-    val Tume2 = Color(0xFF2A2B2F)
+    private fun v(hele: Long, tume: Long) = Color(if (Teema.tume) tume else hele)
+    val Taust get() = v(0xFFE9EDEF, 0xFF121316)
+    val Pind get() = v(0xFFFFFFFF, 0xFF1E1F23)
+    val Tekst get() = v(0xFF1B1C1F, 0xFFECEDEF)
+    val Tekst2 get() = v(0xFF5C6168, 0xFFB4B9C0)
+    val Nork get() = v(0xFF8A9099, 0xFF8E949C)
+    val Joon get() = v(0xFFE2E6E8, 0xFF34363B)
+    val Paneel get() = v(0xFFF1F3F4, 0xFF2A2B30)
+    val Punane get() = v(0xFFE2061A, 0xFFE8202F)
+    val Ploom get() = v(0xFFA0236E, 0xFFC0408A)
+    val Roosa get() = v(0xFFF6E6EF, 0xFF3A2231)
+    val Roheline get() = v(0xFF148246, 0xFF239A58)
+    val RohelineHele get() = v(0xFFE6F4EC, 0xFF183A27)
+    val Kreem get() = v(0xFFFFF2D6, 0xFF3A2F16)
+    val Oranz get() = v(0xFFB26200, 0xFFF0A040)
+    val Tume get() = v(0xFF1B1C1F, 0xFF2C2D32)
+    val Tume2 get() = v(0xFF2A2B2F, 0xFF3A3B41)
 }
 
 // ---- Tekst ----
@@ -140,6 +150,7 @@ object Ik {
     const val Jaga = "M18 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 22a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM8.6 13.5l6.8 4M15.4 6.5l-6.8 4"
     const val Kopeeri = "M9 9h13v13H9zM5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
     const val Kott = "M6 7h12l-1 14H7zM9 7a3 3 0 0 1 6 0"
+    const val Ratas = "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"
     const val Kast = "M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"
 }
 

@@ -202,3 +202,107 @@ object Kulutused {
         return suured.map { Osa(it.key, it.value) } + (if (muu > 0) listOf(Osa("Muu", muu)) else emptyList())
     }
 }
+
+// Autotellimus (sama mis arvutis, Autotellimus.cs): müügitempo viimase 28 päeva järgi → mitu päeva laoseis kestab → mida tellida
+object Autotellimus {
+    const val AJALUGU = 28
+    const val VARU = 3
+
+    data class Rida(val toode: Toode, val tarnija: String, val paevas: Double, val jatkub: Double, val soovitus: Int) {
+        val ostuhind: Int get() = Math.round(toode.hind * 0.7).toInt()   // telefonis ostuhinda pole: hinnang 70 %
+    }
+
+    fun tarnija(t: Toode) = t.tootja?.takeIf { it.isNotBlank() } ?: t.kaubamark?.takeIf { it.isNotBlank() } ?: "Muu tarnija"
+
+    fun arvuta(ostud: List<Ost>, tooted: List<Toode>, nyyd: LocalDateTime, kate: Int = 14): List<Rida> {
+        val piir = nyyd.minusDays(AJALUGU.toLong())
+        val myydud = ostud.filter { !it.tagastatud && it.aeg.isAfter(piir) }.flatMap { it.read }.filter { it.toodeId != null }
+            .groupBy { it.toodeId!! }.mapValues { (_, r) -> r.sumOf { it.kogus } }
+        return tooted.mapNotNull { t ->
+            val tk = myydud[t.id] ?: return@mapNotNull null
+            val paevas = tk.toDouble() / AJALUGU
+            val laos = maxOf(0, t.kogus)
+            val jatkub = laos / paevas
+            if (jatkub >= kate) return@mapNotNull null
+            val vaja = Math.ceil(paevas * (kate + VARU)).toInt() - laos
+            if (vaja > 0) Rida(t, tarnija(t), paevas, jatkub, vaja) else null
+        }.sortedWith(compareBy<Rida> { it.jatkub }.thenBy { it.tarnija })
+    }
+}
+
+// "Ostetakse koos" (sama mis arvutis, Ostukorvianalyys.cs): A → B, kindlus = P(B|A), tõus = kindlus / P(B)
+object Ostukorvianalyys {
+    data class Reegel(val a: String, val b: String, val koos: Int, val osteA: Int, val kindlus: Double, val tous: Double, val toodeB: Int? = null)
+
+    fun <T> reeglid(ostud: List<Set<T>>, nimi: (T) -> String, minKoos: Int = 3, minTous: Double = 1.1): List<Reegel> {
+        val hulgad = ostud.filter { it.isNotEmpty() }
+        val n = hulgad.size
+        if (n == 0) return emptyList()
+        val yks = HashMap<T, Int>()
+        val paar = HashMap<Pair<T, T>, Int>()
+        for (h in hulgad) {
+            for (a in h) yks[a] = (yks[a] ?: 0) + 1
+            for (a in h) for (b in h) if (a != b) paar[a to b] = (paar[a to b] ?: 0) + 1
+        }
+        return paar.mapNotNull { (ab, koos) ->
+            if (koos < minKoos) return@mapNotNull null
+            val kindlus = koos.toDouble() / yks[ab.first]!!
+            val tous = kindlus / (yks[ab.second]!!.toDouble() / n)
+            if (tous < minTous) null else Reegel(nimi(ab.first), nimi(ab.second), koos, yks[ab.first]!!, kindlus, tous, ab.second as? Int)
+        }.sortedWith(compareByDescending<Reegel> { it.tous * Math.sqrt(it.koos.toDouble()) }.thenByDescending { it.kindlus })
+    }
+
+    // A→B ja B→A on sama paar: jääb tugevam suund
+    fun paarid(r: List<Reegel>, max: Int = 25): List<Reegel> {
+        val nahtud = HashSet<String>()
+        return r.filter { nahtud.add(if (it.a < it.b) it.a + "|" + it.b else it.b + "|" + it.a) }.take(max)
+    }
+}
+
+// Müügipaneel: müük päevade kaupa, enim müüdud tooted
+object Myyk {
+    fun paevad(ostud: List<Ost>, nyyd: LocalDateTime, paevi: Int = 14): List<Pair<LocalDate, Int>> {
+        val tana = nyyd.toLocalDate()
+        val k = ostud.filter { !it.tagastatud }.groupBy { it.aeg.toLocalDate() }.mapValues { (_, o) -> o.sumOf { it.summa } }
+        return (paevi - 1 downTo 0).map { tana.minusDays(it.toLong()) }.map { it to (k[it] ?: 0) }
+    }
+
+    fun top(ostud: List<Ost>, max: Int = 8): List<Triple<String, Int, Int>> =
+        ostud.filter { !it.tagastatud }.flatMap { it.read }.groupBy { it.nimi }
+            .map { (n, r) -> Triple(n, r.sumOf { it.kogus }, r.sumOf { it.summa }) }
+            .sortedByDescending { it.second }.take(max)
+}
+
+// Demoandmed (omanikule, et müügipaneel ja analüüs ei oleks tühjad): 3 klienti ja ~60 ostu viimase 60 päeva jooksul.
+// Mõned paarid ostetakse sageli koos (õlu + krõpsud, pasta + kaste, kohv + koor, leib + või, banaan + jogurt).
+object Demo {
+    val kliendid = listOf(Triple("jaan", "Jaan Tamm", "jaan@demo.ee"), Triple("liis", "Liis Kask", "liis@demo.ee"), Triple("kati", "Kati Maasikas", "kati@demo.ee"))
+
+    fun loo(pood: Pood, tooted: List<Toode>, nyyd: LocalDateTime): Int {
+        for ((n, t, e) in kliendid) if (pood.kasutaja(n) == null) pood.registreeri(n, t, "demo123", e)
+        val juhus = java.util.Random(42)
+        val toit = tooted.filter { it.laos && it.kategooriaId in 1..9 }
+        if (toit.isEmpty()) return 0
+        fun leia(vararg sonad: String) = toit.firstOrNull { t -> sonad.any { t.nimi.contains(it, true) } }
+        val paarid = listOf(leia("õlu") to leia("krõps"), leia("pasta", "makaron") to leia("tomatikaste", "pastakaste"),
+            leia("kohv") to leia("koor"), leia("rukkileib", "leib") to leia("või "), leia("banaan") to leia("jogurt"))
+            .mapNotNull { (a, b) -> if (a != null && b != null) a to b else null }
+        val populaarsed = (0 until 150).map { toit[juhus.nextInt(toit.size)] }
+        val ostjad = listOf("mari") + kliendid.map { it.first }
+        var n = 0
+        for (i in 0 until 60) {
+            val aeg = nyyd.minusDays(juhus.nextInt(60).toLong()).withHour(9 + juhus.nextInt(12)).withMinute(juhus.nextInt(60))
+            val korv = LinkedHashMap<Toode, Int>()
+            repeat(2 + juhus.nextInt(6)) { val t = populaarsed[juhus.nextInt(populaarsed.size)]; korv[t] = (korv[t] ?: 0) + 1 + juhus.nextInt(2) }
+            for ((a, b) in paarid) if (juhus.nextInt(100) < 40) { korv[a] = 1; korv[b] = 1 }
+            val read = korv.map { (t, k) -> OstuRida(t.id, t.nimi, k, t.hind, Reeglid.tavaHind(t)) }
+            val kaubad = read.sumOf { it.summa }
+            val kodu = juhus.nextBoolean()
+            val tarne = Reeglid.tarne(kaubad, kodu)
+            pood.lisaOst(Ost(0, aeg, ostjad[juhus.nextInt(ostjad.size)], kaubad, 0, tarne, 0, kaubad + tarne, kaubad / 100,
+                if (juhus.nextBoolean()) "Kaart" else "Sularaha", if (kodu) "Kojuvedu" else "Kaasa", if (kodu) "Tartu mnt 87, Tallinn" else null, read))
+            n++
+        }
+        return n
+    }
+}

@@ -72,6 +72,12 @@ fun AdminEkraan(olek: AppOlek) {
                     }
                 }
                 Vahe(12.dp)
+                Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    for ((tekst, siht) in listOf("Müügipaneel" to Ekraan.Myygipaneel, "Autotellimus" to Ekraan.Autotellimus, "Ostetakse koos" to Ekraan.Koos,
+                        "Kliendid" to Ekraan.Kliendid, "Kampaaniad" to Ekraan.Kampaaniad, "Seaded" to Ekraan.Seaded))
+                        Kiip(Keel.t(tekst), V.Pind, V.Tekst, onClick = { olek.ava(siht) })
+                }
+                Vahe(12.dp)
                 Sisend(otsi, { otsi = it }, Keel.t("Otsi toodet"), taust = V.Pind, ees = { Ikoon(Ik.Otsi, V.Tekst2, 18.dp) })
                 Vahe(10.dp)
                 T(Keel.f("{0} toodet", tooted.size), 12.sp, V.Nork)

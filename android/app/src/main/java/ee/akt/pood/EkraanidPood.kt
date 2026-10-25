@@ -182,6 +182,8 @@ fun AvalehtEkraan(olek: AppOlek) {
                 Kiip(Keel.t(lyhike(kat.nimi)), V.Pind, V.Tekst, onClick = { olek.ava(Ekraan.Ruudustik(kat.nimi, kat.id)) })
         }
         Vahe(12.dp)
+        HooajaRiba(olek)
+        Vahe(12.dp)
         val tooted = olek.tooted.filter { Dieet.sobib(it, olek.dieet) }
         tooted.filter { it.laos }.maxByOrNull { it.soodusProtsent ?: 0 }?.let { NadalaPakkumine(olek, it) }
         Vahe(12.dp)

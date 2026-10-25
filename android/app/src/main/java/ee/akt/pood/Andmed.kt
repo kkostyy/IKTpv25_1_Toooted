@@ -23,6 +23,9 @@ interface Pood {
     fun registreeri(nimi: String, taisNimi: String, parool: String, email: String?): String?
     fun kasutaja(nimi: String): Kasutaja?
     fun muudaBoonust(nimi: String, muutus: Int)
+    fun kasutajad(): List<Kasutaja>
+    fun muudaProfiili(nimi: String, taisNimi: String, email: String?)
+    fun muudaParooli(nimi: String, vana: String, uus: String): String?   // veateade või null
 
     fun ostud(kasutaja: String?): List<Ost>
     fun lisaOst(ost: Ost): Ost
@@ -202,6 +205,20 @@ class SqlPood(private val context: Context) : SQLiteOpenHelper(context, "akt.db"
             put("nimi", n); put("taisNimi", taisNimi.trim().ifEmpty { nimi.trim() }); put("rasi", Parool.rasi(parool)); put("roll", Roll.Klient.name)
             put("kaart", kaart.toString()); put("boonus", 0); put("email", email)
         })
+        return null
+    }
+
+    override fun kasutajad() = paring("SELECT * FROM kasutajad ORDER BY nimi") { loeKasutaja(it) }
+
+    override fun muudaProfiili(nimi: String, taisNimi: String, email: String?) {
+        writableDatabase.update("kasutajad", ContentValues().apply { put("taisNimi", taisNimi.trim()); put("email", email?.trim()?.ifEmpty { null }) }, "nimi=?", arrayOf(nimi))
+    }
+
+    override fun muudaParooli(nimi: String, vana: String, uus: String): String? {
+        val rasi = paring("SELECT rasi FROM kasutajad WHERE nimi=?", nimi) { it.s("rasi") }.firstOrNull() ?: return "Kasutajat ei leitud."
+        if (!Parool.kontrolli(vana, rasi)) return "Praegune parool on vale."
+        if (uus.length < 6) return "Parool peab olema vähemalt 6 märki."
+        writableDatabase.update("kasutajad", ContentValues().apply { put("rasi", Parool.rasi(uus)) }, "nimi=?", arrayOf(nimi))
         return null
     }
 
