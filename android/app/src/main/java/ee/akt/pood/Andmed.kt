@@ -81,6 +81,28 @@ class SqlPood(private val context: Context) : SQLiteOpenHelper(context, "akt.db"
 
     override fun onUpgrade(db: SQLiteDatabase, vana: Int, uus: Int) {}
 
+    // Uuem kataloog (rakenduse uuendus): tooted laaditakse uuesti, kasutajad ja ostud jäävad alles.
+    // Vanad osturead jäävad tšekile nime ja hinnaga; lemmikud ja kampaaniad viitasid vanadele id-dele.
+    override fun onOpen(db: SQLiteDatabase) {
+        super.onOpen(db)
+        if (db.isReadOnly) return
+        val uus = Rimi.versioon(context) ?: return
+        val praegu = db.rawQuery("SELECT vaartus FROM seaded WHERE voti='kataloog'", null).use { if (it.moveToFirst()) it.getString(0) else null }
+        if (praegu == uus) return
+        db.beginTransaction()
+        try {
+            db.execSQL("UPDATE ostuRead SET toodeId = NULL")
+            db.execSQL("DELETE FROM lemmikud")
+            db.execSQL("DELETE FROM kampaaniad")
+            db.execSQL("DELETE FROM tooted")
+            db.execSQL("DELETE FROM kategooriad")
+            Rimi.laadi(context, db)
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+    }
+
     // Tooted ja kategooriad: Rimi e-poe kataloog (assets/rimi_kataloog.json.gz, sama mis arvutiversioonis),
     // kui seda pole, siis väike algandmestik (assets/tooted.json). Lisaks kaks kasutajat ja ostunimekiri.
     private fun algandmed(db: SQLiteDatabase) {
