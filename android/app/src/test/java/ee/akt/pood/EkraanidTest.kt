@@ -52,6 +52,14 @@ class EkraanidTest {
         PereKorv.lisa(pood, PereKorv.loe(pood), 1, 2, "Jaan", aeg()); PereKorv.lisa(pood, PereKorv.loe(pood), 4, 1, "Mari", aeg())
         ava(Ekraan.PereKorv)
     })
+    private fun admin() = AppOlek(MaluPood(kell), { kell }).apply { logiSisse("admin", "admin123"); Demo.loo(pood, tooted, kell); varskendaTooted() }
+    @Test fun seaded() = pilt(olek().apply { ava(Ekraan.Seaded) })
+    @Test fun seadedTume() { Teema.tume = true; try { pilt(olek().apply { ava(Ekraan.Seaded) }) } finally { Teema.tume = false } }
+    @Test fun avalehtTume() { Teema.tume = true; try { pilt(olek()) } finally { Teema.tume = false } }
+    @Test fun myygipaneel() = pilt(admin().apply { ava(Ekraan.Myygipaneel) })
+    @Test fun autotellimus() = pilt(admin().apply { ava(Ekraan.Autotellimus) })
+    @Test fun koos() = pilt(admin().apply { ava(Ekraan.Koos) })
+    @Test fun kliendid() = pilt(admin().apply { ava(Ekraan.Kliendid) })
     @Test fun raiskamine() = pilt(olek().apply { ava(Ekraan.Ruudustik("Ilma raiskamiseta", vaade = "raiskamine")) })
     @Test fun admin() = pilt(AppOlek(MaluPood(kell), { kell }).apply { logiSisse("admin", "admin123") })
     @Test fun toodeMuuda() = pilt(AppOlek(MaluPood(kell), { kell }).apply { logiSisse("admin", "admin123"); ava(Ekraan.ToodeMuuda(1)) })
@@ -98,6 +106,9 @@ class MaluPood(private val kell: LocalDateTime) : Pood {
     override fun registreeri(nimi: String, taisNimi: String, parool: String, email: String?): String? { kasutajad[nimi] = Kasutaja(nimi, taisNimi, Roll.Klient, "100002", 0, email) to parool; return null }
     override fun kasutaja(nimi: String) = kasutajad[nimi]?.first
     override fun muudaBoonust(nimi: String, muutus: Int) {}
+    override fun kasutajad() = kasutajad.values.map { it.first }
+    override fun muudaProfiili(nimi: String, taisNimi: String, email: String?) { kasutajad[nimi]?.let { kasutajad[nimi] = it.first.copy(taisNimi = taisNimi, email = email) to it.second } }
+    override fun muudaParooli(nimi: String, vana: String, uus: String): String? = null
     override fun ostud(kasutaja: String?) = ostud.filter { kasutaja == null || it.kasutaja == kasutaja }.sortedByDescending { it.aeg }
     override fun lisaOst(ost: Ost): Ost { val o = ost.copy(id = ostud.size + 1); ostud.add(o); return o }
     override fun tagasta(ostId: Int) {}

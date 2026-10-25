@@ -372,6 +372,7 @@ fun ProfiilEkraan(olek: AppOlek) {
         Vahe(16.dp)
         Kaart(sisu = 6.dp) {
             val punktid = buildList {
+                add(Triple(Ik.Ratas, "Seaded", { olek.ava(Ekraan.Seaded) }))
                 add(Triple(Ik.Tsekk, "Minu ostud", { olek.ava(Ekraan.Ajalugu) }))
                 add(Triple(Ik.Leht, "Minu dieet", { olek.ava(Ekraan.Dieet) }))
                 add(Triple(Ik.Syda, "Minu lemmikud", { olek.ava(Ekraan.Ruudustik("Minu lemmikud", vaade = "lemmikud")) }))
@@ -380,7 +381,13 @@ fun ProfiilEkraan(olek: AppOlek) {
                 add(Triple(Ik.Graafik, "Minu kulutused", { olek.ava(Ekraan.Kulutused) }))
                 add(Triple(Ik.Taht, "Preemiad", { olek.ava(Ekraan.Preemiad()) }))
                 add(Triple(Ik.Kuu, "Õhtune soodustus", { olek.ava(Ekraan.Ohtu) }))
-                if (k.roll == Roll.Omanik) add(Triple(Ik.Pliiats, "Halda tooteid", { olek.ava(Ekraan.Admin) }))
+                if (k.roll == Roll.Omanik) {
+                    add(Triple(Ik.Pliiats, "Halda tooteid", { olek.ava(Ekraan.Admin) }))
+                    add(Triple(Ik.Graafik, "Müügipaneel", { olek.ava(Ekraan.Myygipaneel) }))
+                    add(Triple(Ik.Kast, "Autotellimus", { olek.ava(Ekraan.Autotellimus) }))
+                    add(Triple(Ik.Silt, "Ostetakse koos", { olek.ava(Ekraan.Koos) }))
+                    add(Triple(Ik.Kasutajad, "Kliendid", { olek.ava(Ekraan.Kliendid) }))
+                }
             }
             for ((ikoon, tekst, tegevus) in punktid) {
                 Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).vajuta(tegevus).padding(12.dp), verticalAlignment = Alignment.CenterVertically) {

@@ -31,6 +31,11 @@ sealed class Ekraan {
     data object Pere : Ekraan()
     data object Kulutused : Ekraan()
     data object PereKorv : Ekraan()
+    data object Seaded : Ekraan()
+    data object Myygipaneel : Ekraan()
+    data object Autotellimus : Ekraan()
+    data object Koos : Ekraan()
+    data object Kliendid : Ekraan()
 }
 
 // Rakenduse olek: kasutaja, ostukorv, navigeerimine. Compose jälgib kõiki välju.

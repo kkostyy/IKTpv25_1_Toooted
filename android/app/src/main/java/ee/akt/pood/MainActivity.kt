@@ -38,6 +38,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import kotlin.concurrent.thread
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -62,7 +66,14 @@ class MainActivity : ComponentActivity() {
             val o = AppOlek(pood)
             runOnUiThread { olekHoidja.value = o }
         }
+        val eelistused = getSharedPreferences("akt", MODE_PRIVATE)
+        Teema.valik = eelistused.getInt("teema", 0)
+        Teema.salvesta = { eelistused.edit().putInt("teema", it).apply() }
         setContent {
+            val susteemTume = isSystemInDarkTheme()
+            Teema.tume = when (Teema.valik) { 1 -> false; 2 -> true; else -> susteemTume }
+            val vaade = LocalView.current
+            SideEffect { WindowCompat.getInsetsController(window, vaade).isAppearanceLightStatusBars = !Teema.tume }
             val olek = olekHoidja.value
             AnimatedContent(olek, transitionSpec = { fadeIn(tween(400)) togetherWith fadeOut(tween(300)) }, label = "algus") { o ->
                 if (o == null) Laadimine(edenemine.floatValue, tehtud.intValue)
@@ -132,6 +143,11 @@ fun Ekraanid(olek: AppOlek, e: Ekraan) {
         Ekraan.Pere -> PereEkraan(olek)
         Ekraan.Kulutused -> KulutusedEkraan(olek)
         Ekraan.PereKorv -> PereKorvEkraan(olek)
+        Ekraan.Seaded -> SeadedEkraan(olek)
+        Ekraan.Myygipaneel -> MyygipaneelEkraan(olek)
+        Ekraan.Autotellimus -> AutotellimusEkraan(olek)
+        Ekraan.Koos -> KoosEkraan(olek)
+        Ekraan.Kliendid -> KliendidEkraan(olek)
     }
 }
 

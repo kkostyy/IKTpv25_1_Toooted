@@ -3,6 +3,11 @@ package ee.akt.pood
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import java.time.LocalDate
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -187,7 +192,7 @@ fun PereKorvEkraan(olek: AppOlek) {
         delay(5000)
         val t = olek.tooted.filter { it.laos && it.kategooriaId in setOf(1, 2, 3) }.randomOrNull() ?: return@LaunchedEffect
         read = PereKorv.lisa(olek.pood, read, t.id, 1, "Kati", olek.aeg())
-        olek.teade = Keel.f("{0} lisas pere korvi: {1}", "Kati", t.nimi)
+        if (olek.pood.seade("pere_teated") != "0") olek.teade = Keel.f("{0} lisas pere korvi: {1}", "Kati", t.nimi)
     }
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp).padding(bottom = 150.dp).animateContentSize()) {
@@ -253,3 +258,68 @@ fun PereKorvEkraan(olek: AppOlek) {
     }
 }
 
+
+// ---------------------------------------------------------------
+//  Hooajaline riba avalehel (sama mis arvutis): Halloween, jõulud, talv, sõbrapäev.
+//  Seadetes saab välja lülitada. Vajutus otsib teemakohaseid tooteid.
+// ---------------------------------------------------------------
+enum class Hooaeg(val tekst: String, val otsi: String, val taust: Long) {
+    Halloween("Halloween 31.10 – kõrvitsad, kommid ja kostüümid", "kõrvits", 0xFF2A1840),
+    Joulud("Häid pühi! Jõulukaubad →", "jõulu", 0xFF0F3D2A),
+    Talv("Talvised soojad joogid →", "kakao", 0xFF1E3A5F),
+    Sobrapaev("Sõbrapäeva kingitused →", "šokolaad", 0xFF9D174D);
+
+    companion object {
+        fun praegu(p: LocalDate): Hooaeg? = when {
+            (p.monthValue == 10 && p.dayOfMonth >= 15) || (p.monthValue == 11 && p.dayOfMonth <= 2) -> Halloween
+            p.monthValue == 12 || (p.monthValue == 1 && p.dayOfMonth <= 6) -> Joulud
+            p.monthValue == 2 && p.dayOfMonth in 10..14 -> Sobrapaev
+            p.monthValue <= 2 -> Talv
+            else -> null
+        }
+    }
+}
+
+@Composable
+fun HooajaRiba(olek: AppOlek) {
+    if (olek.pood.seade("hooaeg") == "0") return
+    val h = Hooaeg.praegu(olek.aeg().toLocalDate()) ?: return
+    val liikumine = rememberInfiniteTransition(label = "hooaeg")
+    val aeg by liikumine.animateFloat(0f, 1f, infiniteRepeatable(tween(6000, easing = LinearEasing)), label = "aeg")
+    Box(
+        Modifier.fillMaxWidth().height(86.dp).clip(RoundedCornerShape(22.dp)).background(Color(h.taust))
+            .vajuta { olek.ava(Ekraan.Otsing(h.otsi)) }
+    ) {
+        Canvas(Modifier.fillMaxSize()) {
+            val w = size.width; val k = size.height
+            val faas = aeg * 2 * Math.PI.toFloat()
+            when (h) {
+                Hooaeg.Halloween -> {
+                    for (i in 0 until 4) {   // kõrvitsad hüplevad
+                        val x = w * (0.52f + i * 0.13f); val y = k * 0.62f + kotlin.math.sin(faas + i) * 5f
+                        drawOval(Color(0xFFEA580C), Offset(x - 18f, y - 14f), Size(36f, 28f))
+                        drawRect(Color(0xFF3F6212), Offset(x - 2f, y - 22f), Size(4f, 9f))
+                    }
+                    val bx = w * aeg; val by = k * 0.25f + kotlin.math.sin(faas * 3) * 4f   // nahkhiir lendab üle
+                    drawOval(Color(0xFF0B0B0F), Offset(bx - 14f, by - 4f), Size(28f, 8f))
+                }
+                Hooaeg.Joulud, Hooaeg.Talv -> {
+                    if (h == Hooaeg.Joulud) for (i in 0 until 14) {   // tuled vilguvad
+                        val v = listOf(0xFFEF4444, 0xFFFACC15, 0xFF22C55E, 0xFF3B82F6)[i % 4]
+                        val hele = 0.35f + 0.65f * ((kotlin.math.sin(faas * 2 + i) + 1) / 2)
+                        drawCircle(Color(v).copy(alpha = hele), 6f, Offset(w * (i + 0.5f) / 14, 10f + (i % 2) * 6f))
+                    }
+                    for (i in 0 until 26) {   // lumi sajab
+                        val y = ((aeg + i * 0.137f) % 1f) * k
+                        drawCircle(Color.White.copy(alpha = 0.8f), 2f + i % 3, Offset((i * 97f) % w, y))
+                    }
+                }
+                Hooaeg.Sobrapaev -> for (i in 0 until 10) {   // südamed tõusevad
+                    val y = k - ((aeg + i * 0.1f) % 1f) * k
+                    drawCircle(Color(0xFFF9A8D4).copy(alpha = 0.7f), 5f + i % 3 * 2, Offset(w * (0.45f + (i % 5) * 0.11f), y))
+                }
+            }
+        }
+        T(Keel.t(h.tekst), 15.sp, Color.White, FontWeight.ExtraBold, read = 2, modifier = Modifier.align(Alignment.CenterStart).padding(start = 16.dp).fillMaxWidth(0.55f))
+    }
+}
