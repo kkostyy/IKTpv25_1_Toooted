@@ -98,7 +98,7 @@ namespace IKTpv25_1_Toooted
     {
         private readonly DataGridView vork;
         private readonly TextBox txtToode;
-        private readonly NumericUpDown numKogus;
+        private readonly MoodneSamm numKogus;
         private readonly RadioButton rbKoik, rbOstmata, rbOstetud;
         private readonly Label lblArv;
         private readonly Edenemine edenemine = new();
@@ -226,7 +226,7 @@ namespace IKTpv25_1_Toooted
             var lisa = new Panel { Dock = DockStyle.Top, Height = 58, BackColor = Teema.Taust, Padding = new Padding(16, 6, 16, 6) };
             var raam = UiStiil.LooSisend(out txtToode, 380, false, "Mida osta? (nt Piim või toote nimi)");
             raam.Location = new Point(18, 10);
-            numKogus = new NumericUpDown { Location = new Point(410, 14), Width = 64, Minimum = 1, Maximum = 99, Value = 1, Font = new Font("Segoe UI", 10F) };
+            numKogus = new MoodneSamm { Location = new Point(410, 10), Width = 116, Height = 38, Minimum = 1, Maximum = 99, Value = 1 };
             var lisaNupp = UiStiil.LooSuurNupp("Lisa", (s, e) => LisaRida());
             lisaNupp.Bounds = new Rectangle(488, 10, 110, 38);
             lisa.Controls.AddRange(new Control[] { raam, numKogus, lisaNupp });

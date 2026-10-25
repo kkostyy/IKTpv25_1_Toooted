@@ -949,7 +949,8 @@ namespace IKTpv25_1_Toooted
 
             ladu.DataSource = db.Toodetabel
                 .Where(t => t.Kogus < Form1.VaikeLaoseis)
-                .OrderBy(t => t.Kogus)
+                .OrderBy(t => t.Kogus).ThenBy(t => t.Toodenimetus)
+                .Take(200)   // suure kataloogi korral ainult kõige väiksema laoseisuga (kõik: Autotellimus)
                 .Select(t => new { Toode = t.Toodenimetus, t.Kogus })
                 .ToList();
 

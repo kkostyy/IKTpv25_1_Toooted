@@ -345,7 +345,7 @@ namespace IKTpv25_1_Toooted
             var viimati = DateTime.MinValue;
             KataloogiEdenemine.Kuula(this, () =>
             {
-                if (!RimiKataloog.Kaib || (DateTime.Now - viimati).TotalSeconds > 1.5)
+                if (!RimiKataloog.Kaib || (DateTime.Now - viimati).TotalSeconds > 10)
                 {
                     viimati = DateTime.Now;
                     LaadiTooted();

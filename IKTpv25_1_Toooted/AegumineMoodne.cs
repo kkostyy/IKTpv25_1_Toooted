@@ -344,7 +344,7 @@ public class OstjaEelvaade : Control
 public class UusPartiiVorm : KujundusVorm
 {
     private readonly ComboBox cmbToode;
-    private readonly NumericUpDown numKogus;
+    private readonly MoodneSamm numKogus;
     private readonly DateTimePicker dtAegub;
 
     public UusPartiiVorm() : base("Uus partii", 420, 300)
@@ -353,7 +353,7 @@ public class UusPartiiVorm : KujundusVorm
         cmbToode = new ComboBox { Location = new Point(20, 38), Width = 380, DropDownStyle = ComboBoxStyle.DropDown, AutoCompleteMode = AutoCompleteMode.SuggestAppend, AutoCompleteSource = AutoCompleteSource.ListItems, Font = new Font("Segoe UI", 10F), DisplayMember = "Value" };
         Controls.Add(cmbToode);
         Silt("Kogus", 20, 80);
-        numKogus = new NumericUpDown { Location = new Point(20, 102), Width = 120, Minimum = 1, Maximum = 9999, Value = 10, Font = new Font("Segoe UI", 10F) };
+        numKogus = new MoodneSamm { Location = new Point(20, 98), Width = 130, Minimum = 1, Maximum = 9999, Value = 10 };
         Controls.Add(numKogus);
         Silt("Aegub", 160, 80);
         dtAegub = new DateTimePicker { Location = new Point(160, 102), Width = 240, Format = DateTimePickerFormat.Custom, CustomFormat = "dd.MM.yyyy", Value = DateTime.Today.AddDays(5), Font = new Font("Segoe UI", 10F) };
