@@ -348,6 +348,7 @@ public static partial class Keel
         L("Rimi kataloog laaditud", "Каталог Rimi загружен", "Rimi catalogue loaded");
         L("Laadin Rimi tooteid taustal…", "Загружаю товары Rimi в фоне…", "Loading Rimi products in the background…");
         L("{0} / {1} toodet · võid samal ajal tööd teha", "{0} / {1} товаров · можно продолжать работу", "{0} / {1} products · you can keep working");
+        L("Kõik {0} ▾", "Все {0} ▾", "All {0} ▾");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
     }
 }

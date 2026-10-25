@@ -75,7 +75,7 @@ public class OstukorviAnalyysVorm : KujundusVorm
         {
             string voti = string.CompareOrdinal(r.A, r.B) < 0 ? r.A + "|" + r.B : r.B + "|" + r.A;
             if (!naha.Add(voti)) continue;
-            var kaart = new ReegliKaart(r, kategooriad) { Width = Math.Max(500, loend.ClientSize.Width - 36) };
+            var kaart = new ReegliKaart(r, kategooriad, naha.Count - 1) { Width = Math.Max(500, loend.ClientSize.Width - 36) };
             kaart.Kampaania += LooKampaania;
             loend.Controls.Add(kaart);
             if (naha.Count >= 25) break;
@@ -119,9 +119,13 @@ public class ReegliKaart : Control
     private readonly bool kategooria;
     private bool nuppHover;
     public event Action<Ostukorvianalyys.Reegel>? Kampaania;
+    private readonly Ilmumine ilm;
+    private readonly SujuvOlek nuppSujuv;
 
-    public ReegliKaart(Ostukorvianalyys.Reegel r, bool kategooria)
+    public ReegliKaart(Ostukorvianalyys.Reegel r, bool kategooria, int jrk = 0)
     {
+        ilm = new Ilmumine(this, Math.Min(jrk, 10) * 60);
+        nuppSujuv = new SujuvOlek(this);
         this.r = r;
         this.kategooria = kategooria;
         Height = 92;
@@ -135,11 +139,11 @@ public class ReegliKaart : Control
     protected override void OnMouseMove(MouseEventArgs e)
     {
         bool h = Nupp.Contains(e.Location);
-        if (h != nuppHover) { nuppHover = h; Cursor = h ? Cursors.Hand : Cursors.Default; Invalidate(); }
+        if (h != nuppHover) { nuppHover = h; Cursor = h ? Cursors.Hand : Cursors.Default; nuppSujuv.Siht = h; }
         base.OnMouseMove(e);
     }
 
-    protected override void OnMouseLeave(EventArgs e) { nuppHover = false; Invalidate(); base.OnMouseLeave(e); }
+    protected override void OnMouseLeave(EventArgs e) { nuppHover = false; nuppSujuv.Siht = false; base.OnMouseLeave(e); }
 
     protected override void OnMouseClick(MouseEventArgs e)
     {
@@ -181,8 +185,9 @@ public class ReegliKaart : Control
             new Rectangle(x, 52, laius, 18), Teema.TekstNork, fl | TextFormatFlags.EndEllipsis);
 
         var n = Nupp;
-        using (var tee = Ymardus.Tee(n, 20)) using (var bb = new SolidBrush(nuppHover ? Teema.AktsentTume : Teema.Aktsent)) g.FillPath(bb, tee);
+        using (var tee = Ymardus.Tee(n, 20)) using (var bb = new SolidBrush(Ymardus.Segu(Teema.Aktsent, Teema.AktsentTume, (float)nuppSujuv.V))) g.FillPath(bb, tee);
         TextRenderer.DrawText(g, Keel.T(kategooria ? "Kampaania kategooriale" : "Loo kampaania −10 %"), fs, n, Color.White,
             TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix);
+        ilm.Kata(g);
     }
 }

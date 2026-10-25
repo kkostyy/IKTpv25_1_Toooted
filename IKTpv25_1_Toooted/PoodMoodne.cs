@@ -120,7 +120,27 @@ namespace IKTpv25_1_Toooted
 
             var kat = new RoundedPanel { Dock = DockStyle.Fill, Radius = 14, FillColor = Color.FromArgb(160, 35, 110), BorderColor = Color.FromArgb(160, 35, 110), BackColor = Teema.Taust, Padding = new Padding(22, 18, 22, 14), Margin = new Padding(0) };
             var chips = new FlowLayoutPanel { Dock = DockStyle.Fill, BackColor = Color.FromArgb(160, 35, 110), WrapContents = true };
-            foreach (var k in kategooriad)
+            // Suur kataloog (17 kategooriat): esimesena "Kõik ▾" (menüü), siis suurimad, mis ära mahuvad
+            var arvud = koikTooted.GroupBy(t => t.KategooriaId).ToDictionary(g => g.Key, g => g.Count());
+            var jarjest = kategooriad.OrderByDescending(k => arvud.GetValueOrDefault(k.Id)).ToList();
+            if (kategooriad.Count > 7)
+            {
+                var koik = new KiipNupp(Keel.F("Kõik {0} ▾", kategooriad.Count)) { Margin = new Padding(0, 0, 8, 8) };
+                koik.Click += (s, e) =>
+                {
+                    var m = new ContextMenuStrip();
+                    foreach (var k in kategooriad.OrderBy(k => Keel.T(k.Kategooria_nimetus)))
+                    {
+                        int id = k.Id;
+                        m.Items.Add($"{Keel.T(k.Kategooria_nimetus)}   ·  {arvud.GetValueOrDefault(k.Id)}", null, (s2, e2) => NaitaKategooria(id));
+                    }
+                    MoodneMenyyJoonistaja.Rakenda(m);
+                    m.Closed += (s2, e2) => BeginInvoke(m.Dispose);
+                    m.Show(koik, new Point(0, koik.Height + 4));
+                };
+                chips.Controls.Add(koik);
+            }
+            foreach (var k in jarjest.Take(kategooriad.Count > 7 ? 5 : 7))
             {
                 int id = k.Id;
                 var c = new KiipNupp(k.Kategooria_nimetus) { Margin = new Padding(0, 0, 8, 8) };

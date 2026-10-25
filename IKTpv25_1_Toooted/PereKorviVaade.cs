@@ -1,4 +1,4 @@
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 
 namespace IKTpv25_1_Toooted;
 
@@ -9,6 +9,10 @@ public class PereKorviVaade : Control
     private const int Pais = 46, Rida = 46, MaxRidu = 4;
     private static readonly Color[] Varvid = { Color.FromArgb(160, 35, 110), Color.FromArgb(226, 6, 19), Color.FromArgb(20, 130, 70), Color.FromArgb(205, 115, 0), Color.FromArgb(40, 90, 180) };
     private Point hiir = new(-1, -1);
+    // uus rida (pereliige lisas) helendab hetke; kõrgus muutub sujuvalt
+    private readonly HashSet<int> tuntud = new();
+    private readonly Dictionary<int, double> valgus = new();
+    private bool esimene = true;
 
     public PereKorviVaade()
     {
@@ -28,7 +32,16 @@ public class PereKorviVaade : Control
     {
         Visible = !string.IsNullOrEmpty(PereKorv.Kood);
         int n = Math.Min(MaxRidu, PereKorv.Read.Count);
-        Height = Pais + (PereKorv.Read.Count == 0 ? 34 : n * Rida + (PereKorv.Read.Count > MaxRidu ? 24 : 0)) + 12;
+        int siht = Pais + (PereKorv.Read.Count == 0 ? 34 : n * Rida + (PereKorv.Read.Count > MaxRidu ? 24 : 0)) + 12;
+        if (esimene || !IsHandleCreated) Height = siht;
+        else if (siht != Height) { int alg = Height; Animatsioon.Kaivita(this, 220, t => Height = alg + (int)Math.Round((siht - alg) * Animatsioon.Sujuv(t))); }
+        foreach (var r in PereKorv.Read)
+            if (tuntud.Add(r.Id) && !esimene)
+            {
+                int id = r.Id;
+                Animatsioon.Kaivita(this, 1400, t => { valgus[id] = 1 - t; Invalidate(); }, () => valgus.Remove(id));
+            }
+        esimene = false;
         Invalidate();
     }
 
@@ -111,6 +124,8 @@ public class PereKorviVaade : Control
         {
             var r = PereKorv.Read[i];
             var k = ReaKast(i);
+            if (valgus.TryGetValue(r.Id, out var vg) && vg > 0)
+                using (var tee = Ymardus.Tee(k, 12)) using (var b = new SolidBrush(Color.FromArgb((int)(150 * vg), 255, 214, 120))) g.FillPath(b, tee);
             var av = new Rectangle(k.X + 6, k.Y + 6, 30, 30);
             using (var b = new SolidBrush(Varvid[Math.Abs(r.KasutajaId) % Varvid.Length])) g.FillEllipse(b, av);
             TextRenderer.DrawText(g, Pere.Initsiaalid(r.Lisaja), fi, av, Color.White, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix);
