@@ -12,6 +12,17 @@ import java.util.zip.GZIPInputStream
 // {"versioon":…, "kategooriad":[{id,nimi}], "tooted":[{n,h,v,k,p,b,t,m,pk,u,uk,ki,ko,li,tv,pa,l,oh}]}
 // Loetakse voona (JsonReader), et 18 000 toodet ei peaks korraga mälus olema.
 object Rimi {
+    // Kataloogi versioon on faili alguses: {"versioon":"rimi-…"
+    fun versioon(context: Context): String? = runCatching {
+        GZIPInputStream(context.assets.open("rimi_kataloog.json.gz")).use { s ->
+            val puhver = ByteArray(200)
+            var n = 0
+            while (n < puhver.size) { val k = s.read(puhver, n, puhver.size - n); if (k <= 0) break; n += k }
+            val algus = String(puhver, 0, n, Charsets.UTF_8)
+            Regex("\"versioon\"\\s*:\\s*\"([^\"]+)\"").find(algus)?.groupValues?.get(1)
+        }
+    }.getOrNull()
+
     // (tehtud, kokku) – kutsutakse taustalõimest iga 500 toote järel
     @Volatile var edenemine: ((Int, Int) -> Unit)? = null
 
@@ -21,6 +32,10 @@ object Rimi {
             r.beginObject()
             while (r.hasNext()) {
                 when (r.nextName()) {
+                    "versioon" -> {
+                        val v = r.nextString()
+                        db.insertWithOnConflict("seaded", null, ContentValues().apply { put("voti", "kataloog"); put("vaartus", v) }, SQLiteDatabase.CONFLICT_REPLACE)
+                    }
                     "arv" -> kokku = r.nextInt()
                     "kategooriad" -> {
                         r.beginArray()
