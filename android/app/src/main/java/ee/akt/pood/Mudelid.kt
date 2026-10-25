@@ -83,3 +83,5 @@ fun eur(sendid: Int): String {
     val a = Math.abs(sendid)
     return "$m${a / 100},${"%02d".format(a % 100)} €"
 }
+
+data class Partii(val id: Int, val toodeId: Int, val kogus: Int, val aegub: java.time.LocalDate, val lisatud: java.time.LocalDate)

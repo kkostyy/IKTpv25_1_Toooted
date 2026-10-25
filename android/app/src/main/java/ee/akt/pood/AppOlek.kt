@@ -36,6 +36,8 @@ sealed class Ekraan {
     data object Autotellimus : Ekraan()
     data object Koos : Ekraan()
     data object Kliendid : Ekraan()
+    data object Kassa : Ekraan()
+    data object Partiid : Ekraan()
 }
 
 // Rakenduse olek: kasutaja, ostukorv, navigeerimine. Compose jälgib kõiki välju.
@@ -61,6 +63,77 @@ class AppOlek(val pood: Pood, private val kell: () -> LocalDateTime = { LocalDat
         Keel.praegu = runCatching { Keel.Kood.valueOf(pood.seade("keel") ?: "ET") }.getOrDefault(Keel.Kood.ET)
     }
 
+    // ---- Õhtune soodustus (omaniku seaded) ----
+    fun laadiOhtu() {
+        Reeglid.OHTU_SEES = pood.seade("ohtu_sees") != "0"
+        Reeglid.OHTU_ALGUS = runCatching { java.time.LocalTime.parse(pood.seade("ohtu_algus")) }.getOrDefault(java.time.LocalTime.of(20, 0))
+        Reeglid.OHTU_PROTSENT = pood.seade("ohtu_protsent")?.toIntOrNull() ?: 50
+    }
+
+    fun salvestaOhtu(sees: Boolean, algus: java.time.LocalTime, protsent: Int) {
+        pood.seaSeade("ohtu_sees", if (sees) null else "0")
+        pood.seaSeade("ohtu_algus", algus.toString())
+        pood.seaSeade("ohtu_protsent", protsent.toString())
+        laadiOhtu()
+        hinnadMuutusid++
+    }
+
+    var hinnadMuutusid by mutableStateOf(0)   // muutub → hinnad arvutatakse uuesti
+
+    // ---- Partiid: varaseim säilivusaeg toote kohta (ilma raiskamiseta −30 %) ----
+    var partiid by mutableStateOf(listOf<Partii>())
+        private set
+
+    fun varskendaPartiid() {
+        partiid = pood.partiid()
+        Raiskamine.partiid = partiid.groupBy { it.toodeId }.mapValues { (_, p) -> p.minOf { it.aegub } }
+        hinnadMuutusid++
+    }
+
+    // ---- Salvestatud ostukorvid (seades "korvid:<kasutaja>": nimi|id:kogus,id:kogus) ----
+    data class SalvestatudKorv(val nimi: String, val read: List<Pair<Int, Int>>)
+
+    private val korvideVoti get() = "korvid:" + (kasutaja?.nimi ?: "")
+
+    fun salvestatudKorvid(): List<SalvestatudKorv> = (pood.seade(korvideVoti) ?: "").lines().filter { '|' in it }.map { r ->
+        val (n, sisu) = r.split('|', limit = 2)
+        SalvestatudKorv(n, sisu.split(',').mapNotNull { p -> p.split(':').takeIf { it.size == 2 }?.let { (a, b) -> a.toIntOrNull()?.let { x -> b.toIntOrNull()?.let { y -> x to y } } } })
+    }
+
+    fun salvestaKorv(nimi: String) {
+        val puhas = nimi.replace("|", " ").replace("\n", " ").trim().ifEmpty { Keel.f("Korv {0}", aeg().toLocalDate()) }
+        val uus = salvestatudKorvid().filter { it.nimi != puhas } + SalvestatudKorv(puhas, korv.map { it.toode.id to it.kogus })
+        pood.seaSeade(korvideVoti, uus.joinToString("\n") { k -> k.nimi + "|" + k.read.joinToString(",") { "${it.first}:${it.second}" } })
+    }
+
+    fun kustutaKorv(nimi: String) {
+        val uus = salvestatudKorvid().filter { it.nimi != nimi }
+        pood.seaSeade(korvideVoti, uus.joinToString("\n") { k -> k.nimi + "|" + k.read.joinToString(",") { "${it.first}:${it.second}" } }.ifEmpty { null })
+    }
+
+    // Tagastab: mitu tk lisati ja mis puudu
+    fun taastaKorv(k: SalvestatudKorv): Pair<Int, List<String>> {
+        var lisatud = 0
+        val puudu = mutableListOf<String>()
+        for ((id, kogus) in k.read) {
+            val t = toode(id) ?: continue
+            val vaba = minOf(kogus, t.kogus - korvis(id))
+            if (vaba <= 0 || lisaKorvi(t, vaba) != null) puudu += t.nimi else lisatud += vaba
+        }
+        return lisatud to puudu
+    }
+
+    // ---- Lemmik on taas laos: kontrollitakse sisselogimisel ----
+    private fun kontrolliLemmikuid() {
+        val voti = "lemmikud_otsas:" + (kasutaja?.nimi ?: return)
+        val enne = (pood.seade(voti) ?: "").split(',').mapNotNull { it.toIntOrNull() }.toSet()
+        val lemmikTooted = tooted.filter { it.id in lemmikud }
+        val tagasi = lemmikTooted.filter { it.id in enne && it.laos }
+        pood.seaSeade(voti, lemmikTooted.filter { !it.laos }.joinToString(",") { it.id.toString() }.ifEmpty { null })
+        if (tagasi.isNotEmpty())
+            teade = Keel.t("Lemmik on taas laos:") + " " + tagasi.take(3).joinToString(", ") { it.nimi } + (if (tagasi.size > 3) " " + Keel.f("ja veel {0}", tagasi.size - 3) else "")
+    }
+
     fun aeg(): LocalDateTime = kell()
 
     // ---- Navigeerimine ----
@@ -82,6 +155,7 @@ class AppOlek(val pood: Pood, private val kell: () -> LocalDateTime = { LocalDat
         val k = pood.logiSisse(nimi, parool) ?: return false
         kasutaja = k
         vaheleht(if (k.roll == Roll.Omanik) Ekraan.Admin else Ekraan.Avaleht)
+        kontrolliLemmikuid()
         return true
     }
 
@@ -103,11 +177,17 @@ class AppOlek(val pood: Pood, private val kell: () -> LocalDateTime = { LocalDat
 
     fun toode(id: Int): Toode? = tooted.firstOrNull { it.id == id }
 
-    fun hind(t: Toode): Reeglid.Hind = Reeglid.lopphind(t, aeg())
+    fun hind(t: Toode): Reeglid.Hind { hinnadMuutusid; return Reeglid.lopphind(t, aeg()) }
 
     fun vahetaLemmik(id: Int) {
         pood.vahetaLemmik(id)
         lemmikud = pood.lemmikud()
+        val t = toode(id)
+        if (t != null && id in lemmikud && !t.laos) {
+            val voti = "lemmikud_otsas:" + (kasutaja?.nimi ?: "")
+            pood.seaSeade(voti, ((pood.seade(voti) ?: "").split(',').filter { it.isNotBlank() } + id.toString()).distinct().joinToString(","))
+            teade = Keel.t("Lisatud lemmikutesse – anname teada, kui toode on taas laos")
+        }
     }
 
     fun vahetaDieet(m: Dieet.Mark) {
@@ -181,5 +261,11 @@ class AppOlek(val pood: Pood, private val kell: () -> LocalDateTime = { LocalDat
             lisatud += kogus
         }
         return lisatud to puudu
+    }
+
+    // viimasena: kõik väljad on selleks ajaks loodud
+    init {
+        laadiOhtu()
+        varskendaPartiid()
     }
 }

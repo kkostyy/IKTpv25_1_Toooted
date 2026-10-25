@@ -4,6 +4,8 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
@@ -286,19 +288,36 @@ fun HooajaRiba(olek: AppOlek) {
     val h = Hooaeg.praegu(olek.aeg().toLocalDate()) ?: return
     val liikumine = rememberInfiniteTransition(label = "hooaeg")
     val aeg by liikumine.animateFloat(0f, 1f, infiniteRepeatable(tween(6000, easing = LinearEasing)), label = "aeg")
+    // Peidetud mäng: kõrvitsale vajutades see "puhkeb" kommideks; kõik 4 leitud → teade
+    val leitud = remember { androidx.compose.runtime.mutableStateListOf<Int>() }
     Box(
         Modifier.fillMaxWidth().height(86.dp).clip(RoundedCornerShape(22.dp)).background(Color(h.taust))
-            .vajuta { olek.ava(Ekraan.Otsing(h.otsi)) }
+            .pointerInput(h) {
+                detectTapGestures { p ->
+                    val i = if (h == Hooaeg.Halloween) (0 until 4).firstOrNull { i -> kotlin.math.abs(p.x - size.width * (0.52f + i * 0.13f)) < 34f } else null
+                    if (i == null) olek.ava(Ekraan.Otsing(h.otsi))
+                    else if (i !in leitud) {
+                        leitud.add(i)
+                        if (leitud.size == 4) olek.teade = Keel.t("Leidsid kõik kõrvitsad! Head Halloweeni!")
+                    }
+                }
+            }
     ) {
         Canvas(Modifier.fillMaxSize()) {
             val w = size.width; val k = size.height
             val faas = aeg * 2 * Math.PI.toFloat()
             when (h) {
                 Hooaeg.Halloween -> {
-                    for (i in 0 until 4) {   // kõrvitsad hüplevad
+                    for (i in 0 until 4) {   // kõrvitsad hüplevad; leitud kõrvits = kommid ümber
                         val x = w * (0.52f + i * 0.13f); val y = k * 0.62f + kotlin.math.sin(faas + i) * 5f
-                        drawOval(Color(0xFFEA580C), Offset(x - 18f, y - 14f), Size(36f, 28f))
+                        val leitudSee = i in leitud
+                        drawOval(Color(if (leitudSee) 0xFFFDBA74 else 0xFFEA580C), Offset(x - 18f, y - 14f), Size(36f, 28f))
                         drawRect(Color(0xFF3F6212), Offset(x - 2f, y - 22f), Size(4f, 9f))
+                        if (leitudSee) for (j in 0 until 6) {
+                            val nurk = j / 6f * 2 * Math.PI.toFloat() + faas
+                            val r = 24f + kotlin.math.sin(faas * 2 + j) * 4f
+                            drawCircle(Color(listOf(0xFFF97316, 0xFFA855F7, 0xFF22C55E, 0xFFFACC15)[j % 4]), 3.5f, Offset(x + kotlin.math.cos(nurk) * r, y + kotlin.math.sin(nurk) * r * 0.6f))
+                        }
                     }
                     val bx = w * aeg; val by = k * 0.25f + kotlin.math.sin(faas * 3) * 4f   // nahkhiir lendab üle
                     drawOval(Color(0xFF0B0B0F), Offset(bx - 14f, by - 4f), Size(28f, 8f))

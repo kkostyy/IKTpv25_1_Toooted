@@ -10,8 +10,10 @@ object Reeglid {
     const val TARNE = 399                  // kojuvedu
     const val TASUTA_TARNE_ALATES = 2500   // tasuta tarne alates 25 €
     const val KUPSETISTE_KATEGOORIA = 2    // õhtune soodustus: leivad, saiad, kondiitritooted
-    val OHTU_ALGUS: LocalTime = LocalTime.of(20, 0)
-    const val OHTU_PROTSENT = 50
+    // Õhtune soodustus – omanik saab Seadetes muuta (AppOlek loeb seadetest)
+    var OHTU_SEES = true
+    var OHTU_ALGUS: LocalTime = LocalTime.of(20, 0)
+    var OHTU_PROTSENT = 50
 
     data class Hind(val hind: Int, val tavaHind: Int, val soodus: String?)
 
@@ -19,7 +21,7 @@ object Reeglid {
 
     fun soodusHind(tava: Int, protsent: Int): Int = Math.round(tava * (100 - protsent) / 100.0).toInt()
 
-    fun ohtuKaib(aeg: LocalDateTime): Boolean = !aeg.toLocalTime().isBefore(OHTU_ALGUS)
+    fun ohtuKaib(aeg: LocalDateTime): Boolean = OHTU_SEES && !aeg.toLocalTime().isBefore(OHTU_ALGUS)
 
     // Lõpphind: kampaania (Toode.hind) või õhtune -50 % küpsetistele – kehtib suurem soodustus, need ei liitu
     fun lopphind(t: Toode, aeg: LocalDateTime = LocalDateTime.now()): Hind {
@@ -176,8 +178,19 @@ object Raiskamine {
     const val PROTSENT = 30
     private val kategooriad = setOf(1, 2, 4, 9)
 
+    // Päris partiid (omanik lisab "Partiid ja säilivus" vaates): toodeId → varaseim säilivusaeg.
+    // Kui partiisid pole, kasutatakse näidisvalikut (allpool).
+    @Volatile var partiid: Map<Int, LocalDate> = emptyMap()
+    const val PAEVI_ENNE = 2
+
     // Mitme päeva pärast aegub (0 = täna) või null
     fun aegub(t: Toode, paev: LocalDate): Int? {
+        if (partiid.isNotEmpty()) {
+            if (!t.laos) return null
+            val a = partiid[t.id] ?: return null
+            val p = java.time.temporal.ChronoUnit.DAYS.between(paev, a).toInt()
+            return if (p in 0..PAEVI_ENNE) p else null
+        }
         if (t.kategooriaId !in kategooriad || !t.laos) return null
         val h = Math.floorMod(t.id * 31 + paev.dayOfYear * 17, 61)
         return if (h < 3) h else null
@@ -305,6 +318,9 @@ object Demo {
         }
         // osa populaarseid on peaaegu otsas – autotellimusel on siis, mida soovitada
         for (t in populaarsed.take(12)) pood.salvestaToode(t.copy(kogus = 1 + juhus.nextInt(5)))
+        // partiid säilivusajaga: osa aegub 0–2 päeva pärast (→ "Ilma raiskamiseta" −30 %), osa hiljem, üks juba aegunud
+        val riknevad = tooted.filter { it.laos && it.kategooriaId in setOf(1, 2, 4, 9) }.shuffled(juhus).take(14)
+        riknevad.forEachIndexed { i, t -> pood.lisaPartii(t.id, 4 + juhus.nextInt(12), nyyd.toLocalDate().plusDays((i % 8 - 1).toLong())) }
         return n
     }
 }

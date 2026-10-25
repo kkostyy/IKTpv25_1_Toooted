@@ -383,7 +383,9 @@ fun ProfiilEkraan(olek: AppOlek) {
                 add(Triple(Ik.Kuu, "Õhtune soodustus", { olek.ava(Ekraan.Ohtu) }))
                 if (k.roll == Roll.Omanik) {
                     add(Triple(Ik.Pliiats, "Halda tooteid", { olek.ava(Ekraan.Admin) }))
+                    add(Triple(Ik.Korv, "Kassa", { olek.ava(Ekraan.Kassa) }))
                     add(Triple(Ik.Graafik, "Müügipaneel", { olek.ava(Ekraan.Myygipaneel) }))
+                    add(Triple(Ik.Kell, "Partiid ja säilivus", { olek.ava(Ekraan.Partiid) }))
                     add(Triple(Ik.Kast, "Autotellimus", { olek.ava(Ekraan.Autotellimus) }))
                     add(Triple(Ik.Silt, "Ostetakse koos", { olek.ava(Ekraan.Koos) }))
                     add(Triple(Ik.Kasutajad, "Kliendid", { olek.ava(Ekraan.Kliendid) }))
@@ -503,7 +505,7 @@ fun OhtuEkraan(olek: AppOlek) {
         Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(26.dp)).background(Color(0xFF3B2150)).padding(20.dp)) {
             VaikeKiip(Keel.t(if (kaib) "KÄIB PRAEGU" else "TÄNA ÕHTUL"), Color(0xFF5A3A70), Color(0xFFF5D76E))
             Vahe(8.dp)
-            T(Keel.t("Pärast 20:00 kõik küpsetised −50 %"), 22.sp, Color.White, FontWeight.ExtraBold)
+            T(Keel.f("Pärast {0} kõik küpsetised −{1} %", Reeglid.OHTU_ALGUS.toString(), Reeglid.OHTU_PROTSENT), 22.sp, Color.White, FontWeight.ExtraBold)
             Vahe(8.dp)
             T(nyyd.format(DateTimeFormatter.ofPattern("HH:mm")), 40.sp, Color.White, FontWeight.ExtraBold)
             val minutid = (20 * 60) - (nyyd.hour * 60 + nyyd.minute)

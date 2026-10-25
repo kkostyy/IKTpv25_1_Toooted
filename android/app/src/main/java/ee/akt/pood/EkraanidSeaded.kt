@@ -35,6 +35,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -124,12 +125,15 @@ fun SeadedEkraan(olek: AppOlek) {
             Valik("Kojuvedu vaikimisi", "Maksmisel on kohe valitud kojuvedu", kojuvedu) { kojuvedu = it; olek.pood.seaSeade("kojuvedu", if (it) null else "0") }
         }
 
+        if (k.roll == Roll.Omanik) Osa("Õhtune soodustus") { OhtuSeaded(olek) }
+        if (k.roll == Roll.Omanik) Osa("Kategooriad") { KategooriadSeaded(olek) }
         if (k.roll == Roll.Omanik) Osa("Haldus") {
             T(Keel.t("Loob 3 klienti ja umbes 60 ostu viimase 60 päeva jooksul – müügipaneel, autotellimus ja „Ostetakse koos“ ei ole siis tühjad."), 13.sp, V.Tekst2, reavahe = 18.sp)
             Vahe(10.dp)
             AaarisNupp(Keel.t("Loo demoandmed"), {
                 val n = Demo.loo(olek.pood, olek.tooted, olek.aeg())
                 olek.varskendaTooted()
+                olek.varskendaPartiid()
                 olek.teade = Keel.f("Lisatud {0} ostu", n)
             }, Modifier.fillMaxWidth())
         }
@@ -184,7 +188,10 @@ fun MyygipaneelEkraan(olek: AppOlek) {
     val lopevad = remember { Autotellimus.arvuta(ostud, olek.tooted, nyyd, 7).take(5) }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp).padding(bottom = 40.dp)) {
-        Pais("Müügipaneel", { olek.tagasi() }, Keel.f("{0} ostu kokku", ostud.size))
+        val kontekst = LocalContext.current
+        Pais("Müügipaneel", { olek.tagasi() }, Keel.f("{0} ostu kokku", ostud.size)) {
+            RingNupp(Ik.Jaga, { jagaCsv(kontekst, "AKT müük.csv", myykCsv(ostud)) }, V.Pind, V.Tekst, 44.dp)
+        }
         Vahe(12.dp)
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             NumbriKaart(Keel.t("Müük täna"), eur(tana), V.Tume, Color.White, Modifier.weight(1f))
@@ -215,6 +222,10 @@ fun MyygipaneelEkraan(olek: AppOlek) {
                 }
             }
         }
+        Vahe(14.dp)
+        PrognoosiKaart(olek, ostud)
+        Vahe(14.dp)
+        SoojuskaardiKaart(ostud)
         Vahe(14.dp)
         Kaart(Modifier.fillMaxWidth()) {
             T(Keel.t("Enim müüdud"), 15.sp, V.Tekst, FontWeight.ExtraBold)
@@ -271,7 +282,10 @@ fun AutotellimusEkraan(olek: AppOlek) {
 
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp).padding(bottom = 130.dp)) {
-            Pais("Autotellimus", { olek.tagasi() }, Keel.t("Müük viimased 28 päeva + 3 päeva varu"))
+            val kontekst = LocalContext.current
+            Pais("Autotellimus", { olek.tagasi() }, Keel.t("Müük viimased 28 päeva + 3 päeva varu")) {
+                if (read.isNotEmpty()) RingNupp(Ik.Jaga, { jagaCsv(kontekst, "AKT tellimus.csv", autotellimusCsv(read) { telli(it) }) }, V.Pind, V.Tekst, 44.dp)
+            }
             Vahe(10.dp)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 for (p in listOf(7, 14, 30)) Kiip(Keel.f("{0} päeva", p), V.Pind, V.Tekst, valitud = kate == p, onClick = { kate = p; muudetud = emptyMap() })
@@ -377,7 +391,8 @@ fun KoosEkraan(olek: AppOlek) {
 @Composable
 fun KliendidEkraan(olek: AppOlek) {
     var otsi by remember { mutableStateOf("") }
-    val kasutajad = remember { olek.pood.kasutajad() }
+    var kasutajad by remember { mutableStateOf(olek.pood.kasutajad()) }
+    var lahti by remember { mutableStateOf<String?>(null) }
     val ostud = remember { olek.pood.ostud(null).filter { !it.tagastatud }.groupBy { it.kasutaja } }
     val nahtavad = kasutajad.filter { otsi.isBlank() || it.taisNimi.contains(otsi, true) || it.nimi.contains(otsi, true) || it.kaart.contains(otsi) || (it.email ?: "").contains(otsi, true) }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp).padding(bottom = 40.dp)) {
@@ -387,8 +402,9 @@ fun KliendidEkraan(olek: AppOlek) {
         Vahe(10.dp)
         for (k in nahtavad) {
             val o = ostud[k.nimi] ?: emptyList()
+            Column(Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(RoundedCornerShape(18.dp)).background(V.Pind).animateContentSize()) {
             Row(
-                Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(RoundedCornerShape(18.dp)).background(V.Pind).padding(12.dp),
+                Modifier.fillMaxWidth().vajuta { lahti = if (lahti == k.nimi) null else k.nimi }.padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Initsiaalid(k.initsiaalid, if (k.roll == Roll.Omanik) V.Tume else V.Ploom, 42.dp)
@@ -401,6 +417,17 @@ fun KliendidEkraan(olek: AppOlek) {
                     T(eur(o.sumOf { it.summa }), 14.sp, V.Tekst, FontWeight.ExtraBold)
                     T(Keel.f("{0} ostu · boonus {1}", o.size, eur(k.boonus)), 11.sp, V.Nork)
                 }
+            }
+            if (lahti == k.nimi && k.nimi != olek.kasutaja?.nimi) Row(Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                val omanik = k.roll == Roll.Omanik
+                Kiip(Keel.t(if (omanik) "Tee kliendiks" else "Tee omanikuks"), V.Paneel, V.Tekst, onClick = {
+                    olek.pood.muudaRolli(k.nimi, if (omanik) Roll.Klient else Roll.Omanik); kasutajad = olek.pood.kasutajad()
+                })
+                Kiip(Keel.t("Kustuta kasutaja"), V.Roosa, V.Punane, onClick = {
+                    olek.pood.kustutaKasutaja(k.nimi); kasutajad = olek.pood.kasutajad(); lahti = null
+                    olek.teade = Keel.f("Kasutaja {0} kustutatud", k.nimi)
+                })
+            }
             }
         }
     }

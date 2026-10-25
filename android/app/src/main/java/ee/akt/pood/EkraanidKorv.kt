@@ -41,6 +41,8 @@ fun KorvEkraan(olek: AppOlek) {
         Column(Modifier.fillMaxSize().padding(16.dp).padding(bottom = 92.dp)) {
             Pais("Ostukorv", null) { VaikeKiip(Keel.f("{0} tk", 0), V.Pind, V.Tekst) }
             Vahe(14.dp)
+            SalvestatudKorvid(olek)
+            Vahe(12.dp)
             Kaart(Modifier.fillMaxWidth().weight(1f), raadius = 28.dp) {
                 Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                     Tyhi(Ik.Korv, Keel.t("Sinu ostukorv on tühi"), Keel.t("Lisa tooteid nupuga „+“ või vaata pakkumisi."))
@@ -71,6 +73,8 @@ fun KorvEkraan(olek: AppOlek) {
             Kaart(sisu = 6.dp) {
                 for (r in olek.korv.toList()) KorviRida(olek, r)
             }
+            Vahe(12.dp)
+            SalvestatudKorvid(olek)
             Vahe(12.dp)
             // Tasuta tarneni
             val puudu = Reeglid.TASUTA_TARNE_ALATES - olek.kaubad

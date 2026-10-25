@@ -73,7 +73,7 @@ fun AdminEkraan(olek: AppOlek) {
                 }
                 Vahe(12.dp)
                 Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    for ((tekst, siht) in listOf("Müügipaneel" to Ekraan.Myygipaneel, "Autotellimus" to Ekraan.Autotellimus, "Ostetakse koos" to Ekraan.Koos,
+                    for ((tekst, siht) in listOf("Kassa" to Ekraan.Kassa, "Müügipaneel" to Ekraan.Myygipaneel, "Partiid" to Ekraan.Partiid, "Autotellimus" to Ekraan.Autotellimus, "Ostetakse koos" to Ekraan.Koos,
                         "Kliendid" to Ekraan.Kliendid, "Kampaaniad" to Ekraan.Kampaaniad, "Seaded" to Ekraan.Seaded))
                         Kiip(Keel.t(tekst), V.Pind, V.Tekst, onClick = { olek.ava(siht) })
                 }

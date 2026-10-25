@@ -148,6 +148,8 @@ fun Ekraanid(olek: AppOlek, e: Ekraan) {
         Ekraan.Autotellimus -> AutotellimusEkraan(olek)
         Ekraan.Koos -> KoosEkraan(olek)
         Ekraan.Kliendid -> KliendidEkraan(olek)
+        Ekraan.Kassa -> KassaEkraan(olek)
+        Ekraan.Partiid -> PartiidEkraan(olek)
     }
 }
 
