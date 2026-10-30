@@ -22,20 +22,28 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+      # Üks fail: AktPood.exe (.NET, SQLite, pildid ja Rimi kataloog on sees – midagi pole vaja paigaldada)
       - name: Ehita
-        run: dotnet publish IKTpv25_1_Toooted/IKTpv25_1_Toooted.csproj -c Release -r win-x64 --self-contained false -o valjund
+        run: >
+          dotnet publish IKTpv25_1_Toooted/IKTpv25_1_Toooted.csproj -c Release -r win-x64 --self-contained true -o valjund
+          -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:IncludeAllContentForSelfExtract=true
+          -p:EnableCompressionInSingleFile=true -p:DebugType=none
       - name: Paki
-        run: |
-          Remove-Item valjund\*.pdb -ErrorAction SilentlyContinue
-          Compress-Archive -Path valjund\* -DestinationPath AktPood-Windows.zip
+        run: Copy-Item valjund\IKTpv25_1_Toooted.exe AktPood.exe
+      # Vanem zip-fail väljalaskest välja (seal peavad olema ainult AktPood.exe ja AktPood.apk)
+      - name: Eemalda zip
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release delete-asset "${{ inputs.versioon || github.ref_name }}" AktPood-Windows.zip -y -R "${{ github.repository }}"
       - uses: softprops/action-gh-release@v2
         with:
-          files: AktPood-Windows.zip
+          files: AktPood.exe
           tag_name: ${{ inputs.versioon || github.ref_name }}
           target_commitish: ${{ github.sha }}
           name: AKT pood ${{ inputs.versioon || github.ref_name }}
           body: |
-            **Windows:** AktPood-Windows.zip (vajab .NET 8 Desktop Runtime'i). Paki lahti ja käivita IKTpv25_1_Toooted.exe. Moodne disain: Ctrl+Shift+M.
+            **Windows:** AktPood.exe – laadi alla ja käivita (eraldi .NET-i pole vaja). Moodne disain: Ctrl+Shift+M.
             **Telefon (Android 8+):** AktPood.apk – laadi telefoni ja ava (luba "tundmatutest allikatest").
             Proovi: mari / mari123 (klient) või admin / admin123 (omanik).
 
