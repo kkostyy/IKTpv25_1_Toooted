@@ -412,6 +412,7 @@ fun ProfiilEkraan(olek: AppOlek) {
 fun AjaluguEkraan(olek: AppOlek) {
     val ostud = remember { olek.pood.ostud(if (olek.kasutaja?.roll == Roll.Omanik) null else olek.kasutaja?.nimi) }
     var valitud by remember { mutableStateOf(ostud.firstOrNull()) }
+    var makseMuutus by remember { androidx.compose.runtime.mutableIntStateOf(0) }   // "Märgi makstuks" → joonista uuesti
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)) {
         Pais("Minu ostud", { olek.tagasi() })
         Vahe(12.dp)
@@ -425,7 +426,10 @@ fun AjaluguEkraan(olek: AppOlek) {
                         T(Keel.f("Ost nr {0}", o.id), 15.sp, Color.White, FontWeight.ExtraBold)
                         T(o.aeg.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")) + " · " + Keel.t(if (o.tarneviis == "Kojuvedu") "Kojuvedu" else "Poest kaasa"), 12.sp, Color(0xFFC9CCD1))
                     }
-                    VaikeKiip(Keel.t(if (o.tagastatud) "Tagastatud" else "Makstud"), if (o.tagastatud) V.Punane else Color(0xFF1E4D33), if (o.tagastatud) Color.White else Color(0xFF7FD9A2))
+                    val ootab = Pangamakse.ootab(olek.pood, o)
+                    VaikeKiip(Keel.t(if (o.tagastatud) "Tagastatud" else if (ootab) "Ootab makset" else "Makstud"),
+                        if (o.tagastatud) V.Punane else if (ootab) Color(0xFF4D3C14) else Color(0xFF1E4D33),
+                        if (o.tagastatud) Color.White else if (ootab) Color(0xFFF5D76E) else Color(0xFF7FD9A2))
                 }
                 Vahe(12.dp)
                 Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color.White).padding(16.dp)) {
@@ -447,6 +451,18 @@ fun AjaluguEkraan(olek: AppOlek) {
                     }, Modifier.weight(1f), taust = Color.White, varv = V.Tekst, noolega = false)
                     if (olek.kasutaja?.roll == Roll.Omanik && !o.tagastatud)
                         AaarisNupp(Keel.t("Tagasta"), { olek.pood.tagasta(o.id); olek.varskendaTooted(); olek.teade = Keel.t("Ost tagastatud") }, Modifier.weight(1f), Color.White)
+                }
+                // pangaülekanne ootab makset: omanik märgib makstuks, ostja näeb rekvisiite ja QR-koodi
+                if (makseMuutus >= 0 && Pangamakse.ootab(olek.pood, o)) {
+                    Vahe(10.dp)
+                    if (olek.kasutaja?.roll == Roll.Omanik)
+                        AaarisNupp(Keel.t("Märgi makstuks"), {
+                            Pangamakse.margiMakstuks(olek.pood, o.id)
+                            olek.teade = Keel.f("Ost nr {0} makstud", o.id)
+                            makseMuutus++
+                        }, Modifier.fillMaxWidth(), Color.White)
+                    else
+                        SuurNupp(Keel.t("Makse rekvisiidid"), { olek.ava(Ekraan.MakseOnnestus(o.id)) }, taust = V.Ploom, noolega = false)
                 }
             }
         }

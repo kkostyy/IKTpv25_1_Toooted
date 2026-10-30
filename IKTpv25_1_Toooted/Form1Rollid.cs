@@ -8,6 +8,7 @@
         private readonly ToolStripMenuItem menuStatistika = new("Statistika...");
         private readonly ToolStripMenuItem menuEksport = new("Ekspordi tooted (CSV)...");
         private readonly ToolStripMenuItem menuEmail = new("E-posti seaded...");
+        private readonly ToolStripMenuItem menuMakse = new("Makse seaded...");
         private readonly ToolStripMenuItem menuKasutajad = new("Kasutajad...");
         private readonly ToolStripMenuItem menuKampaaniad = new("Kampaaniad...");
         private readonly ToolStripMenuItem menuDemo = new("Demoandmed...");
@@ -51,6 +52,8 @@
             haldus.DropDownItems.Add(menuStatistika);
             haldus.DropDownItems.Add(menuEksport);
             haldus.DropDownItems.Add(menuEmail);
+            haldus.DropDownItems.Add(menuMakse);
+            menuMakse.Click += (s, e) => AvaVorm(new MakseSeadedVorm());
             menuEksport.Click += (s, e) => CsvEksport.Tooted(this);
             menuEmail.Click += (s, e) => AvaVorm(new EmailSeadedVorm());
             menuKliendid.Click += (s, e) => AvaVorm(new KliendidVorm());
@@ -96,6 +99,7 @@
             menuStatistika.Visible = omanik;
             menuEksport.Visible = omanik;
             menuEmail.Visible = omanik;
+            menuMakse.Visible = omanik;
             menuKasutajad.Visible = omanik;
             menuKampaaniad.Visible = omanik;
             menuDemo.Visible = omanik;
