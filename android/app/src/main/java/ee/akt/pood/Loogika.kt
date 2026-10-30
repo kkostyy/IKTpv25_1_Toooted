@@ -97,13 +97,27 @@ object Dieet {
         }
     }.toSet()
 
+    // Analüüs üks kord toote kohta (sama objekt → vahemälust). Varem tehti iga kaardi ja iga
+    // ümberjoonistamise juures uuesti koostise väiketähed + otsing 9000 toote peal.
+    private class Info(val toode: Toode, val margid: Set<Mark>, val allergeenid: Set<String>, val teada: Boolean, val laktoosivaba: Boolean)
+    private val vahemalu = java.util.concurrent.ConcurrentHashMap<Int, Info>()
+
+    private fun info(t: Toode): Info {
+        vahemalu[t.id]?.let { if (it.toode === t) return it }
+        val i = Info(t, margid(t), allergeenid(t), !t.koostis.isNullOrBlank() || t.kategooriaId == 3,
+            (t.nimi + " " + (t.kirjeldus ?: "")).lowercase().contains("laktoosivaba"))
+        vahemalu[t.id] = i
+        return i
+    }
+
     // Tundmatu koostisega toode ei sobi (ohutum), puu- ja köögiviljad sobivad alati
     fun sobib(t: Toode, valik: Set<Mark>): Boolean {
         if (valik.isEmpty()) return true
-        val m = margid(t)
-        val teada = !t.koostis.isNullOrBlank() || t.kategooriaId == 3
-        val a = allergeenid(t)
-        val laktoosivaba = (t.nimi + " " + (t.kirjeldus ?: "")).lowercase().contains("laktoosivaba")
+        val inf = info(t)
+        val m = inf.margid
+        val teada = inf.teada
+        val a = inf.allergeenid
+        val laktoosivaba = inf.laktoosivaba
         return valik.all { v ->
             v in m || (teada && when (v) {
                 Mark.Laktoosivaba -> "piim" !in a || laktoosivaba

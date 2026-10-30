@@ -12,15 +12,18 @@ public class OtsinguSoovitused : Control
     private readonly Func<IEnumerable<Toode>> tooted;
     private readonly Action<Toode> ava;
     private readonly Action koik;
+    private readonly Action? pakkumised;
     private List<Toode> vasted = new();
     private int kokku, valitud = -1, hover = -1;
+    private bool teisedOtsivad;   // tühi lahter: "Teised otsivad" (populaarsed pakkumised, nagu telefonis)
 
-    public OtsinguSoovitused(TextBox txt, Func<IEnumerable<Toode>> tooted, Action<Toode> ava, Action koik)
+    public OtsinguSoovitused(TextBox txt, Func<IEnumerable<Toode>> tooted, Action<Toode> ava, Action koik, Action? pakkumised = null)
     {
         this.txt = txt;
         this.tooted = tooted;
         this.ava = ava;
         this.koik = koik;
+        this.pakkumised = pakkumised;
         Visible = false;
         Tag = "omavarv";
         Cursor = Cursors.Hand;
@@ -54,7 +57,24 @@ public class OtsinguSoovitused : Control
     private void Uuenda()
     {
         string s = txt.Text.Trim();
-        if (s.Length == 0 || !txt.Focused) { Peida(); return; }
+        if (!txt.Focused) { Peida(); return; }
+        if (s.Length == 0)
+        {
+            if (pakkumised == null) { Peida(); return; }
+            // Teised otsivad: suurima soodustusega laos olevad tooted
+            teisedOtsivad = true;
+            vasted = tooted().Where(t => t.Kogus > 0 && t.SoodusProtsent != null)
+                .OrderByDescending(t => t.SoodusProtsent).ThenBy(t => t.Toodenimetus).Take(5).ToList();
+            if (vasted.Count == 0) { Peida(); return; }
+            kokku = vasted.Count;
+            valitud = -1;
+            Paiguta();
+            Visible = true;
+            BringToFront();
+            Invalidate();
+            return;
+        }
+        teisedOtsivad = false;
 
         var leitud = tooted()
             .Select(t => (t, skoor: Skoor(t, s)))
@@ -74,7 +94,7 @@ public class OtsinguSoovitused : Control
     // Nime algus > sõna algus nimes > sisaldab nimes > kaubamärk/kategooria
     private static int Skoor(Toode t, string s)
     {
-        var v = StringComparison.CurrentCultureIgnoreCase;
+        var v = StringComparison.OrdinalIgnoreCase;   // ordinaalne on mitu korda kiirem (9000 toodet iga tähe järel)
         string n = t.Toodenimetus;
         if (n.StartsWith(s, v)) return 4;
         int i = n.IndexOf(s, v);
@@ -117,6 +137,7 @@ public class OtsinguSoovitused : Control
             case Keys.Enter:
                 e.Handled = e.SuppressKeyPress = true;
                 if (valitud >= 0 && valitud < n) Vali(vasted[valitud]);
+                else if (teisedOtsivad) { Peida(); pakkumised?.Invoke(); }
                 else { Peida(); koik(); }
                 break;
             case Keys.Escape:
@@ -145,7 +166,11 @@ public class OtsinguSoovitused : Control
     {
         for (int i = 0; i < vasted.Count; i++)
             if (Rida(i).Contains(e.Location)) { Vali(vasted[i]); return; }
-        if (Jalus.Contains(e.Location)) { Peida(); koik(); txt.Focus(); }
+        if (Jalus.Contains(e.Location))
+        {
+            Peida();
+            if (teisedOtsivad) pakkumised?.Invoke(); else { koik(); txt.Focus(); }
+        }
         base.OnMouseClick(e);
     }
 
@@ -184,17 +209,12 @@ public class OtsinguSoovitused : Control
             using (var b = new SolidBrush(Teema.PildiTaust))
             using (var gp = Ymardus.Tee(pk, 8))
                 g.FillPath(b, gp);
-            if (PildiVahemalu.Too(t.Pilt) is Image pilt)
-            {
-                float k = Math.Min((pk.Width - 4f) / pilt.Width, (pk.Height - 4f) / pilt.Height);
-                float w = pilt.Width * k, h = pilt.Height * k;
-                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                g.DrawImage(pilt, pk.X + (pk.Width - w) / 2, pk.Y + (pk.Height - h) / 2, w, h);
-            }
+            if (PildiVahemalu.Pisi(t.Pilt) is Image pilt)
+                PildiVahemalu.Joonista(g, pilt, RectangleF.Inflate(pk, -2, -2));
             else Ikoonid.JoonistaEmoji(g, Ikoonid.KategooriaIkoon(t.Kategooria?.Kategooria_nimetus), pk, Teema.TekstNork, 15f);
 
             // Hind paremal
-            string hind = Ikoonid.Hind(t.Hind);
+            string hind = Ikoonid.Hind(t.Hind) + (teisedOtsivad && t.SoodusProtsent is int sp ? $"  −{sp}%" : "");
             var hs = TextRenderer.MeasureText(g, hind, fHind, Size.Empty, parem);
             int hindX = r.Right - 12 - Math.Max(hs.Width, 70);
             TextRenderer.DrawText(g, hind, fHind, new Rectangle(hindX, r.Y + 10, r.Right - 12 - hindX, 22),
@@ -207,7 +227,7 @@ public class OtsinguSoovitused : Control
             // Nimi + alarida
             int tx = pk.Right + 12;
             var nimiR = new Rectangle(tx, r.Y + 11, hindX - tx - 10, 20);
-            JoonistaEsiletostetud(g, t.Toodenimetus, txt.Text.Trim(), fNimi, nimiR);
+            JoonistaEsiletostetud(g, t.Toodenimetus, teisedOtsivad ? "" : txt.Text.Trim(), fNimi, nimiR);
             string info = string.Join(" · ", new[] { t.Kaubamark, t.Pakend }.Where(x => !string.IsNullOrWhiteSpace(x)));
             if (t.Kogus <= 0) info = Keel.T("Pole laos") + (info.Length > 0 ? " · " + info : "");
             TextRenderer.DrawText(g, info, fVaike, new Rectangle(tx, r.Y + 33, hindX - tx - 10, 16),
@@ -218,7 +238,7 @@ public class OtsinguSoovitused : Control
         var j = Jalus;
         using (var p = new Pen(Teema.Joon)) g.DrawLine(p, j.X + 8, j.Y + 2, j.Right - 8, j.Y + 2);
         var jv = hover == Max ? Teema.Aktsent : Teema.Teine;
-        string jt = Keel.F("Näita kõiki tulemusi ({0})", kokku);
+        string jt = teisedOtsivad ? Keel.T("Teised otsivad") + " · " + Keel.T("Vaata kõiki pakkumisi") : Keel.F("Näita kõiki tulemusi ({0})", kokku);
         var js = TextRenderer.MeasureText(g, jt, fNimi, Size.Empty, TextFormatFlags.NoPrefix | TextFormatFlags.NoPadding);
         int jx = j.X + (j.Width - js.Width - 22) / 2;
         TextRenderer.DrawText(g, jt, fNimi, new Rectangle(jx, j.Y + 4, js.Width + 2, j.Height - 4), jv,

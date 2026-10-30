@@ -62,7 +62,7 @@ public class SoodsamRida : Control
 
         var pk = new Rectangle(16, 10, 48, 48);
         using (var tee = Ymardus.Tee(pk, 10)) using (var b = new SolidBrush(Teema.PildiTaust)) g.FillPath(b, tee);
-        if (PildiVahemalu.Too(toode.Pilt) is Image pilt) PildiVahemalu.Joonista(g, pilt, RectangleF.Inflate(pk, -3, -3));
+        if (PildiVahemalu.Pisi(toode.Pilt) is Image pilt) PildiVahemalu.Joonista(g, pilt, RectangleF.Inflate(pk, -3, -3));
         else Ikoonid.JoonistaEmoji(g, Ikoonid.KategooriaIkoon(toode.Kategooria?.Kategooria_nimetus), pk, Teema.TekstNork, 14f);
 
         using var fNimi = new Font("Segoe UI Semibold", 10F);

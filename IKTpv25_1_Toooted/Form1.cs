@@ -161,7 +161,8 @@ namespace IKTpv25_1_Toooted
                     Hind = t.Hind,
                     Pilt = t.Pilt,
                     KategooriaId = t.KategooriaId,                // vajalik ComboBoxi jaoks
-                    Kategooria = t.Kategooria.Kategooria_nimetus
+                    Kategooria = t.Kategooria.Kategooria_nimetus,
+                    Kaubamark = t.Kaubamark
                 })
                 .ToList();
 
@@ -174,8 +175,8 @@ namespace IKTpv25_1_Toooted
         private void dataGridTooted_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
         {
             if (e.RowIndex < 0 || e.CellStyle == null) return;
-            var kogus = dataGridTooted.Rows[e.RowIndex].Cells["Kogus"].Value;
-            if (kogus is int k && k < VaikeLaoseis)
+            // DataBoundItem on kiirem kui veeru otsimine nime järgi (iga lahtri joonistamisel)
+            if (dataGridTooted.Rows[e.RowIndex].DataBoundItem is TooteVaade { Kogus: var k } && k < VaikeLaoseis)
             {
                 e.CellStyle.BackColor = k == 0 ? Teema.VigaTaust2 : Teema.VigaTaust;
                 e.CellStyle.ForeColor = Teema.Viga;

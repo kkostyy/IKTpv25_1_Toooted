@@ -119,8 +119,13 @@ public partial class AegumineVorm : KujundusVorm
         if (maha > 0) Teade.Toast(Keel.F("Aegunud kaupa maha kantud: {0} tk", maha), TeateTyyp.Hoiatus);
 
         if (cmbToode.Items.Count == 0)
-            foreach (var t in db.Toodetabel.AsNoTracking().OrderBy(t => t.Toodenimetus).Select(t => new { t.Id, t.Toodenimetus }).ToList())
-                cmbToode.Items.Add(new KeyValuePair<int, string>(t.Id, t.Toodenimetus));
+        {
+            // 9000 toodet: korraga (BeginUpdate + AddRange), mitte ükshaaval – muidu aken avaneb sekundeid
+            cmbToode.BeginUpdate();
+            cmbToode.Items.AddRange(db.Toodetabel.AsNoTracking().OrderBy(t => t.Toodenimetus).Select(t => new { t.Id, t.Toodenimetus }).AsEnumerable()
+                .Select(t => (object)new KeyValuePair<int, string>(t.Id, t.Toodenimetus)).ToArray());
+            cmbToode.EndUpdate();
+        }
         cmbToode.DisplayMember = "Value";
 
         partiid = db.Partiid.Include(p => p.Toode).AsNoTracking().OrderBy(p => p.Aegub).ToList();

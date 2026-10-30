@@ -20,6 +20,7 @@ public static class Arve
     // ===============================================================
     public static string LooPdf(Ost ost, bool makstud, decimal makstudSumma)
     {
+        using var keel = Keel.Ajutiselt(EmailSeaded.Lae().TsekiKeeleKood);   // tšekk alati valitud tšeki keeles
         Directory.CreateDirectory(Kaustad.Arved);
         string fail = Path.Combine(Kaustad.Arved, $"Arve_{ost.Id}_{ost.Aeg:yyyyMMdd_HHmmss}.pdf");
 
@@ -420,7 +421,8 @@ public static class Arve
                    "\n\nAutomaatseks saatmiseks täida menüüs Haldus → E-posti seaded.";
         }
 
-        seaded.SaadaHtml(saaja, KirjaTeema(ost), KirjaSisu(ost), KirjaHtml(ost, saaja), Banner(), pdfFail);
+        using (Keel.Ajutiselt(seaded.TsekiKeeleKood))   // e-kiri tšeki keeles, mitte programmi keeles
+            seaded.SaadaHtml(saaja, KirjaTeema(ost), KirjaSisu(ost), KirjaHtml(ost, saaja), Banner(), pdfFail);
         return Keel.F("Tšekk saadetud aadressile {0}", saaja);
     }
 

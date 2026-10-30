@@ -175,7 +175,15 @@ class AppOlek(val pood: Pood, private val kell: () -> LocalDateTime = { LocalDat
     // ---- Tooted ----
     fun varskendaTooted() { tooted = pood.tooted() }
 
-    fun toode(id: Int): Toode? = tooted.firstOrNull { it.id == id }
+    // id → toode (HashMap): varem otsiti 9000 toote seast järjest igal korral (ostukorv, partiid, pere korv …)
+    private var indeks: Map<Int, Toode> = emptyMap()
+    private var indeksiAllikas: List<Toode>? = null
+
+    fun toode(id: Int): Toode? {
+        val praegu = tooted
+        if (indeksiAllikas !== praegu) { indeks = praegu.associateBy { it.id }; indeksiAllikas = praegu }
+        return indeks[id]
+    }
 
     fun hind(t: Toode): Reeglid.Hind { hinnadMuutusid; return Reeglid.lopphind(t, aeg()) }
 

@@ -9,7 +9,7 @@ namespace IKTpv25_1_Toooted
     //  paremal "Sinu ostukorv".
     public partial class PoodVorm : Form, ITagasi, IVormiHost, IKiirklahvid
     {
-        private enum Vaade { Avaleht, Kategooria, Kampaaniad, Odav, Lemmikud, Otsing, Muu, Raiskamine }
+        private enum Vaade { Avaleht, Kategooria, Kampaaniad, Odav, Lemmikud, Otsing, Muu, Raiskamine, Koik }
 
         private readonly Form1 kassa;
         private readonly Panel sisuAla;                 // praegune leht (Navigaator)
@@ -121,9 +121,11 @@ namespace IKTpv25_1_Toooted
             txtOtsi.KeyDown += (s, e) =>
             {
                 if (e.KeyCode == Keys.Escape) { txtOtsi.Clear(); e.SuppressKeyPress = true; }
-                if (e.KeyCode == Keys.Enter) e.SuppressKeyPress = true;
+                if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; otsinguViide?.Stop(); if (!soovitused.Visible) Otsi(); }
             };
-            soovitused = new OtsinguSoovitused(txtOtsi, () => koikTooted, AvaToode, () => { if (txtOtsi.Text.Trim().Length > 0) NaitaRuudustik(Vaade.Otsing); });
+            soovitused = new OtsinguSoovitused(txtOtsi, () => koikTooted, AvaToode,
+                () => { otsinguViide?.Stop(); if (txtOtsi.Text.Trim().Length > 0) NaitaRuudustik(Vaade.Otsing); },
+                () => NaitaRuudustik(Vaade.Kampaaniad));
 
             var kasutaja = new IkoonTekst("", AktiivneKasutaja.Nimi, Teema.Teine, new Font("Segoe UI Semibold", 10.5F));
             vihjed.SetToolTip(kasutaja, Keel.F("Sisse logitud: {0} ({1})", AktiivneKasutaja.Nimi, Keel.T(AktiivneKasutaja.Roll)) + "\n" + Keel.T("Klõps: seaded"));
@@ -156,6 +158,7 @@ namespace IKTpv25_1_Toooted
             // ================= 3. Menüüriba =================
             var nav = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 58, BackColor = Teema.Pind, Padding = new Padding(20, 16, 0, 0), WrapContents = false };
             NavLink(nav, "\uECA5", "Tooted", NaitaAvaleht, Vaade.Avaleht);
+            NavLink(nav, "\uE71D", "Kõik tooted", () => NaitaRuudustik(Vaade.Koik), Vaade.Koik);
             NavLink(nav, "", "Kampaaniad", () => NaitaRuudustik(Vaade.Kampaaniad), Vaade.Kampaaniad);
             NavLink(nav, "🔥", "Tõesti odav!", () => NaitaRuudustik(Vaade.Odav), Vaade.Odav);
             NavLink(nav, "🌱", "Ilma raiskamiseta", () => NaitaRuudustik(Vaade.Raiskamine), Vaade.Raiskamine);
@@ -302,9 +305,12 @@ namespace IKTpv25_1_Toooted
             kulg.Lisa("otsi", "\uE721", "Otsi toodet", () => { txtOtsi.Focus(); txtOtsi.SelectAll(); });
             kulg.Lisa("lemmikud", "\uEB51", "Minu lemmikud", () => NaitaRuudustik(Vaade.Lemmikud));
             kulg.Lisa("kampaaniad", "\uE8EC", "Kampaaniad", () => NaitaRuudustik(Vaade.Kampaaniad));
+            kulg.Lisa("koik", "\uE71D", "Kõik tooted", () => NaitaRuudustik(Vaade.Koik));
+            kulg.Lisa("ohtu", "\uE708", "Õhtune soodustus", AvaOhtu, nahtav: () => OhtuSoodustus.S.Sees);
             kulg.Lisa("kaart", "\uE8C7", "Kliendikaart", () => KliendikaartVorm.Ava(this));
             kulg.Lisa("preemiad", "\uE734", "Preemiad", () => { if (lehed.Praegune is not PreemiadLeht) AvaLeht(new PreemiadLeht()); });
             kulg.Lisa("kulutused", "\uE9D2", "Minu kulutused", AvaKulutused);
+            kulg.Lisa("ostud", "\uE81C", "Minu ostud", AvaMinuOstud);
             kulg.Lisa("nimekiri", "\uE8FD", "Ostunimekiri", AvaNimekiri, Ostunimekiri.OstmataArv);
             kulg.Lisa("korv", "\uE7BF", "Maksma", Vormista, () => Ostukorv.Ridad.Sum(r => r.Kogus));
             kulg.Lisa("seaded", "\uE713", "Seaded", () => SeadedVorm.Ava(this));
@@ -340,7 +346,15 @@ namespace IKTpv25_1_Toooted
             peidetiEnne = MinuDieet.Peida;
             PildiVahemalu.Laetud += PildidLaetud;
             Teema.Muutus += DisainMuutus;
-            Load += (s, e) => { LaadiTooted(); NaitaAvaleht(); UuendaKokku(); PereKorv.Alusta(); };
+            // Tooted laaditakse taustalõimes: aken avaneb kohe ja ei "külmu" 9000 toote lugemise ajal
+            Load += (s, e) =>
+            {
+                var ootab = new Label { Text = Keel.T("Laadin tooteid…"), AutoSize = true, Location = new Point(32, 32), Font = new Font("Segoe UI", 12F), ForeColor = Teema.TekstNork, BackColor = Teema.Taust };
+                sisuAla.Controls.Add(ootab);
+                LaadiTaustal(() => { ootab.Dispose(); NaitaAvaleht(); });
+                UuendaKokku();
+                PereKorv.Alusta();
+            };
             FormClosed += (s, e) => PereKorv.Peata();
             var viimati = DateTime.MinValue;
             KataloogiEdenemine.Kuula(this, () =>
@@ -348,9 +362,7 @@ namespace IKTpv25_1_Toooted
                 if (!RimiKataloog.Kaib || (DateTime.Now - viimati).TotalSeconds > 10)
                 {
                     viimati = DateTime.Now;
-                    LaadiTooted();
-                    MargiAegunuks();
-                    Varskenda();
+                    LaadiTaustal(() => { MargiAegunuks(); Varskenda(); });
                 }
             });
 
@@ -449,6 +461,31 @@ namespace IKTpv25_1_Toooted
 
         private void AvaNimekiri() => Aken.Ava(this, new OstunimekiriVorm());
 
+        // Minu ostud (nagu telefonis): kliendil ainult tema kaardiga ostud – tšekk, "Osta uuesti";
+        // omanik näeb kõiki ja saab tagastada
+        private void AvaMinuOstud()
+        {
+            int? klient = AktiivneKasutaja.OnOmanik ? null : AktiivneKasutaja.KlientId;
+            if (!AktiivneKasutaja.OnOmanik && klient == null)
+            {
+                Teade.Toast("Kliendikaarti pole – oste saab vaadata pärast kaardi loomist (Seaded).", TeateTyyp.Info, 3500);
+                return;
+            }
+            var vorm = new OstudVorm(lubaTagastus: AktiivneKasutaja.OnOmanik, ainultKlient: klient);
+            Aken.Ava(this, vorm, () =>
+            {
+                if (vorm.TagastatudOstud.Count == 0) return;
+                LaadiTaustal(() => { MargiAegunuks(); Varskenda(); });
+            });
+        }
+
+        // Õhtune soodustus: küpsetiste kategooria (ülal bänner: millal algab ja kui palju)
+        private void AvaOhtu()
+        {
+            if (!OhtuSoodustus.S.Sees) { Teade.Toast("Õhtune soodustus on praegu välja lülitatud.", TeateTyyp.Info); return; }
+            NaitaKategooria(OhtuSoodustus.S.KategooriaId);
+        }
+
         // Ctrl+Shift+D: pood suletakse ja Form1 avab klassikalise poe
         private void DisainMuutus()
         {
@@ -481,7 +518,8 @@ namespace IKTpv25_1_Toooted
             if (!IsHandleCreated || IsDisposed) return;
             BeginInvoke(new Action(() =>
             {
-                foreach (var k in KoikKaardid()) k.Invalidate();
+                // ainult kaardid, mis veel pilti ootavad (mitte kõik sadu kaarte)
+                foreach (var k in KoikKaardid()) if (k.OotabPilti) k.Invalidate();
             }));
         }
 
@@ -541,16 +579,50 @@ namespace IKTpv25_1_Toooted
         // ---------------------------------------------------------------
         //  Andmed
         // ---------------------------------------------------------------
-        private void LaadiTooted()
+        // Andmebaasist lugemine (töötab ka taustalõimes)
+        private static (List<Toode> Tooted, List<Kategooria> Kategooriad) LoeAndmed()
         {
             Kampaaniad.Uuenda();
             using var db = new ToodedContext();
-            koikTooted = db.Toodetabel.Include(t => t.Kategooria).AsNoTracking().ToList();
+            var tooted = db.Toodetabel.Include(t => t.Kategooria).AsNoTracking().ToList();
+            var kat = db.Kategooriatabel.AsNoTracking().ToList().OrderBy(k => k.Id).ToList();
+            return (tooted, kat);
+        }
+
+        private int laadimisNr;
+
+        // Lugemine + dieedi analüüs taustal, siis UI-lõimes kuvamine. Vanem pooleli jäänud laadimine jäetakse kõrvale.
+        private async void LaadiTaustal(Action? parast = null)
+        {
+            int nr = ++laadimisNr;
+            (List<Toode> Tooted, List<Kategooria> Kategooriad) andmed;
+            try
+            {
+                andmed = await Task.Run(() =>
+                {
+                    var a = LoeAndmed();
+                    Dieet.Eelarvuta(a.Tooted);   // kaartide kiibid ja dieedifilter ei arvuta enam UI-lõimes
+                    return a;
+                });
+            }
+            catch (Exception ex)
+            {
+                if (!IsDisposed) Teade.Show("Andmete laadimine ebaõnnestus:\n" + ex.Message);
+                return;
+            }
+            if (IsDisposed || nr != laadimisNr) return;
+            Rakenda(andmed.Tooted, andmed.Kategooriad);
+            parast?.Invoke();
+        }
+
+        private void Rakenda(List<Toode> tooted, List<Kategooria> kat)
+        {
+            koikTooted = tooted;
             var tagasi = Lemmikud.KontrolliLaoseisu(koikTooted);
             if (tagasi.Count > 0)
                 Teade.Toast(Keel.T("Lemmik on taas laos:") + " " + string.Join(", ", tagasi.Take(3).Select(t => t.Toodenimetus))
                     + (tagasi.Count > 3 ? " " + Keel.F("ja veel {0}", tagasi.Count - 3) : ""), TeateTyyp.Edu, 6000);
-            kategooriad = db.Kategooriatabel.AsNoTracking().ToList().OrderBy(k => k.Id).ToList();
+            kategooriad = kat;
             LooRail();
             dieet.Uuenda();
         }
@@ -606,6 +678,22 @@ namespace IKTpv25_1_Toooted
         {
             TyhjendaSisu();
             if (moodne) sisu.Controls.Add(LooBento());
+            else
+            {
+                // nagu telefoni avalehel: nädala pakkumine ja "Ilma raiskamiseta" ülal
+                var parim = Filtreeri(koikTooted.Where(t => t.Kogus > 0 && t.SoodusProtsent != null))
+                    .OrderByDescending(t => t.SoodusProtsent).ThenBy(t => t.Pilt == null).FirstOrDefault();
+                if (parim != null)
+                    sisu.Controls.Add(new NadalaPakkumine(parim, () => LisaKorvi(parim), () => AvaToode(parim))
+                        { Height = 250, Margin = new Padding(0, 0, 0, 16), Tag = "laius" });
+                var aeguvad = koikTooted.Where(t => t.Kogus > 0 && Aegumine.Allahinnatud.ContainsKey(t.Id)).ToList();
+                if (aeguvad.Count > 0)
+                {
+                    var banner = new RaiskamiseBanner(aeguvad.Count, aeguvad.Sum(t => t.Hind * Aegumine.Protsent / 100m)) { Tag = "laius", Cursor = Cursors.Hand };
+                    banner.Click += (s, e) => NaitaRuudustik(Vaade.Raiskamine);
+                    sisu.Controls.Add(banner);
+                }
+            }
             if (OhtuSoodustus.S.Sees) sisu.Controls.Add(new OhtuBanner());
             var soodus = Filtreeri(koikTooted.Where(t => t.SoodusProtsent != null).OrderByDescending(t => t.SoodusProtsent));
             if (soodus.Count > 0)
@@ -625,9 +713,21 @@ namespace IKTpv25_1_Toooted
             LopetaSisu();
         }
 
+        // Otsing käivitub alles siis, kui kirjutamine on 250 ms seisnud – muidu ehitataks 9000 toote
+        // hulgast iga tähe järel uus leht (60 kaarti) ja kirjutamine hakkab.
+        private System.Windows.Forms.Timer? otsinguViide;
+
         private void TxtMuutus(object? sender, EventArgs e)
         {
-            if (!vaigista) Otsi();
+            if (vaigista) return;
+            if (otsinguViide == null)
+            {
+                otsinguViide = new System.Windows.Forms.Timer { Interval = 250 };
+                otsinguViide.Tick += (s, _) => { otsinguViide.Stop(); if (!IsDisposed) Otsi(); };
+                FormClosed += (s, _) => otsinguViide.Dispose();
+            }
+            otsinguViide.Stop();
+            otsinguViide.Start();
         }
 
         // Otsingu lehele tagasi tulles: otsingusõna tagasi lahtrisse (otsingut uuesti ei käivitata)
@@ -681,6 +781,7 @@ namespace IKTpv25_1_Toooted
                 Vaade.Odav => "Tõesti odav!",
                 Vaade.Raiskamine => "Ilma raiskamiseta",
                 Vaade.Lemmikud => "Minu lemmikud",
+                Vaade.Koik => "Kõik tooted",
                 _ => Keel.F("Otsing: „{0}“", otsi)
             };
             var leht = new PoeVaadeLeht(pealkiri, voti, () => JoonistaRuudustik(v, kat, otsi), () =>
@@ -689,7 +790,7 @@ namespace IKTpv25_1_Toooted
                 valitudKategooria = kat;
                 if (kulg != null)
                 {
-                    kulg.Aktiivne = v == Vaade.Lemmikud ? "lemmikud" : v == Vaade.Kampaaniad ? "kampaaniad" : null;
+                    kulg.Aktiivne = v == Vaade.Lemmikud ? "lemmikud" : v == Vaade.Kampaaniad ? "kampaaniad" : v == Vaade.Koik ? "koik" : null;
                     kulg.Invalidate();
                 }
                 if (v == Vaade.Otsing) SeaOtsing(otsi); else TyhjendaOtsing();
@@ -712,9 +813,10 @@ namespace IKTpv25_1_Toooted
                 Vaade.Lemmikud => koikTooted.Where(t => Lemmikud.On(t.Id)),
                 Vaade.Raiskamine => koikTooted.Where(t => t.Kogus > 0 && Aegumine.Allahinnatud.ContainsKey(t.Id))
                     .OrderBy(t => Aegumine.Allahinnatud[t.Id]).ThenBy(t => t.Toodenimetus),
-                _ => koikTooted.Where(t => t.Toodenimetus.Contains(otsi, StringComparison.CurrentCultureIgnoreCase)
-                                        || (t.Kaubamark ?? "").Contains(otsi, StringComparison.CurrentCultureIgnoreCase)
-                                        || (t.Kategooria?.Kategooria_nimetus ?? "").Contains(otsi, StringComparison.CurrentCultureIgnoreCase))
+                Vaade.Koik => koikTooted,
+                _ => koikTooted.Where(t => t.Toodenimetus.Contains(otsi, StringComparison.OrdinalIgnoreCase)
+                                        || (t.Kaubamark ?? "").Contains(otsi, StringComparison.OrdinalIgnoreCase)
+                                        || (t.Kategooria?.Kategooria_nimetus ?? "").Contains(otsi, StringComparison.OrdinalIgnoreCase))
             };
 
             if (v != Vaade.Odav && v != Vaade.Raiskamine)
@@ -725,6 +827,9 @@ namespace IKTpv25_1_Toooted
                     3 => q.OrderByDescending(t => t.SoodusProtsent ?? 0).ThenBy(t => t.Toodenimetus),
                     // ühikuhinnaga tooted ees (kg ja l eraldi rühmas), siis ülejäänud
                     4 => q.OrderBy(t => VordlusUhik(t) == null).ThenBy(t => VordlusUhik(t)).ThenBy(t => t.UhikuHind ?? t.Hind),
+                    // otsing (nagu telefonis): nime algusega vasted ees, siis laos olevad
+                    _ when v == Vaade.Otsing => q.OrderByDescending(t => t.Toodenimetus.StartsWith(otsi, StringComparison.OrdinalIgnoreCase))
+                                                 .ThenByDescending(t => t.Kogus > 0).ThenBy(t => t.Toodenimetus),
                     _ => q.OrderBy(t => t.Toodenimetus)
                 };
             var tooted = Filtreeri(q);
@@ -736,6 +841,7 @@ namespace IKTpv25_1_Toooted
                 Vaade.Odav => Keel.T("Tõesti odav!"),
                 Vaade.Raiskamine => Keel.T("Ilma raiskamiseta"),
                 Vaade.Lemmikud => Keel.T("Minu lemmikud"),
+                Vaade.Koik => Keel.T("Kõik tooted"),
                 _ => Keel.F("Otsingu tulemused: „{0}“", otsi)
             };
 
@@ -1023,12 +1129,7 @@ namespace IKTpv25_1_Toooted
                 Teade.Toast("Sinu ostukorv on tühi.", TeateTyyp.Info);
                 return;
             }
-            kassa.Vormista(() =>
-            {
-                LaadiTooted();   // laoseis muutus
-                MargiAegunuks();
-                Varskenda();
-            }, this);
+            kassa.Vormista(() => LaadiTaustal(() => { MargiAegunuks(); Varskenda(); }), this);   // laoseis muutus
         }
 
         private void SalvestaKorv()
@@ -1141,7 +1242,7 @@ namespace IKTpv25_1_Toooted
         private readonly RingNupp vasak, parem;
         private int nihe;
 
-        public const int MaxRiiulil = 16;
+        public const int MaxRiiulil = 10;   // 17 riiulit × 10 kaarti (oli 16) – avaleht ehitub ~40 % kiiremini
 
         public Riiul(string pealkiri, List<Toode> tooted, Action naitaKoiki, Func<TooteKaart, TooteKaart> uhenda)
         {
@@ -1495,12 +1596,18 @@ namespace IKTpv25_1_Toooted
         public event Action<Toode>? Ava;
         public bool ParimUhikuHind { get; set; }   // soodsaim €/kg või €/l selles nimekirjas
         public bool NaitaUhikuHinda { get; set; }  // järjestus ühikuhinna järgi: ühikuhind enne panti
+        public bool OotabPilti { get; private set; } // viimati joonistati ikoon, sest pilt polnud veel laetud
 
         private bool hover;
         private Point hiir;
         private double tempel = 1;  // õhtuse soodustuse "tempel" (0 → 1)
         private bool sobimatu;     // ei sobi "Minu dieet" valikuga
         private double tuhm;       // 0 → 1 (tuhmumise animatsioon)
+
+        // Fondid luuakse üks kord (mitte igal joonistamisel – 60 kaarti × iga hiire liigutus)
+        private static readonly Font FNimi = new("Segoe UI", 10.5F), FVana = new("Segoe UI Semibold", 9.5F, FontStyle.Strikeout),
+            FProtsent = new("Segoe UI Semibold", 7.5F), FMark = new("Segoe UI Semibold", 8F),
+            FAlumine = new("Segoe UI", 9F), FAlumineB = new("Segoe UI", 9F, FontStyle.Bold);
 
         public TooteKaart(Toode toode)
         {
@@ -1535,11 +1642,21 @@ namespace IKTpv25_1_Toooted
 
         protected override void OnMouseEnter(EventArgs e) { hover = true; Invalidate(); base.OnMouseEnter(e); }
         protected override void OnMouseLeave(EventArgs e) { hover = false; Invalidate(); base.OnMouseLeave(e); }
+        // Hiire tsoon: 0 muu, 1 tärn, 2 nupu vasak (−), 3 nupu keskel, 4 nupu parem (+).
+        // Kaart joonistatakse uuesti ainult tsooni vahetusel (mitte igal hiire liigutusel).
+        private int Tsoon(Point p)
+        {
+            if (Taht.Contains(p)) return 1;
+            var n = Nupp;
+            if (!n.Contains(p)) return 0;
+            return p.X < n.X + 40 ? 2 : p.X > n.Right - 40 ? 4 : 3;
+        }
+
         protected override void OnMouseMove(MouseEventArgs e)
         {
-            bool enne = Nupp.Contains(hiir) || Taht.Contains(hiir);
+            int enne = Tsoon(hiir);
             hiir = e.Location;
-            if (enne != (Nupp.Contains(hiir) || Taht.Contains(hiir)) || Nupp.Contains(hiir)) Invalidate();
+            if (enne != Tsoon(hiir)) Invalidate();
             base.OnMouseMove(e);
         }
 
@@ -1612,7 +1729,9 @@ namespace IKTpv25_1_Toooted
 
             // Pilt (valge taust, keskel)
             var pildiKast = new RectangleF(kaart.X + 18, kaart.Y + 16, kaart.Width - 36, 150);
-            if (PildiVahemalu.Too(Toode.Pilt) is Image pilt)
+            var pilt = PildiVahemalu.Pisi(Toode.Pilt);
+            OotabPilti = pilt == null && PildiVahemalu.Laeb(Toode.Pilt);
+            if (pilt != null)
                 PildiVahemalu.Joonista(g, pilt, pildiKast);
             else
                 Ikoonid.JoonistaEmoji(g, Ikoonid.KategooriaIkoon(Toode.Kategooria?.Kategooria_nimetus),
@@ -1647,8 +1766,7 @@ namespace IKTpv25_1_Toooted
                 g.TranslateTransform(-(ring.X + 18), -(ring.Y + 18));
                 using var b = new SolidBrush(Color.FromArgb((int)(255 * Math.Clamp(tempel * 1.5, 0, 1)), ohtu ? Teema.Aktsent : Teema.Teine));
                 g.FillEllipse(b, ring);
-                using var f = new Font("Segoe UI Semibold", 7.5F);
-                TextRenderer.DrawText(g, $"-{h.Protsent}%", f, Rectangle.Round(ring), Color.White,
+                TextRenderer.DrawText(g, $"-{h.Protsent}%", FProtsent, Rectangle.Round(ring), Color.White,
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
                 g.Restore(olek0);
             }
@@ -1668,8 +1786,7 @@ namespace IKTpv25_1_Toooted
 
             // Nimi keskel
             int x = (int)kaart.X + 16, w = (int)kaart.Width - 32;
-            using (var nimi = new Font("Segoe UI", 10.5F))
-                TextRenderer.DrawText(g, Toode.Toodenimetus, nimi, new Rectangle(x, my + 20, w, 62), Teema.Tekst2,
+            TextRenderer.DrawText(g, Toode.Toodenimetus, FNimi, new Rectangle(x, my + 20, w, 62), Teema.Tekst2,
                     TextFormatFlags.WordBreak | TextFormatFlags.HorizontalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
 
             // Hind
@@ -1679,8 +1796,7 @@ namespace IKTpv25_1_Toooted
             int laius = Ikoonid.JoonistaHind(g, h.Hind, "tk", x, hinnaY, soodus ? Teema.Aktsent : Teema.Tekst, 25f);
             if (soodus)
             {
-                using var vana = new Font("Segoe UI Semibold", 9.5F, FontStyle.Strikeout);
-                TextRenderer.DrawText(g, Ikoonid.Hind(h.TavaHind), vana, new Point(x + laius + 4, hinnaY + 21), Teema.Tekst2);
+                TextRenderer.DrawText(g, Ikoonid.Hind(h.TavaHind), FVana, new Point(x + laius + 4, hinnaY + 21), Teema.Tekst2);
             }
             // Moodne: õhtuse soodustuse toode enne algust – "20:00 → 0,85 €" ploomiga (lõuend N12)
             var ohtuS = OhtuSoodustus.S;
@@ -1720,9 +1836,8 @@ namespace IKTpv25_1_Toooted
             if (alumine != null)
             {
                 bool parim = ParimUhikuHind && uhikuga && !alumine.StartsWith("+");
-                using var v = new Font("Segoe UI", 9F, parim ? FontStyle.Bold : FontStyle.Regular);
                 if (parim) alumine += " · " + Keel.T("soodsaim");
-                TextRenderer.DrawText(g, alumine.Replace("€", " €"), v, new Point(x, hinnaY + 42), parim ? Teema.Edu : Teema.TekstNork);
+                TextRenderer.DrawText(g, alumine.Replace("€", " €"), parim ? FAlumineB : FAlumine, new Point(x, hinnaY + 42), parim ? Teema.Edu : Teema.TekstNork);
             }
 
             // Lemmiku tärn
@@ -1783,8 +1898,7 @@ namespace IKTpv25_1_Toooted
 
         private static void VaikeMark(Graphics g, string tekst, Color varv, int x, int y)
         {
-            using var f = new Font("Segoe UI Semibold", 8F);
-            TextRenderer.DrawText(g, tekst, f, new Point(x, y), varv, TextFormatFlags.NoPrefix);
+            TextRenderer.DrawText(g, tekst, FMark, new Point(x, y), varv, TextFormatFlags.NoPrefix);
         }
 
         // "Lisa ostukorvi" või korvis olles "− N tk +"

@@ -139,72 +139,182 @@ public static class Ostukorv
     }
 }
 
-// Toodete pildid mälus (laetakse üks kord), et pood ja ostukorv ei peaks faile korduvalt lugema
-// Veebipildid (e-poe tooted) laaditakse taustal üks kord alla ja salvestatakse kausta Images.
+// Toodete pildid mälus. Kiiruse jaoks:
+//  * pilt vähendatakse laadimisel (max 300 px) ja hoitakse PArgb-vormingus – joonistamine on mitu korda kiirem
+//    kui suure veebipildi skaleerimine igal kaardi joonistamisel;
+//  * mälus on kuni MaxPilte pilti (vanimad unustatakse), muidu 9000 toote sirvimine sööb mälu;
+//  * Pisi() laeb ka kettal oleva pildi taustalõimes (kerimine ei hakka), Too() laeb kohalikku faili kohe;
+//  * veebist laaditakse korraga kuni 6 pilti; teade "Laetud" antakse koondatult (~ iga 120 ms), mitte iga pildi järel.
 public static class PildiVahemalu
 {
-    private static readonly Dictionary<string, Image?> pildid = new(StringComparer.OrdinalIgnoreCase);
+    private const int MaxKylg = 300, MaxPilte = 700;
+
+    private static readonly Dictionary<string, LinkedListNode<(string Voti, Image? Pilt)>> pildid = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly LinkedList<(string Voti, Image? Pilt)> jarjekord = new();   // ees = viimati kasutatud
     private static readonly HashSet<string> laadimisel = new(StringComparer.OrdinalIgnoreCase);
     private static readonly HttpClient http = new() { Timeout = TimeSpan.FromSeconds(20) };
+    private static readonly SemaphoreSlim veebiPiirang = new(6);
+    private static readonly object lukk = new();
+    private static System.Threading.Timer? teavitus;
+    private static int ootelTeade;
 
-    // Käivitub (taustalõimes), kui mõni veebipilt on alla laaditud – vormid joonistavad end uuesti
+    // Käivitub (taustalõimes), kui pilte on alla laaditud – vormid joonistavad end uuesti
     public static event Action? Laetud;
 
+    private static bool Vahemalus(string voti, out Image? pilt)
+    {
+        lock (lukk)
+        {
+            if (pildid.TryGetValue(voti, out var solm))
+            {
+                if (solm != jarjekord.First) { jarjekord.Remove(solm); jarjekord.AddFirst(solm); }
+                pilt = solm.Value.Pilt;
+                return true;
+            }
+        }
+        pilt = null;
+        return false;
+    }
+
+    private static void Pane(string voti, Image? pilt)
+    {
+        lock (lukk)
+        {
+            if (pildid.TryGetValue(voti, out var vana)) jarjekord.Remove(vana);
+            pildid[voti] = jarjekord.AddFirst((voti, pilt));
+            // vanimad välja; Dispose'i ei kutsu – pilt võib olla veel PictureBoxis (GC vabastab)
+            while (pildid.Count > MaxPilte && jarjekord.Last is { } viimane)
+            {
+                jarjekord.RemoveLast();
+                pildid.Remove(viimane.Value.Voti);
+            }
+        }
+    }
+
+    // Pilt kohe: kohalik fail laetakse samas lõimes, veebipilt hakkab alla laadima (siis null)
     public static Image? Too(string? failinimi)
     {
         if (string.IsNullOrEmpty(failinimi)) return null;
-        lock (pildid)
-        {
-            if (pildid.TryGetValue(failinimi, out var olemas)) return olemas;
-        }
+        if (Vahemalus(failinimi, out var olemas)) return olemas;
+        lock (lukk) if (laadimisel.Contains(failinimi)) return null;
 
         string? tee = Kaustad.PildiTee(failinimi);
-        if (Kaustad.OnVeebiPilt(failinimi) && (tee == null || !File.Exists(tee)))
+        if (tee == null || !File.Exists(tee))
         {
-            AlustaAllalaadimist(failinimi, tee!);
+            if (Kaustad.OnVeebiPilt(failinimi) && tee != null) AlustaLaadimist(failinimi, tee, veeb: true);
+            else Pane(failinimi, null);
             return null;
         }
 
-        var pilt = Kaustad.LaePilt(tee);
-        lock (pildid) pildid[failinimi] = pilt;
+        var pilt = Vahenda(Kaustad.LaePilt(tee));
+        Pane(failinimi, pilt);
         return pilt;
     }
 
-    private static void AlustaAllalaadimist(string url, string tee)
+    // Kas pilt on alles tulekul (laadimisel või pole veel küsitud); vigane/puuduv pilt = false
+    public static bool Laeb(string? failinimi)
     {
-        lock (laadimisel)
+        if (string.IsNullOrEmpty(failinimi)) return false;
+        lock (lukk) return laadimisel.Contains(failinimi) || !pildid.ContainsKey(failinimi);
+    }
+
+    // Kaartide jaoks: ei loe kunagi UI-lõimes faili, vaid tagastab null ja laeb taustal ("Laetud" teatab)
+    public static Image? Pisi(string? failinimi)
+    {
+        if (string.IsNullOrEmpty(failinimi)) return null;
+        if (Vahemalus(failinimi, out var olemas)) return olemas;
+        string? tee = Kaustad.PildiTee(failinimi);
+        if (tee == null) return null;
+        AlustaLaadimist(failinimi, tee, veeb: Kaustad.OnVeebiPilt(failinimi));
+        return null;
+    }
+
+    private static void AlustaLaadimist(string voti, string tee, bool veeb)
+    {
+        lock (lukk)
         {
-            if (!laadimisel.Add(url)) return;   // juba laadimisel
+            if (!laadimisel.Add(voti)) return;   // juba laadimisel
         }
 
         Task.Run(async () =>
         {
+            Image? pilt = null;
             try
             {
-                byte[] baidid = await http.GetByteArrayAsync(url);
-                Directory.CreateDirectory(Path.GetDirectoryName(tee)!);
-                await File.WriteAllBytesAsync(tee, baidid);
-                var pilt = Kaustad.LaePilt(tee);
-                lock (pildid) pildid[url] = pilt;
+                if (!File.Exists(tee))
+                {
+                    if (!veeb) return;
+                    await veebiPiirang.WaitAsync();
+                    try
+                    {
+                        byte[] baidid = await http.GetByteArrayAsync(voti);
+                        Directory.CreateDirectory(Path.GetDirectoryName(tee)!);
+                        await File.WriteAllBytesAsync(tee, baidid);
+                    }
+                    finally { veebiPiirang.Release(); }
+                }
+                pilt = Vahenda(Kaustad.LaePilt(tee));
             }
             catch
             {
-                lock (pildid) pildid[url] = null;   // internetti pole – kaart näitab ikooni
+                pilt = null;   // internetti pole – kaart näitab ikooni
             }
             finally
             {
-                lock (laadimisel) laadimisel.Remove(url);
+                Pane(voti, pilt);
+                lock (lukk) laadimisel.Remove(voti);
+                Teavita();
             }
-            Laetud?.Invoke();
         });
     }
 
-    // Joonistab pildi kasti sisse proportsioone säilitades
+    // Mitu pilti järjest → üks "Laetud" teade
+    private static void Teavita()
+    {
+        if (Interlocked.Exchange(ref ootelTeade, 1) == 1) return;
+        lock (lukk)
+        {
+            teavitus ??= new System.Threading.Timer(_ =>
+            {
+                Interlocked.Exchange(ref ootelTeade, 0);
+                try { Laetud?.Invoke(); } catch { }
+            });
+            teavitus.Change(120, Timeout.Infinite);
+        }
+    }
+
+    // Suur pilt → kuni 300 px, kiire joonistamise vorming (32bppPArgb)
+    private static Image? Vahenda(Image? pilt)
+    {
+        if (pilt == null) return null;
+        try
+        {
+            float suhe = Math.Min(1f, Math.Min((float)MaxKylg / pilt.Width, (float)MaxKylg / pilt.Height));
+            int w = Math.Max(1, (int)Math.Round(pilt.Width * suhe)), h = Math.Max(1, (int)Math.Round(pilt.Height * suhe));
+            var uus = new Bitmap(w, h, System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
+            using (var g = Graphics.FromImage(uus))
+            {
+                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+                g.DrawImage(pilt, 0, 0, w, h);
+            }
+            pilt.Dispose();
+            return uus;
+        }
+        catch
+        {
+            return pilt;
+        }
+    }
+
+    // Joonistab pildi kasti sisse proportsioone säilitades (pilt on juba väike → kiire bilineaarne)
     public static void Joonista(Graphics g, Image pilt, RectangleF kast)
     {
         float suhe = Math.Min(kast.Width / pilt.Width, kast.Height / pilt.Height);
         float w = pilt.Width * suhe, h = pilt.Height * suhe;
-        g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+        var enne = g.InterpolationMode;
+        g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.Bilinear;
         g.DrawImage(pilt, kast.X + (kast.Width - w) / 2, kast.Y + (kast.Height - h) / 2, w, h);
+        g.InterpolationMode = enne;
     }
 }

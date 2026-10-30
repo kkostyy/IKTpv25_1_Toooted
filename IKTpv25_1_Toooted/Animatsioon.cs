@@ -74,17 +74,36 @@ public static class Animatsioon
     public static System.Windows.Forms.Timer? Tsykkel(Control omanik, Action<double> faas, int intervall = 30)
     {
         if (!Lubatud) { faas(0); return null; }
-        Tapsus();
-        var taimer = new System.Windows.Forms.Timer { Interval = Math.Max(10, intervall / 2) };   // 2× sagedamini = sujuvam
+        // Lõputud kaunistused (hõljuvad ringid, pulss): kuni ~30 kaadrit sekundis ja ainult siis, kui element
+        // on päriselt ekraanil – kerimisega välja jäänud, peidetud või mitteaktiivse akna animatsioon seisab.
+        // Varem töötas iga selline taimer 20–25 ms tagant ka nähtamatult ja koormas kogu akna joonistamist.
+        var taimer = new System.Windows.Forms.Timer { Interval = Math.Max(33, intervall) };
         var kell = Stopwatch.StartNew();
         taimer.Tick += (s, e) =>
         {
             if (omanik.IsDisposed) { taimer.Stop(); taimer.Dispose(); return; }
-            if (omanik.Visible) faas(kell.Elapsed.TotalSeconds);
+            if (Nahtav(omanik)) faas(kell.Elapsed.TotalSeconds);
         };
         omanik.Disposed += (s, e) => { taimer.Stop(); taimer.Dispose(); };
         taimer.Start();
         return taimer;
+    }
+
+    // Kas element on nähtav: kõik vanemad nähtavad, aken aktiivne ega minimeeritud ja ala pole välja keritud
+    public static bool Nahtav(Control c)
+    {
+        if (!c.Visible || !c.IsHandleCreated || c.Width <= 0 || c.Height <= 0) return false;
+        if (c.TopLevelControl is not Form aken || aken.WindowState == FormWindowState.Minimized) return false;
+        if (Form.ActiveForm != aken) return false;   // teine aken (või dialoog) on ees
+        var r = new Rectangle(Point.Empty, c.Size);
+        for (Control? x = c; x != null && x != aken; x = x.Parent)
+        {
+            r.Offset(x.Location);
+            if (x.Parent == null) return false;
+            r.Intersect(x.Parent.ClientRectangle);
+            if (r.Width <= 0 || r.Height <= 0) return false;
+        }
+        return true;
     }
 }
 

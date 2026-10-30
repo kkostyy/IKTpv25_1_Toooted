@@ -46,9 +46,31 @@ public static class Dieet
     // Allergeenid, mida kaardil näidatakse (EL 14 hulgast)
     public static bool OnAllergeen(string ruhm) => ruhm is not ("liha" or "mesi");
 
-    private static readonly Dictionary<int, (string Voti, DieediInfo Info)> vahemalu = new();
+    // lõimekindel: pood analüüsib kõik tooted taustal ette (Eelarvuta)
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<int, (string Voti, DieediInfo Info)> vahemalu = new();
+
+    // Kõik tooted taustalõimes läbi – pärast seda on poe dieedifilter ja kaartide kiibid kohe käes
+    public static void Eelarvuta(IEnumerable<Toode> tooted)
+    {
+        foreach (var t in tooted) { try { Analuusi(t); } catch { } }
+    }
+
+    // Kiire tee: sama Toode objekt (poe nimekiri) → vastus ilma pikka võtit kokku panemata.
+    // Kaardi iga joonistamine kutsub seda; varem pandi iga kord kokku koostis + kirjeldus + lisainfo.
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Toode, DieediInfo> objektil = new();
 
     public static DieediInfo Analuusi(Toode t)
+    {
+        if (objektil.TryGetValue(t, out var kiire)) return kiire;
+        var tulemus = AnaluusiAeglaselt(t);
+        objektil.AddOrUpdate(t, tulemus);
+        return tulemus;
+    }
+
+    // Kui toote andmeid muudeti samas objektis (nt admin), unusta vana tulemus
+    public static void Unusta(Toode t) => objektil.Remove(t);
+
+    private static DieediInfo AnaluusiAeglaselt(Toode t)
     {
         string voti = $"{t.Koostisosad}|{t.Lisainfo}|{t.Kirjeldus}|{t.Margised}|{t.Paritolumaa}|{t.KategooriaId}|{t.Toodenimetus}";
         if (t.Id != 0 && vahemalu.TryGetValue(t.Id, out var v) && v.Voti == voti) return v.Info;
