@@ -319,7 +319,7 @@ namespace IKTpv25_1_Toooted
             using (var pp = Ymardus.Tee(pildiKast, 10))
             using (var pb = new SolidBrush(Teema.PildiTaust))
                 g.FillPath(pb, pp);
-            if (PildiVahemalu.Too(Toode.Pilt) is Image pilt)
+            if (PildiVahemalu.Pisi(Toode.Pilt) is Image pilt)
                 PildiVahemalu.Joonista(g, pilt, RectangleF.Inflate(pildiKast, -10, -10));
             else
                 Ikoonid.JoonistaEmoji(g, Ikoonid.KategooriaIkoon(Toode.Kategooria?.Kategooria_nimetus), Rectangle.Round(pildiKast), Teema.Joon, 34f);

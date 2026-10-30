@@ -350,5 +350,27 @@ public static partial class Keel
         L("{0} / {1} toodet · võid samal ajal tööd teha", "{0} / {1} товаров · можно продолжать работу", "{0} / {1} products · you can keep working");
         L("Kõik {0} ▾", "Все {0} ▾", "All {0} ▾");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
+        // --- Telefoni funktsioonid arvutis ---
+        L("Minu ostud", "Мои покупки", "My purchases"); L("Laadin tooteid…", "Загружаю товары…", "Loading products…");
+        L("Tšeki ja e-kirja keel", "Язык чека и письма", "Receipt and e-mail language");
+        L("Gmail ei aktsepteerinud kasutajat või parooli ({0}).", "Gmail не принял логин или пароль ({0}).", "Gmail did not accept the user or password ({0}).");
+        L("• Saatja aadress peab olema täpselt see Gmaili konto, millele rakenduse parool loodi.", "• Адрес отправителя должен быть именно тем аккаунтом Gmail, для которого создан пароль приложения.", "• The sender address must be exactly the Gmail account the app password was created for.");
+        L("• Vaja on 16-märgilist RAKENDUSE parooli (myaccount.google.com → Turvalisus → Rakenduse paroolid), mitte tavalist parooli; kontol peab olema 2-astmeline kinnitus.", "• Нужен 16-значный ПАРОЛЬ ПРИЛОЖЕНИЯ (myaccount.google.com → Безопасность → Пароли приложений), а не обычный пароль; в аккаунте должна быть включена двухэтапная проверка.", "• You need a 16-character APP password (myaccount.google.com → Security → App passwords), not the normal password; 2-step verification must be on.");
+        L("• Kui parool on GitHubis avalikult nähtav, võib Google selle tühistada – loo uus.", "• Если пароль лежит открыто на GitHub, Google может его отозвать – создайте новый.", "• If the password is public on GitHub, Google may revoke it – create a new one.");
+        L("Ei saanud ühendust serveriga {0}:{1}.", "Нет соединения с сервером {0}:{1}.", "Could not connect to server {0}:{1}.");
+        L("• Kontrolli internetiühendust.", "• Проверьте интернет.", "• Check the internet connection.");
+        L("• Kooli-/töövõrk või viirusetõrje võib pordi 587 blokeerida – proovi teises võrgus (nt telefoni levialas).", "• Школьная/рабочая сеть или антивирус могут блокировать порт 587 – попробуйте другую сеть (например, раздачу с телефона).", "• A school/work network or antivirus may block port 587 – try another network (e.g. phone hotspot).");
+        L("Saaja aadress on vigane või seda postkasti pole.", "Адрес получателя неверный или такого ящика нет.", "The recipient address is invalid or the mailbox does not exist.");
+        L("Gmaili päevane saatmislimiit on täis – proovi homme uuesti.", "Дневной лимит отправки Gmail исчерпан – попробуйте завтра.", "Gmail's daily sending limit is reached – try again tomorrow.");
+        L("Salvestatud parooli ei saa lugeda (teine Windowsi kasutaja või arvuti). Sisesta parool uuesti: Haldus → E-posti seaded.", "Сохранённый пароль не читается (другой пользователь Windows или компьютер). Введите пароль заново: Haldus → E-posti seaded.", "The saved password can't be read (different Windows user or computer). Enter it again: Management → E-mail settings.");
+        L("E-kirja saatmine ebaõnnestus.", "Не удалось отправить письмо.", "Sending the e-mail failed.");
+        L("Tehniline viga:", "Техническая ошибка:", "Technical error:"); L("Saatmine ebaõnnestus:", "Отправка не удалась:", "Sending failed:");
+        L("Makse õnnestus!", "Оплата прошла!", "Payment successful!"); L("Vaata tšekki", "Посмотреть чек", "View receipt");
+        L("Jätka ostlemist", "Продолжить покупки", "Continue shopping"); L("boonust", "бонуса", "bonus");
+        L("Tšekk saadetakse aadressile {0}", "Чек будет отправлен на {0}", "Receipt will be sent to {0}");
+        L("Teised otsivad", "Другие ищут", "Others search for"); L("Vaata kõiki pakkumisi", "Все предложения", "See all offers");
+        L("Otsi toodet või kaubamärki...", "Найти товар или бренд...", "Search product or brand...");
+        L("Kliendikaarti pole – oste saab vaadata pärast kaardi loomist (Seaded).", "Нет карты клиента – покупки можно смотреть после создания карты (Настройки).", "No customer card – purchases can be viewed after creating a card (Settings).");
+        L("Õhtune soodustus on praegu välja lülitatud.", "Вечерняя скидка сейчас выключена.", "The evening discount is currently turned off.");
     }
 }

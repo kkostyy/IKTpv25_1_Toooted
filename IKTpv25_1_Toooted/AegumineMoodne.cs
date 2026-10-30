@@ -365,8 +365,10 @@ public class UusPartiiVorm : KujundusVorm
         Load += (s, e) =>
         {
             using var db = new ToodedContext();
-            foreach (var t in db.Toodetabel.AsNoTracking().OrderBy(t => t.Toodenimetus).Select(t => new { t.Id, t.Toodenimetus }).ToList())
-                cmbToode.Items.Add(new KeyValuePair<int, string>(t.Id, t.Toodenimetus));
+            cmbToode.BeginUpdate();
+            cmbToode.Items.AddRange(db.Toodetabel.AsNoTracking().OrderBy(t => t.Toodenimetus).Select(t => new { t.Id, t.Toodenimetus }).AsEnumerable()
+                .Select(t => (object)new KeyValuePair<int, string>(t.Id, t.Toodenimetus)).ToArray());
+            cmbToode.EndUpdate();
         };
     }
 

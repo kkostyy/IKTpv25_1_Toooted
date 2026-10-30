@@ -10,7 +10,26 @@ public enum KeeleKood { ET, RU, EN }
 // Vormide sildid, nupud, menüüd ja tabelite päised tõlgitakse automaatselt (Teema.Rakenda kaudu).
 public static partial class Keel
 {
-    public static KeeleKood Praegu { get; private set; } = KeeleKood.ET;
+    private static KeeleKood praegu = KeeleKood.ET;
+    [ThreadStatic] private static KeeleKood? ajutine;   // ainult selles lõimes (nt tšekk / e-kiri teises keeles)
+
+    public static KeeleKood Praegu { get => ajutine ?? praegu; private set => praegu = value; }
+
+    // Ajutiselt teine keel (tšekk ja e-kiri kliendi keeles, programmi keel ei muutu):
+    //   using (Keel.Ajutiselt(KeeleKood.ET)) { ... }
+    public static IDisposable Ajutiselt(KeeleKood k)
+    {
+        var vana = ajutine;
+        ajutine = k;
+        return new Taastaja(() => ajutine = vana);
+    }
+
+    private sealed class Taastaja : IDisposable
+    {
+        private Action? taasta;
+        public Taastaja(Action taasta) => this.taasta = taasta;
+        public void Dispose() { taasta?.Invoke(); taasta = null; }
+    }
 
     public static string Nimi(KeeleKood k) => k switch { KeeleKood.RU => "Русский", KeeleKood.EN => "English", _ => "Eesti" };
 

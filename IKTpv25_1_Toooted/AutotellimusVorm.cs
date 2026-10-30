@@ -125,7 +125,7 @@ public class AutotellimusVorm : KujundusVorm
         {
             using var db = new ToodedContext();
             var ostud = Myygianalyys.Ostud(db, DateTime.Today.AddDays(-Autotellimus.Ajalugu), DateTime.Now.AddMinutes(1));
-            var tooted = db.Toodetabel.AsNoTracking().ToList();
+            var tooted = db.Toodetabel.AsNoTracking().Kerged().ToList();
             read = Autotellimus.Arvuta(ostud, tooted, katePaevi);
         }
         catch (Exception ex) { Teade.Show("Andmete laadimine ebaõnnestus:\n" + ex.Message); read = new(); }

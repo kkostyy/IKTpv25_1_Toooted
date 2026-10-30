@@ -21,6 +21,10 @@ public class EmailSeaded
     public string ParoolKruptitud { get; set; } = "";     // Gmaili RAKENDUSE parool (16 märki), krüpteeritud
     public string Server { get; set; } = "smtp.gmail.com";
     public int Port { get; set; } = 587;
+    // Tšeki (PDF) ja e-kirja keel – ei sõltu programmi keelest (vaikimisi eesti)
+    public string TsekiKeel { get; set; } = "ET";
+
+    public KeeleKood TsekiKeeleKood => Enum.TryParse(TsekiKeel, out KeeleKood k) ? k : KeeleKood.ET;
 
     private static string Fail => Path.Combine(Kaustad.Juur, "email.json");
 
@@ -72,13 +76,16 @@ public class EmailSeaded
         using var kiri = new MailMessage(Saatja, saaja, teema, sisu);
         if (manus != null) kiri.Attachments.Add(new Attachment(manus));   // using vabastab faili
 
+        string parool;
+        try { parool = Parool().Replace(" ", ""); }
+        catch (Exception ex) { throw new InvalidOperationException(Selgita(ex), ex); }
         using var smtp = new SmtpClient(Server, Port)
         {
-            Credentials = new NetworkCredential(Saatja, Parool().Replace(" ", "")),
+            Credentials = new NetworkCredential(Saatja.Trim(), parool),
             EnableSsl = true,
             Timeout = 20000
         };
-        smtp.Send(kiri);
+        Saada(smtp, kiri);
     }
 
     // HTML-kiri (bänner kirja sees, cid:banner) + lihttekst + PDF manusena
@@ -107,13 +114,53 @@ public class EmailSeaded
         kiri.AlternateViews.Add(htmlVaade);
         if (manus != null) kiri.Attachments.Add(new Attachment(manus));
 
+        string parool;
+        try { parool = Parool().Replace(" ", ""); }
+        catch (Exception ex) { throw new InvalidOperationException(Selgita(ex), ex); }
         using var smtp = new SmtpClient(Server, Port)
         {
-            Credentials = new NetworkCredential(Saatja, Parool().Replace(" ", "")),
+            Credentials = new NetworkCredential(Saatja.Trim(), parool),
             EnableSsl = true,
             Timeout = 30000
         };
-        smtp.Send(kiri);
+        Saada(smtp, kiri);
+    }
+
+    // Saatmine + arusaadav veateade (SmtpException ütleb tavaliselt ainult "Failure sending mail")
+    private void Saada(SmtpClient smtp, MailMessage kiri)
+    {
+        try { smtp.Send(kiri); }
+        catch (Exception ex) { throw new InvalidOperationException(Selgita(ex), ex); }
+    }
+
+    private string Selgita(Exception ex)
+    {
+        // kogu vigade ahel: sageli on põhjus alles sisemises erindis
+        var osad = new List<string>();
+        for (var e = ex; e != null; e = e.InnerException) if (!osad.Contains(e.Message)) osad.Add(e.Message);
+        string koik = string.Join(" → ", osad);
+        string k = koik.ToLowerInvariant();
+
+        string pohjus;
+        if (k.Contains("5.7.0") || k.Contains("5.7.8") || k.Contains("535") || k.Contains("authentication") || k.Contains("username and password"))
+            pohjus = Keel.F("Gmail ei aktsepteerinud kasutajat või parooli ({0}).", Saatja) + "\n" +
+                     Keel.T("• Saatja aadress peab olema täpselt see Gmaili konto, millele rakenduse parool loodi.") + "\n" +
+                     Keel.T("• Vaja on 16-märgilist RAKENDUSE parooli (myaccount.google.com → Turvalisus → Rakenduse paroolid), mitte tavalist parooli; kontol peab olema 2-astmeline kinnitus.") + "\n" +
+                     Keel.T("• Kui parool on GitHubis avalikult nähtav, võib Google selle tühistada – loo uus.");
+        else if (k.Contains("timed out") || k.Contains("timeout") || k.Contains("unable to connect") || k.Contains("actively refused") || k.Contains("no such host") || k.Contains("network"))
+            pohjus = Keel.F("Ei saanud ühendust serveriga {0}:{1}.", Server, Port) + "\n" +
+                     Keel.T("• Kontrolli internetiühendust.") + "\n" +
+                     Keel.T("• Kooli-/töövõrk või viirusetõrje võib pordi 587 blokeerida – proovi teises võrgus (nt telefoni levialas).");
+        else if (k.Contains("5.5.1") || k.Contains("5.1.") || k.Contains("recipient") || k.Contains("mailbox"))
+            pohjus = Keel.T("Saaja aadress on vigane või seda postkasti pole.");
+        else if (k.Contains("5.4.5") || k.Contains("daily") || k.Contains("limit"))
+            pohjus = Keel.T("Gmaili päevane saatmislimiit on täis – proovi homme uuesti.");
+        else if (k.Contains("key not valid") || k.Contains("cryptographic"))
+            pohjus = Keel.T("Salvestatud parooli ei saa lugeda (teine Windowsi kasutaja või arvuti). Sisesta parool uuesti: Haldus → E-posti seaded.");
+        else
+            pohjus = Keel.T("E-kirja saatmine ebaõnnestus.");
+
+        return pohjus + "\n\n" + Keel.T("Tehniline viga:") + " " + koik;
     }
 
     public static bool OnKorrektneAadress(string? aadress) =>

@@ -97,11 +97,11 @@ namespace IKTpv25_1_Toooted
             // moodne: maksmine avaneb samas aknas (poe leht / peaakna sisu)
             Aken.Ava(omanik ?? Form.ActiveForm ?? (IWin32Window)this, vorm, () =>
             {
-                if (vorm.DialogResult == DialogResult.OK && vorm.Tulemus != null && PealeMaksmist(vorm)) tehtud?.Invoke();
+                if (vorm.DialogResult == DialogResult.OK && vorm.Tulemus != null && PealeMaksmist(vorm, omanik)) tehtud?.Invoke();
             });
         }
 
-        private bool PealeMaksmist(MaksmineVorm vorm)
+        private bool PealeMaksmist(MaksmineVorm vorm, IWin32Window? kust = null)
         {
 
             Ost ost = vorm.Tulemus;
@@ -111,11 +111,7 @@ namespace IKTpv25_1_Toooted
             Ostukorv.Tyhjenda();
             LaadiTooted();
 
-            decimal tagasi = ost.MakstudSumma - ost.Summa;
-            Teade.Toast(Keel.F("Ost nr {0} makstud: {1}", ost.Id, Ostukorv.Eur(ost.Summa)) +
-                        (tagasi > 0 ? "\n" + Keel.F("Tagasiraha: {0}", Ostukorv.Eur(tagasi)) : "") +
-                        (ost.Klient != null ? "\n" + Keel.F("Boonust lisandus {0}", Ostukorv.Eur(ost.BoonusLisatud)) : ""),
-                        TeateTyyp.Edu, 5000);
+            // "Makse õnnestus!" ekraan näidatakse juba maksmisaknas (MaksmineVorm.Maksa)
 
             // Ostunimekiri: ostetud tooted saavad linnukese (ostja või töötaja oma kaardiga)
             if (AktiivneKasutaja.OnOstja || (ost.KlientId != null && ost.KlientId == AktiivneKasutaja.KlientId))
