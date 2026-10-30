@@ -1104,6 +1104,8 @@ namespace IKTpv25_1_Toooted
             }
             string? viga = Ostukorv.LisaToode(t);
             if (viga != null) Teade.Toast(viga, TeateTyyp.Hoiatus);
+            else if (Vanusepiirang.Piir(t) is int piir && Ostukorv.KorvisKogus(t.Id) == 1)
+                Teade.Toast(Keel.F("{0}+ toode – vanust kontrollitakse maksmisel", piir), TeateTyyp.Info, 3000);
         }
 
         private static void VahendaKorvis(Toode t)

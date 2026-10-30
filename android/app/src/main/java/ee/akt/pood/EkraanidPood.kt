@@ -325,6 +325,7 @@ fun ToodeKaart(olek: AppOlek, t: Toode, modifier: Modifier = Modifier) {
             ToodePilt(t.pilt, Modifier.fillMaxSize().padding(6.dp))
             t.soodusProtsent?.let { VaikeKiip("−$it%", V.Punane, Color.White, Modifier.align(Alignment.TopStart)) }
             if (t.id in olek.lemmikud) Box(Modifier.align(Alignment.TopEnd)) { Ikoon(Ik.Syda, V.Ploom, 18.dp) }
+            olek.vanusePiir(t)?.let { VaikeKiip("$it+", V.Tume, Color.White, Modifier.align(Alignment.BottomEnd)) }
             if (!sobib && olek.dieet.isNotEmpty()) VaikeKiip(Keel.t("Ei sobi"), V.Tume, Color.White, Modifier.align(Alignment.BottomStart))
             else Raiskamine.aegub(t, olek.aeg().toLocalDate())?.let { VaikeKiip(Raiskamine.tekst(it), V.Roheline, Color.White, Modifier.align(Alignment.BottomStart)) }
         }

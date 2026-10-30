@@ -463,5 +463,12 @@
   "Müüja": { "ru": "Продавец", "en": "Seller" },
   "Tee müüjaks": { "ru": "Сделать продавцом", "en": "Make seller" },
   "Proovi: mari / mari123 (klient), myyja / myyja123 (müüja) või admin / admin123 (omanik)": { "ru": "Попробуйте: mari / mari123 (клиент), myyja / myyja123 (продавец) или admin / admin123 (владелец)", "en": "Try: mari / mari123 (customer), myyja / myyja123 (seller) or admin / admin123 (owner)" },
-  "IBAN kopeeritud – kleebi pangaäpis. Summa {0}, selgitus „{1}“": { "ru": "IBAN скопирован – вставьте в приложении банка. Сумма {0}, пояснение «{1}»", "en": "IBAN copied – paste it in the bank app. Amount {0}, reference “{1}”" }
+  "IBAN kopeeritud – kleebi pangaäpis. Summa {0}, selgitus „{1}“": { "ru": "IBAN скопирован – вставьте в приложении банка. Сумма {0}, пояснение «{1}»", "en": "IBAN copied – paste it in the bank app. Amount {0}, reference “{1}”" },
+  "Vanuse kontroll · {0}+": { "ru": "Проверка возраста · {0}+", "en": "Age check · {0}+" },
+  "Sünnikuupäev pp.kk.aaaa": { "ru": "Дата рождения дд.мм.гггг", "en": "Date of birth dd.mm.yyyy" },
+  "Kinnitan, et andmed on õiged. Kauba üleandmisel kontrollitakse isikut tõendavat dokumenti.": { "ru": "Подтверждаю, что данные верны. При передаче товара проверяется документ, удостоверяющий личность.", "en": "I confirm the data is correct. ID will be checked when the goods are handed over." },
+  "Sisesta sünnikuupäev kujul pp.kk.aaaa.": { "ru": "Введите дату рождения в виде дд.мм.гггг.", "en": "Enter the date of birth as dd.mm.yyyy." },
+  "Alla {0}-aastasele ei müüda: {1}. Eemalda need tooted ostukorvist.": { "ru": "Лицам младше {0} лет не продаётся: {1}. Уберите эти товары из корзины.", "en": "Not sold to under-{0}s: {1}. Remove these products from the basket." },
+  "Kinnita vanuse andmed.": { "ru": "Подтвердите данные о возрасте.", "en": "Confirm the age details." },
+  "Kontrollisin ostja isikut tõendavat dokumenti.": { "ru": "Я проверил(а) документ покупателя.", "en": "I checked the buyer's ID." }
 }

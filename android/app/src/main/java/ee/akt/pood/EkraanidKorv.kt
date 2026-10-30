@@ -154,6 +154,11 @@ fun MaksmineEkraan(olek: AppOlek) {
     var aken by remember { mutableStateOf(Tarneaknad.aknad(olek.aeg()).firstOrNull()) }
     var paev by remember { mutableStateOf(aken?.toLocalDate()) }
     var viga by remember { mutableStateOf<String?>(null) }
+    var synd by remember { mutableStateOf(olek.pood.seade("synd:" + (olek.kasutaja?.nimi ?: "")) ?: "") }
+    var kinnitan by remember { mutableStateOf(false) }
+    // vanusepiiranguga tooted korvis (alkohol 18+, energiajoogid 16+)
+    val piiratud = olek.korv.mapNotNull { r -> olek.vanusePiir(r.toode)?.let { r.toode.nimi to it } }
+    val piir = piiratud.maxOfOrNull { it.second }
     val k = olek.kasutaja ?: return
     val tarne = Reeglid.tarne(olek.kaubad, kojuvedu)
     val kasutatud = if (boonus) minOf(k.boonus, olek.kaubad) else 0
@@ -214,6 +219,22 @@ fun MaksmineEkraan(olek: AppOlek) {
                 }
             }
             Vahe(16.dp)
+            if (piir != null) {
+                Kaart(Modifier.fillMaxWidth(), taust = V.Kreem, sisu = 14.dp) {
+                    T(Keel.f("Vanuse kontroll · {0}+", piir), 15.sp, V.Tekst, FontWeight.ExtraBold)
+                    Vahe(4.dp)
+                    T(piiratud.take(4).joinToString("\n") { "• ${it.first} (${it.second}+)" }, 12.sp, V.Tekst2)
+                    Vahe(10.dp)
+                    Sisend(synd, { synd = it.filter { c -> c.isDigit() || c == '.' }.take(10); viga = null }, Keel.t("Sünnikuupäev pp.kk.aaaa"), number = true, taust = V.Pind)
+                    Vahe(10.dp)
+                    Row(Modifier.fillMaxWidth().vajuta { kinnitan = !kinnitan }, verticalAlignment = Alignment.CenterVertically) {
+                        T(Keel.t("Kinnitan, et andmed on õiged. Kauba üleandmisel kontrollitakse isikut tõendavat dokumenti."), 12.sp, V.Tekst, modifier = Modifier.weight(1f))
+                        Spacer(Modifier.width(8.dp))
+                        Lyliti(kinnitan)
+                    }
+                }
+                Vahe(16.dp)
+            }
             T(Keel.t("Makse"), 15.sp, V.Tekst, FontWeight.ExtraBold)
             Vahe(8.dp)
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -245,7 +266,12 @@ fun MaksmineEkraan(olek: AppOlek) {
                 when {
                     kojuvedu && aadress.trim().length < 5 -> viga = Keel.t("Sisesta kojuveo aadress.")
                     kojuvedu && aken == null -> viga = Keel.t("Vali kojuveo päev ja kellaaeg.")
+                    piir != null && Vanus.vanus(synd, olek.aeg().toLocalDate()) == null -> viga = Keel.t("Sisesta sünnikuupäev kujul pp.kk.aaaa.")
+                    piir != null && Vanus.vanus(synd, olek.aeg().toLocalDate())!! < piir -> viga = Keel.f("Alla {0}-aastasele ei müüda: {1}. Eemalda need tooted ostukorvist.", piir,
+                        piiratud.filter { it.second > Vanus.vanus(synd, olek.aeg().toLocalDate())!! }.joinToString(", ") { it.first })
+                    piir != null && !kinnitan -> viga = Keel.t("Kinnita vanuse andmed.")
                     else -> {
+                        if (piir != null) olek.pood.seaSeade("synd:" + k.nimi, synd.trim())   // järgmisel korral täidetud
                         val ost = olek.vormista(kojuvedu, aadress.trim().let { a -> if (aken != null) "$a · ${Tarneaknad.tekst(aken!!, olek.aeg().toLocalDate())}" else a }, makse, boonus)
                         olek.asenda(Ekraan.MakseOnnestus(ost.id))
                     }
