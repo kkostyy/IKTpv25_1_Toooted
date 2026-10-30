@@ -116,7 +116,7 @@ public class PangaMakseVorm : Form
         StartPosition = FormStartPosition.CenterParent;
         ShowInTaskbar = false;
         KeyPreview = true;
-        ClientSize = new Size(500, 720);
+        ClientSize = new Size(500, 790);
         BackColor = Taust;
         Text = Keel.T("Pangaülekanne");
         SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
@@ -138,6 +138,7 @@ public class PangaMakseVorm : Form
         FormClosed += (o, e) => qr?.Dispose();
     }
 
+    private Rectangle PankNupp => new(28, Height - 136, Width - 56, 50);
     private Rectangle ArveNupp => new(28, Height - 76, (Width - 66) / 2, 50);
     private Rectangle ValmisNupp => new(38 + (Width - 66) / 2, Height - 76, (Width - 66) / 2, 50);
 
@@ -152,6 +153,7 @@ public class PangaMakseVorm : Form
         int uus = -1;
         for (int i = 0; i < read.Count; i++) if (read[i].Nupp.Contains(e.Location)) uus = i;
         if (pdf != null && ArveNupp.Contains(e.Location)) uus = 100;
+        if (PankNupp.Contains(e.Location)) uus = 102;
         if (ValmisNupp.Contains(e.Location)) uus = 101;
         if (uus != hiir) { hiir = uus; Cursor = uus >= 0 ? Cursors.Hand : Cursors.Default; Invalidate(); }
         base.OnMouseMove(e);
@@ -169,6 +171,14 @@ public class PangaMakseVorm : Form
                 try { Clipboard.SetText(tekst); kopeeritud = read[i].Silt; Invalidate(); } catch { }
                 return;
             }
+        if (PankNupp.Contains(e.Location))
+        {
+            // IBAN lõikelauale ja Swedbanki internetipank brauseris
+            try { Clipboard.SetText(s.Iban.Replace(" ", "")); kopeeritud = "IBAN"; Invalidate(); } catch { }
+            try { Arve.Ava("https://www.swedbank.ee/private"); } catch (Exception ex) { Teade.Show("Brauseri avamine ebaõnnestus:\n" + ex.Message); }
+            Teade.Toast(Keel.F("IBAN kopeeritud – kleebi pangaäpis. Summa {0}, selgitus „{1}“", Ostukorv.Eur(ost.Summa), MakseSeaded.Selgitus(ost)), TeateTyyp.Info, 6000);
+            return;
+        }
         if (pdf != null && ArveNupp.Contains(e.Location))
         {
             try { Arve.Ava(pdf); } catch (Exception ex) { Teade.Show("Arve avamine ebaõnnestus:\n" + ex.Message); }
@@ -228,9 +238,12 @@ public class PangaMakseVorm : Form
 
         using (var f = new Font("Segoe UI", 8.5F))
             TextRenderer.DrawText(g, Keel.T("Kaup saadetakse / antakse kätte pärast makse laekumist."), f,
-                new Rectangle(16, ArveNupp.Y - 30, w - 32, 20), Nork, kesk | TextFormatFlags.EndEllipsis);
+                new Rectangle(16, PankNupp.Y - 30, w - 32, 20), Nork, kesk | TextFormatFlags.EndEllipsis);
 
         using var fb = new Font("Segoe UI Semibold", 11F);
+        var pn = PankNupp;
+        using (var tee = Ymardus.Tee(pn, 25)) using (var b = new SolidBrush(hiir == 102 ? Color.FromArgb(230, 110, 0) : Color.FromArgb(255, 121, 0))) g.FillPath(b, tee);
+        TextRenderer.DrawText(g, Keel.T("Ava Swedbanki internetipank"), fb, pn, Color.White, kesk | TextFormatFlags.VerticalCenter);
         if (pdf != null)
         {
             var a = ArveNupp;
