@@ -139,6 +139,9 @@ fun KassaEkraan(olek: AppOlek) {
         .filter { it.laos && (it.nimi.contains(otsi.trim(), true) || (it.kaubamark ?: "").contains(otsi.trim(), true)) }.take(6).toList()
     val summa = read.sumOf { (t, k) -> olek.hind(t).hind * k }
     val pant = read.sumOf { (t, k) -> t.pant * k }
+    // vanusepiirang: müüja kontrollib dokumenti (alkohol 18+, energiajoogid 16+)
+    val piir = read.mapNotNull { (t, _) -> olek.vanusePiir(t) }.maxOrNull()
+    var dokument by remember { mutableStateOf(false) }
 
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp).padding(bottom = 170.dp)) {
@@ -191,6 +194,19 @@ fun KassaEkraan(olek: AppOlek) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf("Kaart", "Sularaha").forEachIndexed { j, m -> Kiip(Keel.t(m), V.Pind, V.Tekst, valitud = makse == j, onClick = { makse = j }) }
             }
+            if (piir != null) {
+                Vahe(10.dp)
+                Row(
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(V.Kreem).vajuta { dokument = !dokument }.padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        T(Keel.f("Vanuse kontroll · {0}+", piir), 14.sp, V.Tekst, FontWeight.ExtraBold)
+                        T(Keel.t("Kontrollisin ostja isikut tõendavat dokumenti."), 12.sp, V.Tekst2)
+                    }
+                    Lyliti(dokument)
+                }
+            }
         }
         Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth().clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)).background(V.Tume).padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -199,13 +215,14 @@ fun KassaEkraan(olek: AppOlek) {
             }
             Vahe(10.dp)
             SuurNupp(Keel.f("Maksa {0}", eur(summa + pant)), {
+                if (piir != null && !dokument) { olek.teade = Keel.f("Vanuse kontroll · {0}+", piir) + ": " + Keel.t("Kontrollisin ostja isikut tõendavat dokumenti."); return@SuurNupp }
                 val ostuRead = read.map { (t, k) -> val h = olek.hind(t); OstuRida(t.id, t.nimi, k, h.hind, h.tavaHind, h.soodus) }
                 val boonus = if (klient != null) Reeglid.boonus(summa, Reeglid.Tase.Pronks) else 0
                 olek.pood.lisaOst(Ost(0, olek.aeg(), klient?.nimi ?: "kassa", summa, 0, 0, pant, summa + pant, boonus,
                     if (makse == 0) "Kaart" else "Sularaha", "Kassa", null, ostuRead))
                 olek.varskendaTooted()
                 olek.teade = Keel.f("Makstud {0}", eur(summa + pant)) + if (klient != null) " · " + Keel.f("boonus +{0}", eur(boonus)) else ""
-                read.clear(); kaart = ""
+                read.clear(); kaart = ""; dokument = false
             }, lubatud = read.isNotEmpty(), noolega = false)
         }
     }

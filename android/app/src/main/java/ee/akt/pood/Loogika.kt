@@ -338,3 +338,22 @@ object Demo {
         return n
     }
 }
+
+// Vanusepiirang (nagu arvutis, Vanusepiirang.cs): alkohol 18+, energiajoogid 16+
+object Vanus {
+    const val ALKOHOL = 18
+    const val ENERGIAJOOK = 16
+
+    fun piir(nimi: String, kategooria: String?): Int? {
+        val alkoholivaba = nimi.startsWith("Alkoholivaba", true) || nimi.contains("0,0%") || nimi.contains("0.0%")
+        if (!alkoholivaba && (kategooria ?: "").startsWith("Alkohol", true)) return ALKOHOL
+        if (nimi.contains("energiajook", true) || nimi.contains("red bull", true)) return ENERGIAJOOK
+        return null
+    }
+
+    // "pp.kk.aaaa" → vanus aastates (null, kui kuupäev on vigane)
+    fun vanus(synd: String, tana: java.time.LocalDate): Int? = runCatching {
+        val d = java.time.LocalDate.parse(synd.trim(), java.time.format.DateTimeFormatter.ofPattern("d.M.uuuu"))
+        if (d.isAfter(tana)) null else java.time.Period.between(d, tana).years
+    }.getOrNull()
+}

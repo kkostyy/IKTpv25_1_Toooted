@@ -185,6 +185,9 @@ class AppOlek(val pood: Pood, private val kell: () -> LocalDateTime = { LocalDat
         return indeks[id]
     }
 
+    // 18 (alkohol), 16 (energiajook) või null
+    fun vanusePiir(t: Toode): Int? = Vanus.piir(t.nimi, kategooriad.firstOrNull { it.id == t.kategooriaId }?.nimi)
+
     fun hind(t: Toode): Reeglid.Hind { hinnadMuutusid; return Reeglid.lopphind(t, aeg()) }
 
     fun vahetaLemmik(id: Int) {

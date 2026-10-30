@@ -359,6 +359,16 @@ public partial class MaksmineVorm : Form
     {
         if (Ostukorv.Ridad.Count == 0) { Teade.Show("Ostukorv on tühi."); return; }
 
+        // Vanusepiirang: alkohol 18+, energiajoogid 16+ (sünnikuupäev + dokumendi kontroll)
+        int ridu = Ostukorv.Ridad.Count;
+        if (!Vanusepiirang.Kontrolli(TopLevelControl as Form ?? this)) return;
+        if (Ostukorv.Ridad.Count != ridu)
+        {
+            Arvuta();   // piiranguga tooted eemaldati – uus summa enne maksmist üle vaadata
+            Teade.Toast("Ostukorv muutus – kontrolli summat ja vajuta uuesti „Maksa“.", TeateTyyp.Info, 4000);
+            return;
+        }
+
         if (txtKaart.Text.Trim().Length > 0 && klientId == null)
         {
             Teade.Show("Sellise numbriga kliendikaarti ei leitud.\nTühjenda väli, kui klient kaarti ei kasuta.", "Kliendikaart",

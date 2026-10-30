@@ -1089,5 +1089,20 @@
   "Vaata kõiki pakkumisi": { "ru": "Все предложения", "en": "See all offers" },
   "Otsi toodet või kaubamärki...": { "ru": "Найти товар или бренд...", "en": "Search product or brand..." },
   "Kliendikaarti pole – oste saab vaadata pärast kaardi loomist (Seaded).": { "ru": "Нет карты клиента – покупки можно смотреть после создания карты (Настройки).", "en": "No customer card – purchases can be viewed after creating a card (Settings)." },
-  "Õhtune soodustus on praegu välja lülitatud.": { "ru": "Вечерняя скидка сейчас выключена.", "en": "The evening discount is currently turned off." }
+  "Õhtune soodustus on praegu välja lülitatud.": { "ru": "Вечерняя скидка сейчас выключена.", "en": "The evening discount is currently turned off." },
+  "Vanuse kontroll": { "ru": "Проверка возраста", "en": "Age check" },
+  "Vanuse kontroll · {0}+": { "ru": "Проверка возраста · {0}+", "en": "Age check · {0}+" },
+  "Ostukorvis on vanusepiiranguga tooted (alkohol 18+, energiajoogid 16+):": { "ru": "В корзине есть товары с возрастным ограничением (алкоголь 18+, энергетики 16+):", "en": "Your basket has age-restricted products (alcohol 18+, energy drinks 16+):" },
+  "Sinu sünnikuupäev": { "ru": "Ваша дата рождения", "en": "Your date of birth" },
+  "Ostja sünnikuupäev (dokumendilt)": { "ru": "Дата рождения покупателя (по документу)", "en": "Buyer's date of birth (from ID)" },
+  "Kinnitan, et andmed on õiged. Kauba üleandmisel kontrollitakse isikut tõendavat dokumenti.": { "ru": "Подтверждаю, что данные верны. При передаче товара проверяется документ, удостоверяющий личность.", "en": "I confirm the data is correct. ID will be checked when the goods are handed over." },
+  "Kontrollisin ostja isikut tõendavat dokumenti.": { "ru": "Я проверил(а) документ покупателя.", "en": "I checked the buyer's ID." },
+  "Kinnita": { "ru": "Подтвердить", "en": "Confirm" },
+  "Eemalda need tooted": { "ru": "Убрать эти товары", "en": "Remove these products" },
+  "Ostja on {0}-aastane. Neid tooteid ei saa osta:": { "ru": "Покупателю {0} лет. Эти товары купить нельзя:", "en": "The buyer is {0}. These products cannot be bought:" },
+  "Eemalda need tooted ostukorvist ja proovi uuesti.": { "ru": "Уберите эти товары из корзины и попробуйте снова.", "en": "Remove these products from the basket and try again." },
+  "Vanusepiirang": { "ru": "Возрастное ограничение", "en": "Age restriction" },
+  "Ostukorvist eemaldati {0} toodet": { "ru": "Из корзины убрано товаров: {0}", "en": "{0} products removed from the basket" },
+  "Ostukorv muutus – kontrolli summat ja vajuta uuesti „Maksa“.": { "ru": "Корзина изменилась – проверьте сумму и снова нажмите «Оплатить».", "en": "The basket changed – check the total and press “Pay” again." },
+  "{0}+ toode – vanust kontrollitakse maksmisel": { "ru": "Товар {0}+ – возраст проверяется при оплате", "en": "{0}+ product – age is checked at payment" }
 }
