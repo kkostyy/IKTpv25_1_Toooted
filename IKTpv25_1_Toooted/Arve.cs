@@ -85,7 +85,9 @@ public static class Arve
         }
 
         bool kaart = ost.Makseviis != "Sularaha";
-        t.Rida(Keel.T(kaart ? "KAARDIMAKSE" : "SULARAHA"));
+        bool pank = ost.Makseviis == MakseSeaded.Pangaulekanne;
+        string viis = Keel.T(pank ? "PANGAÜLEKANNE" : kaart ? "KAARDIMAKSE" : "SULARAHA");
+        t.Rida(viis);
         t.Rida(Keel.T("MÜÜK"));
         t.Rida(Keel.T("AEG"), ost.Aeg.ToString("yyyy-MM-dd HH:mm"));
         t.Rida(Keel.T("SUMMA:"), e(ost.Summa) + " EUR");
@@ -95,6 +97,17 @@ public static class Arve
             t.Rida(Keel.T("Tagasiraha:"), e(makstudSumma - ost.Summa) + " EUR");
         }
         if (kaart && makstud) t.Keskel(Keel.T("MAKSE KINNITATUD"));
+        if (pank && !makstud)
+        {
+            // rekvisiidid arvel: kuhu maksta
+            var ms = MakseSeaded.Lae();
+            t.Joon();
+            t.Rida(Keel.T("MAKSA ÜLEKANDEGA:"));
+            t.Rida(Keel.T("Saaja"), ms.Saaja);
+            t.Rida("IBAN", ms.IbanLoetav);
+            t.Rida(Keel.T("Selgitus"), MakseSeaded.Selgitus(ost));
+            t.Rida(Keel.T("Summa"), e(ost.Summa) + " EUR");
+        }
         t.Joon();
 
         if (ost.Klient != null)
@@ -107,7 +120,7 @@ public static class Arve
         }
 
         t.Suur(Keel.T("KOKKU"), e(ost.Summa) + " EUR");
-        t.Rida(Keel.T(kaart ? "KAARDIMAKSE" : "SULARAHA"), e(ost.Summa) + " EUR");
+        t.Rida(viis, e(ost.Summa) + " EUR");
         t.Vahe(4);
 
         // Käibemaksu tabel (hinnad sisaldavad 24 % käibemaksu)
@@ -295,6 +308,16 @@ public static class Arve
         if (ost.Tarneviis == Tarne.Kojuvedu) sb.AppendLine(Keel.F("Kohaletoimetamine: {0}", ost.TarneHind == 0 ? Keel.T("TASUTA") : Ostukorv.Eur(ost.TarneHind)));
         if (ost.Soodustus > 0) sb.AppendLine(Keel.F("Boonuse soodustus: -{0}", Ostukorv.Eur(ost.Soodustus)));
         sb.AppendLine(Keel.F("Kokku: {0}", Ostukorv.Eur(ost.Summa)));
+        if (ost.Makseviis == MakseSeaded.Pangaulekanne && !ost.Makstud)
+        {
+            var ms = MakseSeaded.Lae();
+            sb.AppendLine();
+            sb.AppendLine(Keel.T("Palun tasu pangaülekandega:"));
+            sb.AppendLine($"  {Keel.T("Saaja")}: {ms.Saaja}");
+            sb.AppendLine($"  IBAN: {ms.IbanLoetav}");
+            sb.AppendLine($"  {Keel.T("Summa")}: {Ostukorv.Eur(ost.Summa)}");
+            sb.AppendLine($"  {Keel.T("Selgitus")}: {MakseSeaded.Selgitus(ost)}");
+        }
         if (ost.Klient != null) sb.AppendLine(Keel.F("Boonust lisandus: {0}", Ostukorv.Eur(ost.BoonusLisatud)));
         sb.AppendLine();
         sb.AppendLine(Keel.T("Soovime sulle meeldivaid oste!"));
@@ -319,6 +342,14 @@ public static class Arve
             read.Append($"<tr><td style=\"padding:6px 0;color:#666\">{H(silt)}</td>" +
                         $"<td style=\"padding:6px 0;text-align:right;{(paks ? "font-weight:bold;color:#222;font-size:16px" : "color:#333")}\">{H(vaartus)}</td></tr>");
         Rida(Keel.T("Ostu nr"), ost.Id.ToString());
+        if (ost.Makseviis == MakseSeaded.Pangaulekanne && !ost.Makstud)
+        {
+            var ms = MakseSeaded.Lae();
+            Rida(Keel.T("Makse"), Keel.T("Ootab makset (pangaülekanne)"), true);
+            Rida(Keel.T("Saaja"), ms.Saaja);
+            Rida("IBAN", ms.IbanLoetav, true);
+            Rida(Keel.T("Selgitus"), MakseSeaded.Selgitus(ost));
+        }
         Rida(Keel.T("Kuupäev"), ost.Aeg.ToString("dd.MM.yyyy HH:mm"));
         Rida(Keel.T("Tooteid"), ost.Read.Sum(r => r.Kogus).ToString());
         if (ost.Tarneviis == Tarne.Kojuvedu)

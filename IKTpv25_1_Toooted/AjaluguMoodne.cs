@@ -135,7 +135,7 @@ namespace IKTpv25_1_Toooted
             TextRenderer.DrawText(g, Keel.T("KOKKU"), fs, new Point((int)x0, (int)y), must);
             TextRenderer.DrawText(g, ost.Summa.ToString("0.00") + " €", fs, new Rectangle((int)x0, (int)y, (int)(x1 - x0), 26), must, TextFormatFlags.Right);
             y += 32;
-            Kesk(Keel.T(ost.Makseviis == "Sularaha" ? "SULARAHA" : "KAARDIMAKSE"), fb, hall);
+            Kesk(Keel.T(ost.Makseviis == "Sularaha" ? "SULARAHA" : ost.Makseviis == MakseSeaded.Pangaulekanne ? "PANGAÜLEKANNE" : "KAARDIMAKSE"), fb, hall);
             if (ost.Tagastatud) Kesk(Keel.T("TAGASTATUD"), fb, Color.FromArgb(200, 30, 30));
             y += 6;
             Kesk(Keel.T("Aitäh ostu eest!"), f, hall);
