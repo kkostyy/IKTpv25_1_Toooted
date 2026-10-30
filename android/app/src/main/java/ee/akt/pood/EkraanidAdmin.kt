@@ -44,8 +44,8 @@ import java.time.format.DateTimeFormatter
 fun AdminEkraan(olek: AppOlek) {
     var otsi by remember { mutableStateOf("") }
     val tana = remember { olek.pood.ostud(null).filter { !it.tagastatud && it.aeg.toLocalDate() == LocalDate.now() }.sumOf { it.summa } }
-    val vahe = olek.tooted.count { it.kogus in 0..9 }
-    val tooted = olek.tooted.filter { otsi.isBlank() || it.nimi.contains(otsi.trim(), true) }
+    val vahe = remember(olek.tooted) { olek.tooted.count { it.kogus in 0..9 } }
+    val tooted = remember(otsi, olek.tooted) { olek.tooted.filter { otsi.isBlank() || it.nimi.contains(otsi.trim(), true) } }
     Box(Modifier.fillMaxSize()) {
         LazyColumn(Modifier.fillMaxSize().padding(horizontal = 16.dp), contentPadding = androidx.compose.foundation.layout.PaddingValues(top = 16.dp, bottom = 100.dp)) {
             item {

@@ -266,8 +266,10 @@ public class KampaaniadVorm : KujundusVorm
     {
         using var db = new ToodedContext();
         tooted = db.Toodetabel.AsNoTracking().OrderBy(t => t.Toodenimetus).ToList();
+        cmbToode.BeginUpdate();
         cmbToode.Items.Clear();
-        foreach (var t in tooted) cmbToode.Items.Add(new TooteValik(t));
+        cmbToode.Items.AddRange(tooted.Select(t => (object)new TooteValik(t)).ToArray());
+        cmbToode.EndUpdate();
     }
 
     private sealed record TooteValik(Toode Toode)

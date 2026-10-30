@@ -10,6 +10,7 @@ namespace IKTpv25_1_Toooted
         public string? Pilt { get; set; }
         public int KategooriaId { get; set; }
         public string Kategooria { get; set; } = "";
+        [System.ComponentModel.Browsable(false)] public string? Kaubamark { get; set; }   // otsinguks, tabelis veergu pole
     }
 
     // Toodete otsing: nime järgi ja kategooria järgi (filtreerimine mälus)
@@ -34,9 +35,17 @@ namespace IKTpv25_1_Toooted
             };
 
             txtOtsi.Width = 260;
-            txtOtsi.PlaceholderText = "Otsi toodet nime järgi...";
+            txtOtsi.PlaceholderText = "Otsi toodet või kaubamärki...";
             txtOtsi.Margin = new Padding(0, 6, 10, 0);
-            txtOtsi.TextChanged += (s, e) => NaitaTooted();
+            // 9000 rida: tabel ehitatakse uuesti alles siis, kui kirjutamine on 250 ms seisnud
+            var viide = new System.Windows.Forms.Timer { Interval = 250 };
+            viide.Tick += (s, e) => { viide.Stop(); NaitaTooted(); };
+            txtOtsi.TextChanged += (s, e) => { viide.Stop(); viide.Start(); };
+            txtOtsi.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) { viide.Stop(); NaitaTooted(); e.SuppressKeyPress = true; } };
+            FormClosed += (s, e) => viide.Dispose();
+            // topeltpuhver: kerimine ja värvimine ilma vilkumiseta
+            typeof(DataGridView).GetProperty("DoubleBuffered", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                ?.SetValue(dataGridTooted, true);
 
             cmbOtsiKategooria.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbOtsiKategooria.Width = 180;
@@ -86,19 +95,23 @@ namespace IKTpv25_1_Toooted
 
             string otsi = txtOtsi.Text.Trim();
             if (otsi.Length > 0)
-                tulemus = tulemus.Where(t => t.Toodenimetus.Contains(otsi, StringComparison.CurrentCultureIgnoreCase));
+                tulemus = tulemus.Where(t => t.Toodenimetus.Contains(otsi, StringComparison.OrdinalIgnoreCase)
+                                          || (t.Kaubamark ?? "").Contains(otsi, StringComparison.OrdinalIgnoreCase));
 
             if (cmbOtsiKategooria.SelectedIndex > 0 && cmbOtsiKategooria.SelectedItem is string kategooria)
                 tulemus = tulemus.Where(t => t.Kategooria == kategooria);
 
             var nimekiri = tulemus.ToList();
+            dataGridTooted.SuspendLayout();
             dataGridTooted.DataSource = nimekiri;
 
             if (dataGridTooted.Columns["Id"] is DataGridViewColumn id) id.Visible = false;
             if (dataGridTooted.Columns["KategooriaId"] is DataGridViewColumn kid) kid.Visible = false;
             if (dataGridTooted.Columns["Toodenimetus"] is DataGridViewColumn nimi) nimi.HeaderText = Keel.T("Toode");
             if (dataGridTooted.Columns["Hind"] is DataGridViewColumn hind) hind.DefaultCellStyle.Format = "0.00";
+            if (dataGridTooted.Columns["Kaubamark"] is DataGridViewColumn km) km.Visible = false;
             dataGridTooted.ClearSelection();
+            dataGridTooted.ResumeLayout();
 
             lblLeitud.Text = Keel.F("Leitud: {0} / {1}", nimekiri.Count, koikTooted.Count);
         }
