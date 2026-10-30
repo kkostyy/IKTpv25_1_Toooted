@@ -19,7 +19,7 @@ public partial class MaksmineVorm : Form
     private readonly TarneAjaValija tarneAeg = new();
     private readonly Label lblKlient, lblVahesumma, lblSoodustus, lblMaksta, lblTagasi;
     private readonly CheckBox chkBoonus;
-    private readonly RadioButton rbSularaha, rbKaart;
+    private readonly RadioButton rbSularaha, rbKaart, rbPank;
     private readonly FlowLayoutPanel kiirNupud;
     private readonly RoundedButton btnMaksa;
 
@@ -104,9 +104,13 @@ public partial class MaksmineVorm : Form
         var makse = Kaart("Makse", 16, 622, 588, 170);
         rbSularaha = new RadioButton { Text = "Sularaha", Location = new Point(16, 36), AutoSize = true, Checked = true, BackColor = Teema.Pind, ForeColor = Teema.Tekst, Font = new Font("Segoe UI", 10F) };
         rbKaart = new RadioButton { Text = "Pangakaart", Location = new Point(130, 36), AutoSize = true, BackColor = Teema.Pind, ForeColor = Teema.Tekst, Font = new Font("Segoe UI", 10F) };
+        // Pangaülekanne: raha otse poe kontole (rekvisiidid + QR-kood pärast tellimist)
+        rbPank = new RadioButton { Text = "Pangaülekanne", Location = new Point(262, 36), AutoSize = true, BackColor = Teema.Pind, ForeColor = Teema.Tekst, Font = new Font("Segoe UI", 10F) };
         rbSularaha.CheckedChanged += (s, e) => MakseviisMuutus();
+        rbPank.CheckedChanged += (s, e) => MakseviisMuutus();
         makse.Controls.Add(rbSularaha);
         makse.Controls.Add(rbKaart);
+        makse.Controls.Add(rbPank);
 
         makse.Controls.Add(Silt("Saadud summa (€)", 14, 70));
         var raamSaadud = UiStiil.LooSisend(out txtSaadud, 150, false, "0.00");
@@ -173,7 +177,7 @@ public partial class MaksmineVorm : Form
             AktiivneKasutaja.Uuenda();
             if (AktiivneKasutaja.TsekkEmailile) txtEmail.Text = AktiivneKasutaja.Email ?? "";
             if (AktiivneKasutaja.Kaardinumber != null) txtKaart.Text = AktiivneKasutaja.Kaardinumber;
-            rbKaart.Checked = true;   // e-poes makstakse kaardiga
+            rbPank.Checked = true;    // e-poes: päris makse pangaülekandega poe kontole
             rbKojuvedu.Checked = true; // e-poest tuuakse koju (aadress seadetest)
             txtAadress.Text = AktiivneKasutaja.Aadress ?? "";
             txtEmail.Focus();
@@ -316,6 +320,13 @@ public partial class MaksmineVorm : Form
         lblMaksta.Text = Ostukorv.Eur(summa);
         kokkuvote?.Naita(soodustus, TarneHind(), summa);
 
+        if (rbPank.Checked)
+        {
+            txtSaadud.Text = summa.ToString("0.00", CultureInfo.InvariantCulture);
+            lblTagasi.Text = Keel.F("Ülekanne kontole {0} – rekvisiidid ja QR-kood pärast tellimist", MakseSeaded.Lae().IbanLoetav);
+            lblTagasi.ForeColor = Teema.Tekst2;
+            return;
+        }
         if (rbKaart.Checked)
         {
             txtSaadud.Text = summa.ToString("0.00", CultureInfo.InvariantCulture);
@@ -414,9 +425,9 @@ public partial class MaksmineVorm : Form
                 Summa = summa,
                 Kasutaja = AktiivneKasutaja.OnOstja ? "e-pood" : AktiivneKasutaja.Nimi,
                 Email = email.Length > 0 ? email : null,
-                Makstud = true,
-                MakstudSumma = saadud,
-                Makseviis = rbKaart.Checked ? "Kaart" : "Sularaha",
+                Makstud = !rbPank.Checked,                 // ülekanne: makstud alles siis, kui raha laekub
+                MakstudSumma = rbPank.Checked ? 0 : saadud,
+                Makseviis = rbPank.Checked ? MakseSeaded.Pangaulekanne : rbKaart.Checked ? "Kaart" : "Sularaha",
                 Tarneviis = rbKojuvedu.Checked ? Tarne.Kojuvedu : Tarne.Kaasa,
                 TarneHind = tarneHind,
                 Aadress = rbKojuvedu.Checked ? aadress : null,
@@ -468,7 +479,7 @@ public partial class MaksmineVorm : Form
             db.SaveChanges();
             Tulemus = ost;
 
-            try { PdfFail = Arve.LooPdf(ost, true, saadud); }
+            try { PdfFail = Arve.LooPdf(ost, ost.Makstud, saadud); }
             catch (Exception ex)
             {
                 Teade.Show("Ost on salvestatud, kuid PDF-tšeki loomine ebaõnnestus:\n" + ex.Message, "PDF",
@@ -480,7 +491,9 @@ public partial class MaksmineVorm : Form
             try
             {
                 var omanik = TopLevel ? this : TopLevelControl as Form;
-                MakseOnnestusVorm.Naita(omanik != null && omanik.Visible ? omanik : null, ost, PdfFail);
+                var o = omanik != null && omanik.Visible ? omanik : null;
+                if (ost.Makseviis == MakseSeaded.Pangaulekanne) PangaMakseVorm.Naita(o, ost, PdfFail);   // rekvisiidid + QR
+                else MakseOnnestusVorm.Naita(o, ost, PdfFail);
             }
             catch { }
 

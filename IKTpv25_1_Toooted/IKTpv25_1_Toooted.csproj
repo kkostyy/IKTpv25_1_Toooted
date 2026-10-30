@@ -28,6 +28,8 @@
     <PackageReference Include="PdfSharpCore" Version="1.3.63" />
     <!-- paroolide räsi -->
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <!-- pangaülekande QR-kood (EPC / SEPA) -->
+    <PackageReference Include="QRCoder" Version="1.4.3" />
     <!-- e-posti rakenduse parool salvestatakse krüpteeritult (Windows DPAPI) -->
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
   </ItemGroup>

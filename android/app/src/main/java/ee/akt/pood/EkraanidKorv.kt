@@ -150,7 +150,7 @@ fun MaksmineEkraan(olek: AppOlek) {
     var kojuvedu by remember { mutableStateOf(olek.pood.seade("kojuvedu") != "0") }
     var aadress by remember { mutableStateOf(olek.pood.seade("aadress") ?: "") }
     var boonus by remember { mutableStateOf(false) }
-    var makse by remember { mutableStateOf("Kaart") }
+    var makse by remember { mutableStateOf(Pangamakse.VIIS) }   // päris makse: ülekanne poe kontole
     var aken by remember { mutableStateOf(Tarneaknad.aknad(olek.aeg()).firstOrNull()) }
     var paev by remember { mutableStateOf(aken?.toLocalDate()) }
     var viga by remember { mutableStateOf<String?>(null) }
@@ -216,9 +216,13 @@ fun MaksmineEkraan(olek: AppOlek) {
             Vahe(16.dp)
             T(Keel.t("Makse"), 15.sp, V.Tekst, FontWeight.ExtraBold)
             Vahe(8.dp)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                for (m in listOf("Kaart", "Sularaha"))
-                    Kiip(Keel.t(if (m == "Kaart") "Pangakaart" else "Sularaha kullerile"), V.Pind, V.Tekst, valitud = makse == m, onClick = { makse = m })
+            Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                for (m in listOf(Pangamakse.VIIS, "Kaart", "Sularaha"))
+                    Kiip(Keel.t(when (m) { "Kaart" -> "Pangakaart"; "Sularaha" -> "Sularaha kullerile"; else -> m }), V.Pind, V.Tekst, valitud = makse == m, onClick = { makse = m })
+            }
+            if (makse == Pangamakse.VIIS) {
+                Vahe(6.dp)
+                T(Keel.f("Ülekanne kontole {0} – rekvisiidid ja QR-kood pärast tellimist", Pangamakse.loetav(Pangamakse.iban(olek.pood))), 12.sp, V.Tekst2)
             }
             if (viga != null) { Vahe(10.dp); T(viga!!, 13.sp, V.Punane, FontWeight.Bold) }
         }
@@ -237,7 +241,7 @@ fun MaksmineEkraan(olek: AppOlek) {
                 T(eur(kokku), 30.sp, Color.White, FontWeight.ExtraBold)
             }
             Vahe(12.dp)
-            SuurNupp(Keel.f("Maksa {0}", eur(kokku)), {
+            SuurNupp(Keel.f(if (makse == Pangamakse.VIIS) "Telli · {0}" else "Maksa {0}", eur(kokku)), {
                 when {
                     kojuvedu && aadress.trim().length < 5 -> viga = Keel.t("Sisesta kojuveo aadress.")
                     kojuvedu && aken == null -> viga = Keel.t("Vali kojuveo päev ja kellaaeg.")
@@ -283,6 +287,7 @@ object Tarneaknad {
 @Composable
 fun MakseOnnestusEkraan(olek: AppOlek, ostId: Int) {
     val ost = remember(ostId) { olek.pood.ostud(olek.kasutaja?.nimi).firstOrNull { it.id == ostId } }
+    if (ost != null && Pangamakse.ootab(olek.pood, ost)) { PangaOotabEkraan(olek, ost); return }
     Column(Modifier.fillMaxSize().background(V.Tume).padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Row(
             Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(Color.White).padding(14.dp),
@@ -308,6 +313,22 @@ fun MakseOnnestusEkraan(olek: AppOlek, ostId: Int) {
         }
         Spacer(Modifier.weight(1f))
         SuurNupp(Keel.t("Vaata tšekki"), { olek.vaheleht(Ekraan.Profiil); olek.ava(Ekraan.Ajalugu) }, taust = Color.White, varv = V.Tekst, noolega = false)
+        Vahe(10.dp)
+        AaarisNupp(Keel.t("Tagasi poodi"), { olek.vaheleht(Ekraan.Avaleht) }, Modifier.fillMaxWidth(), Color.White)
+    }
+}
+
+// Pangaülekanne: tellimus vormistatud, ootab makset – QR-kood ja rekvisiidid
+@Composable
+fun PangaOotabEkraan(olek: AppOlek, ost: Ost) {
+    Column(Modifier.fillMaxSize().background(V.Tume).verticalScroll(rememberScrollState()).padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        T(Keel.t("Tellimus on vormistatud"), 24.sp, Color.White, FontWeight.ExtraBold, keskel = true)
+        Vahe(8.dp)
+        VaikeKiip(Keel.f("Ootab makset · tellimus nr {0}", ost.id), Color(0xFF4D3C14), Color(0xFFF5D76E))
+        Vahe(14.dp)
+        PangaRekvisiidid(olek, ost)
+        Vahe(16.dp)
+        SuurNupp(Keel.t("Minu ostud"), { olek.vaheleht(Ekraan.Profiil); olek.ava(Ekraan.Ajalugu) }, taust = Color.White, varv = V.Tekst, noolega = false)
         Vahe(10.dp)
         AaarisNupp(Keel.t("Tagasi poodi"), { olek.vaheleht(Ekraan.Avaleht) }, Modifier.fillMaxWidth(), Color.White)
     }
