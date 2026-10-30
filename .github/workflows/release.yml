@@ -30,6 +30,12 @@ jobs:
           -p:EnableCompressionInSingleFile=true -p:DebugType=none
       - name: Paki
         run: Copy-Item valjund\IKTpv25_1_Toooted.exe AktPood.exe
+      # Vanem zip-fail väljalaskest välja (seal peavad olema ainult AktPood.exe ja AktPood.apk)
+      - name: Eemalda zip
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release delete-asset "${{ inputs.versioon || github.ref_name }}" AktPood-Windows.zip -y -R "${{ github.repository }}"
       - uses: softprops/action-gh-release@v2
         with:
           files: AktPood.exe
