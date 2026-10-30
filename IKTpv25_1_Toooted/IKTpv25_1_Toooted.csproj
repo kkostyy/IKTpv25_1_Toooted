@@ -34,6 +34,11 @@
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
   </ItemGroup>
 
+  <!-- Tõlked (eesti → vene, inglise): Keel/tolked.json põimitakse programmi sisse -->
+  <ItemGroup>
+    <EmbeddedResource Include="Keel\tolked.json" LogicalName="tolked.json" />
+  </ItemGroup>
+
   <!-- Algtoodete pildid kopeeritakse väljundkausta; Program kopeerib need edasi AppData kausta -->
   <ItemGroup>
     <None Update="Pildid\*.png">
