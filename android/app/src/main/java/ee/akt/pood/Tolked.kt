@@ -290,5 +290,16 @@ object Tolked {
         L("Uus kampaania", "Новая акция", "New campaign"); L("Salvesta kampaania", "Сохранить акцию", "Save campaign"); L("Kampaania salvestatud", "Акция сохранена", "Campaign saved")
         L("Näita rohkem ({0} veel)", "Показать ещё (осталось {0})", "Show more ({0} left)")
         L("Kampaaniaid veel pole.", "Акций пока нет.", "No campaigns yet."); L("Käib", "Идёт", "Running"); L("Tulekul", "Скоро", "Upcoming"); L("Lõppenud", "Закончилась", "Ended")
+        // ---- pangaülekanne ----
+        L("Pangaülekanne", "Банковский перевод", "Bank transfer"); L("Telli · {0}", "Заказать · {0}", "Order · {0}")
+        L("Ülekanne kontole {0} – rekvisiidid ja QR-kood pärast tellimist", "Перевод на счёт {0} – реквизиты и QR-код после оформления", "Transfer to {0} – details and QR code after ordering")
+        L("Tellimus on vormistatud", "Заказ оформлен", "Order placed"); L("Ootab makset · tellimus nr {0}", "Ожидает оплаты · заказ № {0}", "Awaiting payment · order no. {0}")
+        L("Ootab makset", "Ожидает оплаты", "Awaiting payment")
+        L("Skaneeri pangaäpis või maksa internetipangas:", "Отсканируйте в приложении банка или оплатите в интернет-банке:", "Scan in your bank app or pay in online banking:")
+        L("Saaja", "Получатель", "Recipient"); L("Summa", "Сумма", "Amount"); L("Selgitus", "Пояснение", "Reference")
+        L("Kopeeri", "Копировать", "Copy"); L("Kopeeritud", "Скопировано", "Copied")
+        L("Kaup saadetakse / antakse kätte pärast makse laekumist.", "Товар отправляется / выдаётся после поступления оплаты.", "Goods are sent / handed over after payment arrives.")
+        L("Märgi makstuks", "Отметить оплаченным", "Mark as paid"); L("Ost nr {0} makstud", "Покупка № {0} оплачена", "Purchase no. {0} paid")
+        L("Makse rekvisiidid", "Реквизиты оплаты", "Payment details"); L("Minu ostud", "Мои покупки", "My purchases")
     }
 }

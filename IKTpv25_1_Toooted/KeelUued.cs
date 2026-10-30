@@ -351,7 +351,26 @@ public static partial class Keel
         L("Kõik {0} ▾", "Все {0} ▾", "All {0} ▾");
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
         // --- Telefoni funktsioonid arvutis ---
-        L("Minu ostud", "Мои покупки", "My purchases"); L("Laadin tooteid…", "Загружаю товары…", "Loading products…");
+        L("Minu ostud", "Мои покупки", "My purchases");
+        L("Pangaülekanne", "Банковский перевод", "Bank transfer"); L("PANGAÜLEKANNE", "БАНКОВСКИЙ ПЕРЕВОД", "BANK TRANSFER");
+        L("Ülekanne kontole {0} – rekvisiidid ja QR-kood pärast tellimist", "Перевод на счёт {0} – реквизиты и QR-код после оформления", "Transfer to {0} – details and QR code after ordering");
+        L("Tellimus on vormistatud", "Заказ оформлен", "Order placed"); L("Ootab makset · tellimus nr {0}", "Ожидает оплаты · заказ № {0}", "Awaiting payment · order no. {0}");
+        L("Skaneeri pangaäpis või maksa internetipangas:", "Отсканируйте в приложении банка или оплатите в интернет-банке:", "Scan in your bank app or pay in online banking:");
+        L("Saaja", "Получатель", "Recipient"); L("Summa", "Сумма", "Amount"); L("Selgitus", "Пояснение", "Reference");
+        L("Kopeeri", "Копировать", "Copy"); L("Kopeeritud", "Скопировано", "Copied"); L("Vaata arvet", "Посмотреть счёт", "View invoice"); L("Valmis", "Готово", "Done");
+        L("Kaup saadetakse / antakse kätte pärast makse laekumist.", "Товар отправляется / выдаётся после поступления оплаты.", "Goods are sent / handed over after payment arrives.");
+        L("Makse seaded", "Настройки оплаты", "Payment settings"); L("Makse seaded...", "Настройки оплаты...", "Payment settings...");
+        L("Pangaülekanne: ostja maksab sellele kontole. Tellimus on „Maksmata“, kuni märgid selle Ostude ajaloos makstuks.", "Банковский перевод: покупатель платит на этот счёт. Заказ «не оплачен», пока вы не отметите его оплаченным в истории покупок.", "Bank transfer: the buyer pays to this account. The order stays “Unpaid” until you mark it paid in purchase history.");
+        L("Saaja nimi", "Имя получателя", "Recipient name"); L("Sisesta saaja nimi.", "Введите имя получателя.", "Enter the recipient name.");
+        L("IBAN ei ole korrektne (kontrolli numbreid).", "IBAN неверный (проверьте цифры).", "IBAN is not valid (check the digits).");
+        L("Makse seaded salvestatud", "Настройки оплаты сохранены", "Payment settings saved");
+        L("Märgi makstuks", "Отметить оплаченным", "Mark as paid"); L("Makse rekvisiidid", "Реквизиты оплаты", "Payment details");
+        L("Kas raha {0} on kontole laekunud? Märgin ostu nr {1} makstuks.", "Деньги {0} пришли на счёт? Отмечаю покупку № {1} оплаченной.", "Has {0} arrived in the account? Marking purchase no. {1} as paid.");
+        L("Ost nr {0} makstud", "Покупка № {0} оплачена", "Purchase no. {0} paid");
+        L("See ost on juba makstud või tagastatud.", "Эта покупка уже оплачена или возвращена.", "This purchase is already paid or returned.");
+        L("Rekvisiidid on ainult maksmata pangaülekandega tellimustel.", "Реквизиты есть только у неоплаченных заказов с банковским переводом.", "Payment details exist only for unpaid bank-transfer orders.");
+        L("MAKSA ÜLEKANDEGA:", "ОПЛАТИТЕ ПЕРЕВОДОМ:", "PAY BY BANK TRANSFER:"); L("Palun tasu pangaülekandega:", "Пожалуйста, оплатите банковским переводом:", "Please pay by bank transfer:");
+        L("Makse", "Оплата", "Payment"); L("Ootab makset (pangaülekanne)", "Ожидает оплаты (банковский перевод)", "Awaiting payment (bank transfer)"); L("Laadin tooteid…", "Загружаю товары…", "Loading products…");
         L("Tšeki ja e-kirja keel", "Язык чека и письма", "Receipt and e-mail language");
         L("Gmail ei aktsepteerinud kasutajat või parooli ({0}).", "Gmail не принял логин или пароль ({0}).", "Gmail did not accept the user or password ({0}).");
         L("• Saatja aadress peab olema täpselt see Gmaili konto, millele rakenduse parool loodi.", "• Адрес отправителя должен быть именно тем аккаунтом Gmail, для которого создан пароль приложения.", "• The sender address must be exactly the Gmail account the app password was created for.");

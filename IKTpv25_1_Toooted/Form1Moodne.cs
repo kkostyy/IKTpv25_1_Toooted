@@ -258,6 +258,7 @@ namespace IKTpv25_1_Toooted
             L("Õhtune soodustus...", () => AvaVorm(new OhtuSeadedVorm()), true);
             L("Kasutajad...", () => AvaVorm(new KasutajadVorm()), true);
             L("E-posti seaded...", () => AvaVorm(new EmailSeadedVorm()), true);
+            L("Makse seaded...", () => AvaVorm(new MakseSeadedVorm()), true);
             L("Registreeri kasutaja...", () => AvaVorm(new RegistreerimineVorm(lubaOmanik: true)), true);
             m.Items.Add(new ToolStripSeparator());
             ToolStripMenuItem V(string t, Action a, bool valitud) { var i = new ToolStripMenuItem(Keel.T(t), null, (s, e) => a()) { Checked = valitud }; m.Items.Add(i); return i; }

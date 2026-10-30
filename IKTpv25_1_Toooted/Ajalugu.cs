@@ -61,9 +61,15 @@ namespace IKTpv25_1_Toooted
             };
             nupud.Controls.Add(UiStiil.LooNupp("Osta uuesti", (s, e) => OstaUuesti(), true));
             nupud.Controls.Add(UiStiil.LooNupp("Tšekk (PDF)", (s, e) => PrindiTsekk()));
+            // maksmata pangaülekanne: rekvisiidid ja QR-kood uuesti
+            nupud.Controls.Add(UiStiil.LooNupp("Makse rekvisiidid", (s, e) => NaitaRekvisiite()));
             var tagasta = UiStiil.LooNupp("Tagasta ost", (s, e) => Tagasta());
             tagasta.Visible = lubaTagastus;
             nupud.Controls.Add(tagasta);
+            // pangaülekanne laekus kontole → omanik märgib ostu makstuks
+            var makstud = UiStiil.LooNupp("Märgi makstuks", (s, e) => MargiMakstuks());
+            makstud.Visible = lubaTagastus;
+            nupud.Controls.Add(makstud);
             if (ainultKlient == null)   // kogu poe müük ainult omanikule/müüjale
                 nupud.Controls.Add(UiStiil.LooNupp("Ekspordi müük (CSV)", (s, e) => CsvEksport.Myyk(this)));
             var sulge = UiStiil.LooNupp("Sulge", null);
@@ -205,6 +211,35 @@ namespace IKTpv25_1_Toooted
                 Arve.Ava(Arve.LooPdf(ost, ost.Makstud, ost.MakstudSumma));
             }
             catch (Exception ex) { Teade.Show("Tšeki loomine ebaõnnestus:\n" + ex.Message); }
+        }
+
+        private void NaitaRekvisiite()
+        {
+            if (ValitudNr() is not int nr) { Teade.Show("Vali ost."); return; }
+            using var db = new ToodedContext();
+            var ost = LaeOst(db, nr);
+            if (ost == null) return;
+            if (ost.Makseviis != MakseSeaded.Pangaulekanne || ost.Makstud || ost.Tagastatud)
+            {
+                Teade.Show("Rekvisiidid on ainult maksmata pangaülekandega tellimustel.");
+                return;
+            }
+            PangaMakseVorm.Naita(TopLevelControl as Form ?? this, ost, null);
+        }
+
+        private void MargiMakstuks()
+        {
+            if (ostud.CurrentRow?.DataBoundItem is not OstuVaade o) { Teade.Show("Vali ost."); return; }
+            if (o.Staatus != "Maksmata") { Teade.Show("See ost on juba makstud või tagastatud."); return; }
+            if (Teade.Show(Keel.F("Kas raha {0} on kontole laekunud? Märgin ostu nr {1} makstuks.", Ostukorv.Eur(o.Summa), o.Nr),
+                    "Makse", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+            try
+            {
+                MakseSeaded.MargiMakstuks(o.Nr);
+                Teade.Toast(Keel.F("Ost nr {0} makstud", o.Nr));
+                Laadi();
+            }
+            catch (Exception ex) { Teade.Show("Viga:\n" + ex.Message); }
         }
 
         // Tagastamine: kaup läheb tagasi lattu, kliendi boonus taastatakse
