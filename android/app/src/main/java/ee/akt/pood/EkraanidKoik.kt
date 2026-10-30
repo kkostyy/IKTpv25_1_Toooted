@@ -142,7 +142,14 @@ fun KassaEkraan(olek: AppOlek) {
 
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp).padding(bottom = 170.dp)) {
-            Pais("Kassa", { olek.tagasi() }, Keel.t("Müük poes"))
+            if (olek.kasutaja?.roll == Roll.Myyja)
+                // müüjal on kassa avaleht: tagasi asemel ostude ajalugu ja väljalogimine
+                Pais("Kassa", null, Keel.t("Müük poes") + " · " + (olek.kasutaja?.taisNimi ?: "")) {
+                    RingNupp(Ik.Tsekk, { olek.ava(Ekraan.Ajalugu) }, V.Pind, V.Tekst, 44.dp)
+                    Spacer(Modifier.width(8.dp))
+                    RingNupp(Ik.Valja, { olek.logiValja() }, V.Pind, V.Tekst, 44.dp)
+                }
+            else Pais("Kassa", { olek.tagasi() }, Keel.t("Müük poes"))
             Vahe(10.dp)
             Sisend(otsi, { otsi = it }, Keel.t("Otsi toodet või kaubamärki"), taust = V.Pind, ees = { Ikoon(Ik.Otsi, V.Tekst2, 18.dp) })
             for (t in vasted) {

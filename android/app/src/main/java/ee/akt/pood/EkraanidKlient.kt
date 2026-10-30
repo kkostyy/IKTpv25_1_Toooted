@@ -358,7 +358,7 @@ fun ProfiilEkraan(olek: AppOlek) {
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
                 T(k.taisNimi, 17.sp, Color.White, FontWeight.ExtraBold)
-                T(Keel.t(if (k.roll == Roll.Omanik) "Omanik" else "Ostja") + " · " + Keel.f("kaart {0}", k.kaart), 12.sp, Color(0xFFC9CCD1))
+                T(Keel.t(k.roll.nimi()) + " · " + Keel.f("kaart {0}", k.kaart), 12.sp, Color(0xFFC9CCD1))
             }
             Column(horizontalAlignment = Alignment.End) {
                 T(Keel.t("Boonus"), 11.sp, Color(0xFFC9CCD1))
@@ -410,7 +410,7 @@ fun ProfiilEkraan(olek: AppOlek) {
 // ---------------------------------------------------------------
 @Composable
 fun AjaluguEkraan(olek: AppOlek) {
-    val ostud = remember { olek.pood.ostud(if (olek.kasutaja?.roll == Roll.Omanik) null else olek.kasutaja?.nimi) }
+    val ostud = remember { olek.pood.ostud(if (olek.kasutaja?.roll == Roll.Klient) olek.kasutaja?.nimi else null) }   // omanik ja müüja näevad kõiki
     var valitud by remember { mutableStateOf(ostud.firstOrNull()) }
     var makseMuutus by remember { androidx.compose.runtime.mutableIntStateOf(0) }   // "Märgi makstuks" → joonista uuesti
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)) {

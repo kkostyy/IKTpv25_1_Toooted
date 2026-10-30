@@ -302,6 +302,8 @@ object Tolked {
         L("Märgi makstuks", "Отметить оплаченным", "Mark as paid"); L("Ost nr {0} makstud", "Покупка № {0} оплачена", "Purchase no. {0} paid")
         L("Makse rekvisiidid", "Реквизиты оплаты", "Payment details"); L("Minu ostud", "Мои покупки", "My purchases")
         L("Ava Swedbanki äpp", "Открыть приложение Swedbank", "Open Swedbank app")
+        L("Müüja", "Продавец", "Seller"); L("Tee müüjaks", "Сделать продавцом", "Make seller")
+        L("Proovi: mari / mari123 (klient), myyja / myyja123 (müüja) või admin / admin123 (omanik)", "Попробуйте: mari / mari123 (клиент), myyja / myyja123 (продавец) или admin / admin123 (владелец)", "Try: mari / mari123 (customer), myyja / myyja123 (seller) or admin / admin123 (owner)")
         L("IBAN kopeeritud – kleebi pangaäpis. Summa {0}, selgitus „{1}“", "IBAN скопирован – вставьте в приложении банка. Сумма {0}, пояснение «{1}»", "IBAN copied – paste it in the bank app. Amount {0}, reference “{1}”")
     }
 }

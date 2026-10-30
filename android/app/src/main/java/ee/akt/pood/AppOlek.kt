@@ -154,7 +154,7 @@ class AppOlek(val pood: Pood, private val kell: () -> LocalDateTime = { LocalDat
     fun logiSisse(nimi: String, parool: String): Boolean {
         val k = pood.logiSisse(nimi, parool) ?: return false
         kasutaja = k
-        vaheleht(if (k.roll == Roll.Omanik) Ekraan.Admin else Ekraan.Avaleht)
+        vaheleht(when (k.roll) { Roll.Omanik -> Ekraan.Admin; Roll.Myyja -> Ekraan.Kassa; Roll.Klient -> Ekraan.Avaleht })
         kontrolliLemmikuid()
         return true
     }
