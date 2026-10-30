@@ -352,6 +352,8 @@ public static partial class Keel
         L("Muudatused on salvestamata. Kas sulgen ikkagi?", "Изменения не сохранены. Всё равно закрыть?", "Changes are not saved. Close anyway?");
         // --- Telefoni funktsioonid arvutis ---
         L("Minu ostud", "Мои покупки", "My purchases");
+        L("Ava Swedbanki internetipank", "Открыть интернет-банк Swedbank", "Open Swedbank online banking");
+        L("IBAN kopeeritud – kleebi pangaäpis. Summa {0}, selgitus „{1}“", "IBAN скопирован – вставьте в банке. Сумма {0}, пояснение «{1}»", "IBAN copied – paste it in your bank. Amount {0}, reference “{1}”");
         L("Pangaülekanne", "Банковский перевод", "Bank transfer"); L("PANGAÜLEKANNE", "БАНКОВСКИЙ ПЕРЕВОД", "BANK TRANSFER");
         L("Ülekanne kontole {0} – rekvisiidid ja QR-kood pärast tellimist", "Перевод на счёт {0} – реквизиты и QR-код после оформления", "Transfer to {0} – details and QR code after ordering");
         L("Tellimus on vormistatud", "Заказ оформлен", "Order placed"); L("Ootab makset · tellimus nr {0}", "Ожидает оплаты · заказ № {0}", "Awaiting payment · order no. {0}");
