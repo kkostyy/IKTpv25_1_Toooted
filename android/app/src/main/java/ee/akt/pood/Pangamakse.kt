@@ -23,6 +23,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -39,6 +42,7 @@ object Pangamakse {
     const val VIIS = "Pangaülekanne"
     private const val SAAJA = "KONSTANTIN GAPONENKO"
     private const val IBAN = "EE502200221075082971"
+    const val SWEDBANK = "com.swedbank"   // "Swedbank Eestis" (Google Play)
 
     fun saaja(pood: Pood) = pood.seade("pank_saaja") ?: SAAJA
     fun iban(pood: Pood) = (pood.seade("pank_iban") ?: IBAN).replace(" ", "")
@@ -68,8 +72,20 @@ fun PangaRekvisiidid(olek: AppOlek, ost: Ost) {
     val maatriks = remember(ost.id) { Pangamakse.qr(Pangamakse.epc(olek.pood, ost.summa, selgitus)) }
     val louend = LocalClipboardManager.current
     var kopeeritud by remember { mutableStateOf<String?>(null) }
+    val kontekst = LocalContext.current
 
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        // IBAN lõikelauale ja Swedbanki äpp lahti (pole paigaldatud → Google Play)
+        SuurNupp(Keel.t("Ava Swedbanki äpp"), {
+            louend.setText(AnnotatedString(iban))
+            kopeeritud = "IBAN"
+            olek.teade = Keel.f("IBAN kopeeritud – kleebi pangaäpis. Summa {0}, selgitus „{1}“", eur(ost.summa), selgitus)
+            val ava = kontekst.packageManager.getLaunchIntentForPackage(Pangamakse.SWEDBANK)
+                ?: Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + Pangamakse.SWEDBANK))
+            ava.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            runCatching { kontekst.startActivity(ava) }
+        }, taust = Color(0xFFFF7900), noolega = true)
+        Vahe(14.dp)
         if (maatriks != null)
             Box(Modifier.size(210.dp).clip(RoundedCornerShape(18.dp)).background(Color.White).padding(12.dp)) {
                 Canvas(Modifier.size(186.dp)) {
