@@ -95,7 +95,7 @@ fun SisseEkraan(olek: AppOlek) {
                 T(Keel.t("Pole kontot? Registreeru"), 14.sp, V.Ploom, FontWeight.Bold)
             }
             Vahe(6.dp)
-            T(Keel.t("Proovi: mari / mari123 (klient) või admin / admin123 (omanik)"), 11.sp, V.Nork, modifier = Modifier.fillMaxWidth(), keskel = true)
+            T(Keel.t("Proovi: mari / mari123 (klient), myyja / myyja123 (müüja) või admin / admin123 (omanik)"), 11.sp, V.Nork, modifier = Modifier.fillMaxWidth(), keskel = true)
         }
     }
 }

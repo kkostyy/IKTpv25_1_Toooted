@@ -103,6 +103,7 @@ class SqlPood(private val context: Context) : SQLiteOpenHelper(context, "akt.db"
     override fun onOpen(db: SQLiteDatabase) {
         super.onOpen(db)
         if (db.isReadOnly) return
+        runCatching { lisaMyyja(db) }
         val uus = Rimi.versioon(context) ?: return
         val praegu = db.rawQuery("SELECT vaartus FROM seaded WHERE voti='kataloog'", null).use { if (it.moveToFirst()) it.getString(0) else null }
         if (praegu == uus) return
@@ -151,6 +152,16 @@ class SqlPood(private val context: Context) : SQLiteOpenHelper(context, "akt.db"
         }
     }
 
+    // Müüja (myyja / myyja123) – lisatakse ka vanasse andmebaasi (rakenduse uuendus)
+    private fun lisaMyyja(db: SQLiteDatabase) {
+        val olemas = db.rawQuery("SELECT 1 FROM kasutajad WHERE nimi='myyja'", null).use { it.moveToFirst() }
+        if (olemas) return
+        db.insert("kasutajad", null, ContentValues().apply {
+            put("nimi", "myyja"); put("taisNimi", "Mati Müüja"); put("rasi", Parool.rasi("myyja123")); put("roll", Roll.Myyja.name)
+            put("kaart", "099999"); put("boonus", 0)
+        })
+    }
+
     private fun lisaKasutajad(db: SQLiteDatabase) {
         db.insert("kasutajad", null, ContentValues().apply {
             put("nimi", "admin"); put("taisNimi", "Admin Omanik"); put("rasi", Parool.rasi("admin123")); put("roll", Roll.Omanik.name)
@@ -160,6 +171,7 @@ class SqlPood(private val context: Context) : SQLiteOpenHelper(context, "akt.db"
             put("nimi", "mari"); put("taisNimi", "Mari Maasikas"); put("rasi", Parool.rasi("mari123")); put("roll", Roll.Klient.name)
             put("kaart", "100001"); put("boonus", 42); put("email", "mari@email.ee")
         })
+        lisaMyyja(db)
         for ((tekst, ostetud) in listOf("Piim" to false, "Leib" to true, "Banaanid" to false, "Kohv" to false))
             db.insert("nimekiri", null, ContentValues().apply { put("tekst", tekst); put("ostetud", if (ostetud) 1 else 0); put("lisaja", "Mari") })
     }

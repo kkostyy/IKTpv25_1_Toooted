@@ -33,7 +33,10 @@ data class Toode(
     val laos: Boolean get() = kogus > 0
 }
 
-enum class Roll { Omanik, Klient }
+// Müüja (nagu arvutis): näeb ainult kassat ja ostude ajalugu
+enum class Roll { Omanik, Myyja, Klient }
+
+fun Roll.nimi(): String = when (this) { Roll.Omanik -> "Omanik"; Roll.Myyja -> "Müüja"; Roll.Klient -> "Ostja" }
 
 data class Kasutaja(
     val nimi: String,

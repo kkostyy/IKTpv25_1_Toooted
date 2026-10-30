@@ -142,7 +142,7 @@ fun SeadedEkraan(olek: AppOlek) {
             ReaSumma(Keel.t("Versioon"), "1.3")
             ReaSumma(Keel.t("Tooteid kataloogis"), olek.tooted.size.toString())
             ReaSumma(Keel.t("Kataloog"), olek.pood.seade("kataloog")?.removePrefix("rimi-")?.replace('T', ' ') ?: "–")
-            ReaSumma(Keel.t("Kasutaja"), "${k.nimi} · ${Keel.t(if (k.roll == Roll.Omanik) "Omanik" else "Ostja")}")
+            ReaSumma(Keel.t("Kasutaja"), "${k.nimi} · ${Keel.t(k.roll.nimi())}")
         }
         AaarisNupp(Keel.t("Logi välja"), { olek.logiValja() }, Modifier.fillMaxWidth(), V.Punane)
     }
@@ -407,7 +407,7 @@ fun KliendidEkraan(olek: AppOlek) {
                 Modifier.fillMaxWidth().vajuta { lahti = if (lahti == k.nimi) null else k.nimi }.padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Initsiaalid(k.initsiaalid, if (k.roll == Roll.Omanik) V.Tume else V.Ploom, 42.dp)
+                Initsiaalid(k.initsiaalid, when (k.roll) { Roll.Omanik -> V.Tume; Roll.Myyja -> V.Roheline; Roll.Klient -> V.Ploom }, 42.dp)
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     T(k.taisNimi, 15.sp, V.Tekst, FontWeight.Bold, read = 1)
@@ -419,10 +419,11 @@ fun KliendidEkraan(olek: AppOlek) {
                 }
             }
             if (lahti == k.nimi && k.nimi != olek.kasutaja?.nimi) Row(Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                val omanik = k.roll == Roll.Omanik
-                Kiip(Keel.t(if (omanik) "Tee kliendiks" else "Tee omanikuks"), V.Paneel, V.Tekst, onClick = {
-                    olek.pood.muudaRolli(k.nimi, if (omanik) Roll.Klient else Roll.Omanik); kasutajad = olek.pood.kasutajad()
-                })
+                // roll: ostja / müüja / omanik
+                for ((r, tekst) in listOf(Roll.Klient to "Tee kliendiks", Roll.Myyja to "Tee müüjaks", Roll.Omanik to "Tee omanikuks"))
+                    if (k.roll != r) Kiip(Keel.t(tekst), V.Paneel, V.Tekst, onClick = {
+                        olek.pood.muudaRolli(k.nimi, r); kasutajad = olek.pood.kasutajad()
+                    })
                 Kiip(Keel.t("Kustuta kasutaja"), V.Roosa, V.Punane, onClick = {
                     olek.pood.kustutaKasutaja(k.nimi); kasutajad = olek.pood.kasutajad(); lahti = null
                     olek.teade = Keel.f("Kasutaja {0} kustutatud", k.nimi)
