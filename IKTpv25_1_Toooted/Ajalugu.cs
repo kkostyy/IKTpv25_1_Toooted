@@ -22,20 +22,22 @@ namespace IKTpv25_1_Toooted
     public partial class OstudVorm : KujundusVorm
     {
         private readonly bool lubaTagastus;
+        private readonly int? ainultKlient;   // "Minu ostud" (poes): ainult selle kliendi ostud
         private readonly DataGridView ostud, read;
         private readonly CheckBox naitaTagastatud;
 
         // Ostud, mis selles aknas tagastati (Kassa peab neist teadma)
         public List<int> TagastatudOstud { get; } = new();
 
-        public OstudVorm(bool lubaTagastus) : base("Ostude ajalugu", 820, 600)
+        public OstudVorm(bool lubaTagastus, int? ainultKlient = null) : base(ainultKlient != null ? "Minu ostud" : "Ostude ajalugu", 820, 600)
         {
             this.lubaTagastus = lubaTagastus;
+            this.ainultKlient = ainultKlient;
             FormBorderStyle = FormBorderStyle.Sizable;
             MaximizeBox = true;
             MinimumSize = new Size(700, 500);
 
-            Pealkiri("Ostude ajalugu");
+            Pealkiri(ainultKlient != null ? "Minu ostud" : "Ostude ajalugu");
 
             naitaTagastatud = new CheckBox { Text = "Näita ka tagastatud", AutoSize = true, Location = new Point(620, 22), Anchor = AnchorStyles.Top | AnchorStyles.Right };
             naitaTagastatud.CheckedChanged += (s, e) => Laadi();
@@ -62,7 +64,8 @@ namespace IKTpv25_1_Toooted
             var tagasta = UiStiil.LooNupp("Tagasta ost", (s, e) => Tagasta());
             tagasta.Visible = lubaTagastus;
             nupud.Controls.Add(tagasta);
-            nupud.Controls.Add(UiStiil.LooNupp("Ekspordi müük (CSV)", (s, e) => CsvEksport.Myyk(this)));
+            if (ainultKlient == null)   // kogu poe müük ainult omanikule/müüjale
+                nupud.Controls.Add(UiStiil.LooNupp("Ekspordi müük (CSV)", (s, e) => CsvEksport.Myyk(this)));
             var sulge = UiStiil.LooNupp("Sulge", null);
             sulge.DialogResult = DialogResult.Cancel;
             nupud.Controls.Add(sulge);
@@ -95,8 +98,10 @@ namespace IKTpv25_1_Toooted
             using var db = new ToodedContext();
             bool koik = naitaTagastatud.Checked;
 
+            int? klient = ainultKlient;
             ostud.DataSource = db.Ostud
                 .Where(o => koik || !o.Tagastatud)
+                .Where(o => klient == null || o.KlientId == klient)
                 .OrderByDescending(o => o.Aeg)
                 .Select(o => new OstuVaade
                 {
@@ -377,10 +382,11 @@ namespace IKTpv25_1_Toooted
     public class EmailSeadedVorm : KujundusVorm
     {
         private readonly TextBox txtSaatja, txtParool, txtTest;
+        private readonly ComboBox cmbKeel;
         private readonly Label lblOlek;
         private readonly EmailSeaded seaded = EmailSeaded.Lae();
 
-        public EmailSeadedVorm() : base("E-posti seaded", 420, 470)
+        public EmailSeadedVorm() : base("E-posti seaded", 420, 530)
         {
             KysiSulgemisel = true;
             Pealkiri("E-posti seaded");
@@ -406,12 +412,24 @@ namespace IKTpv25_1_Toooted
             var salvesta = Nupp("Salvesta", 20, 285, true);
             salvesta.Click += (s, e) => Salvesta();
 
-            Silt("Testkiri (kontrolli, kas saatmine töötab)", 20, 340);
-            txtTest = Sisend(20, 360, 270);
-            txtTest.PlaceholderText = "sinu@email.ee";
-            Nupp("Saada testkiri", 296, 355).Click += (s, e) => SaadaTest();
+            // Tšeki ja e-kirja keel (eraldi programmi keelest) – salvestub kohe
+            Silt("Tšeki ja e-kirja keel", 20, 336);
+            cmbKeel = new ComboBox { Location = new Point(20, 356), Width = 380, DropDownStyle = ComboBoxStyle.DropDownList };
+            foreach (KeeleKood k in Enum.GetValues<KeeleKood>()) cmbKeel.Items.Add(Keel.Nimi(k));
+            cmbKeel.SelectedIndex = (int)seaded.TsekiKeeleKood;
+            cmbKeel.SelectedIndexChanged += (s, e) =>
+            {
+                seaded.TsekiKeel = ((KeeleKood)cmbKeel.SelectedIndex).ToString();
+                try { seaded.Salvesta(); } catch { }
+            };
+            Controls.Add(cmbKeel);
 
-            var maerkus = Silt("Parool hoitakse krüpteeritult failis AppData\\Local\\ToodedApp\\email.json,\nmitte koodis – GitHubi see ei satu.", 20, 405);
+            Silt("Testkiri (kontrolli, kas saatmine töötab)", 20, 400);
+            txtTest = Sisend(20, 420, 270);
+            txtTest.PlaceholderText = "sinu@email.ee";
+            Nupp("Saada testkiri", 296, 415).Click += (s, e) => SaadaTest();
+
+            var maerkus = Silt("Parool hoitakse krüpteeritult failis AppData\\Local\\ToodedApp\\email.json,\nmitte koodis – GitHubi see ei satu.", 20, 465);
             maerkus.ForeColor = Color.Gray;
             maerkus.MaximumSize = new Size(380, 0);   // pikk failitee murtakse, ei lähe kaardist välja
 
@@ -465,8 +483,7 @@ namespace IKTpv25_1_Toooted
             catch (Exception ex)
             {
                 Cursor = Cursors.Default;
-                Teade.Show("Saatmine ebaõnnestus:\n" + ex.Message +
-                                "\n\nKontrolli, et kasutad RAKENDUSE parooli (mitte tavalist) ja kaheastmeline kinnitamine on sees.");
+                Teade.Show(Keel.T("Saatmine ebaõnnestus:") + "\n" + ex.Message, "E-post", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

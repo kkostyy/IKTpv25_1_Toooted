@@ -184,8 +184,11 @@ fun AvalehtEkraan(olek: AppOlek) {
         Vahe(12.dp)
         HooajaRiba(olek)
         Vahe(12.dp)
-        val tooted = olek.tooted.filter { Dieet.sobib(it, olek.dieet) }
-        tooted.filter { it.laos }.maxByOrNull { it.soodusProtsent ?: 0 }?.let { NadalaPakkumine(olek, it) }
+        // arvutatakse ainult siis, kui tooted või dieet muutuvad (mitte igal ümberjoonistamisel)
+        val tooted = remember(olek.tooted, olek.dieet) { olek.tooted.filter { Dieet.sobib(it, olek.dieet) } }
+        val nadala = remember(tooted) { tooted.filter { it.laos }.maxByOrNull { it.soodusProtsent ?: 0 } }
+        val parimad = remember(tooted) { tooted.filter { it.soodusProtsent != null && it.laos }.sortedByDescending { it.soodusProtsent }.take(6) }
+        nadala?.let { NadalaPakkumine(olek, it) }
         Vahe(12.dp)
         TarneKaart(olek)
         Vahe(12.dp)
@@ -200,7 +203,7 @@ fun AvalehtEkraan(olek: AppOlek) {
             T(Keel.t("Kõik"), 14.sp, V.Ploom, FontWeight.Bold, Modifier.vajuta { olek.ava(Ekraan.Ruudustik("Kampaaniad", vaade = "kampaaniad")) })
         }
         Vahe(10.dp)
-        Ruudud(olek, tooted.filter { it.soodusProtsent != null && it.laos }.sortedByDescending { it.soodusProtsent }.take(6))
+        Ruudud(olek, parimad)
     }
 }
 
@@ -348,9 +351,9 @@ fun ToodeKaart(olek: AppOlek, t: Toode, modifier: Modifier = Modifier) {
 fun OtsingEkraan(olek: AppOlek, algus: String) {
     var otsi by remember { mutableStateOf(algus) }
     val s = otsi.trim()
-    val vasted = if (s.isEmpty()) emptyList() else olek.tooted.filter {
+    val vasted = remember(s, olek.tooted) { if (s.isEmpty()) emptyList() else olek.tooted.filter {
         it.nimi.contains(s, true) || (it.kaubamark ?: "").contains(s, true)
-    }.sortedWith(compareByDescending<Toode> { it.nimi.startsWith(s, true) }.thenByDescending { it.laos }.thenBy { it.nimi })
+    }.sortedWith(compareByDescending<Toode> { it.nimi.startsWith(s, true) }.thenByDescending { it.laos }.thenBy { it.nimi }) }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp).padding(bottom = 92.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             RingNupp(Ik.Vasak, { olek.tagasi() }, V.Pind, V.Tekst, 48.dp)
@@ -371,7 +374,8 @@ fun OtsingEkraan(olek: AppOlek, algus: String) {
             Vahe(18.dp)
             T(Keel.t("Teised otsivad"), 16.sp, V.Tekst, FontWeight.ExtraBold)
             Vahe(10.dp)
-            Kaart(sisu = 6.dp) { for (t in olek.tooted.filter { it.laos }.sortedByDescending { it.soodusProtsent ?: 0 }.take(5)) OtsinguRida(olek, t, "") }
+            val populaarsed = remember(olek.tooted) { olek.tooted.filter { it.laos }.sortedByDescending { it.soodusProtsent ?: 0 }.take(5) }
+            Kaart(sisu = 6.dp) { for (t in populaarsed) OtsinguRida(olek, t, "") }
         } else if (vasted.isEmpty()) {
             Kaart {
                 Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -417,18 +421,23 @@ private fun OtsinguRida(olek: AppOlek, t: Toode, otsi: String) {
 fun RuudustikEkraan(olek: AppOlek, e: Ekraan.Ruudustik) {
     var jarjestus by remember { mutableIntStateOf(0) }
     var naita by remember { mutableIntStateOf(40) }   // suur kataloog: 40 kaupa
-    val alus = when (e.vaade) {
-        "kampaaniad" -> olek.tooted.filter { it.soodusProtsent != null }
-        "lemmikud" -> olek.tooted.filter { it.id in olek.lemmikud }
-        "koik" -> olek.tooted
-        "raiskamine" -> olek.tooted.filter { Raiskamine.aegub(it, olek.aeg().toLocalDate()) != null }
-        else -> olek.tooted.filter { it.kategooriaId == e.kategooriaId }
-    }.filter { Dieet.sobib(it, olek.dieet) }
-    val tooted = when (jarjestus) {
-        1 -> alus.sortedBy { olek.hind(it).hind }
-        2 -> alus.sortedWith(compareBy<Toode> { it.uhikuHind == null }.thenBy { it.uhik ?: "" }.thenBy { it.uhikuHind ?: it.hind })
-        3 -> alus.sortedByDescending { it.soodusProtsent ?: 0 }
-        else -> alus.sortedBy { it.nimi }
+    // filtreerimine ja järjestamine (kuni 9000 toodet) ainult siis, kui midagi päriselt muutus
+    val alus = remember(e, olek.tooted, olek.lemmikud, olek.dieet, olek.hinnadMuutusid) {
+        when (e.vaade) {
+            "kampaaniad" -> olek.tooted.filter { it.soodusProtsent != null }
+            "lemmikud" -> olek.tooted.filter { it.id in olek.lemmikud }
+            "koik" -> olek.tooted
+            "raiskamine" -> olek.tooted.filter { Raiskamine.aegub(it, olek.aeg().toLocalDate()) != null }
+            else -> olek.tooted.filter { it.kategooriaId == e.kategooriaId }
+        }.filter { Dieet.sobib(it, olek.dieet) }
+    }
+    val tooted = remember(alus, jarjestus) {
+        when (jarjestus) {
+            1 -> alus.sortedBy { olek.hind(it).hind }
+            2 -> alus.sortedWith(compareBy<Toode> { it.uhikuHind == null }.thenBy { it.uhik ?: "" }.thenBy { it.uhikuHind ?: it.hind })
+            3 -> alus.sortedByDescending { it.soodusProtsent ?: 0 }
+            else -> alus.sortedBy { it.nimi }
+        }
     }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp).padding(bottom = 92.dp)) {
         Pais(lyhike(e.pealkiri), { olek.tagasi() }, Keel.f("{0} toodet", tooted.size))

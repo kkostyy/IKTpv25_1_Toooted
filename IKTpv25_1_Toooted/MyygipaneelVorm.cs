@@ -30,7 +30,15 @@ public class MyygipaneelVorm : KujundusVorm
         yla.Controls.Add(new Label { Text = "Müügipaneel", Location = new Point(18, 14), AutoSize = true, Font = UiStiil.PealkirjaFont, ForeColor = Teema.Tekst, BackColor = Teema.Taust });
         perioodid = new FlowLayoutPanel { AutoSize = true, WrapContents = false, BackColor = Teema.Taust };
         yla.Controls.Add(perioodid);
-        yla.Resize += (s, e) => perioodid.Location = new Point(yla.Width - perioodid.Width - 18, 14);
+        // müük CSV-failina (nagu telefonis "Jaga CSV")
+        var csv = UiStiil.LooNupp("Ekspordi müük (CSV)", (s, e) => CsvEksport.Myyk(this));
+        yla.Controls.Add(csv);
+        yla.Resize += (s, e) =>
+        {
+            perioodid.Location = new Point(yla.Width - perioodid.Width - 18, 14);
+            int parem = moodneFilter != null ? yla.Width - moodneFilter.Width - 18 : perioodid.Left;
+            csv.Location = new Point(parem - csv.Width - 14, 16);
+        };
         if (Teema.OnMoodne)
         {
             yla.Height = 76;
@@ -113,7 +121,7 @@ public class MyygipaneelVorm : KujundusVorm
             var nyyd = DateTime.Now;
             var ostud = Myygianalyys.Ostud(db, nyyd.AddDays(-paevi), nyyd.AddMinutes(1));
             var enne = Myygianalyys.Ostud(db, nyyd.AddDays(-2 * paevi), nyyd.AddDays(-paevi));
-            var tooted = db.Toodetabel.AsNoTracking().ToDictionary(t => t.Id);
+            var tooted = db.Toodetabel.AsNoTracking().Kerged().ToDictionary(t => t.Id);
             var nimed = db.Kategooriatabel.AsNoTracking().ToDictionary(k => k.Id, k => k.Kategooria_nimetus);
 
             var k = Myygianalyys.Kpi(ostud, tooted);

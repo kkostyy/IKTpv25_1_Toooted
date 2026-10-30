@@ -36,7 +36,11 @@ public static class Teema
     public static bool OnMoodne => Stiil == Disain.Moodne;
 
     // WS_EX_COMPOSITED (kogu aken joonistatakse korraga, animatsioonid ei rebene); AKT_KOMPOSIIT=0 lülitab välja
-    public static bool Komposiit => OnMoodne && Environment.GetEnvironmentVariable("AKT_KOMPOSIIT") != "0";
+    // Suurtes akendes (pood, peaaken) on see vaikimisi VÄLJAS: iga väike muutus joonistas terve akna
+    // (sadu tootekaarte) uuesti ja kerimine hakkis. AKT_KOMPOSIIT=1 lülitab tagasi sisse.
+    public static bool Komposiit => OnMoodne && Environment.GetEnvironmentVariable("AKT_KOMPOSIIT") == "1";
+    // Väikesed dialoogid: endiselt sees (seal on vähe elemente ja animatsioonid ei rebene)
+    public static bool KomposiitDialoog => OnMoodne && Environment.GetEnvironmentVariable("AKT_KOMPOSIIT") != "0";
     public static string AktsendiNimi { get; private set; } = "Punane";
 
     // Ümarad nurgad (suuremad raadiused) ja külgmenüü

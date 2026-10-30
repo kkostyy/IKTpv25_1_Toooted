@@ -156,7 +156,7 @@ public class KorviReaKontroll : Control
         using (var path = Ymardus.Tee(kast, 8))
         using (var b = new SolidBrush(Teema.PildiTaust))
             g.FillPath(b, path);
-        if (PildiVahemalu.Too(rida.Pilt) is Image pilt)
+        if (PildiVahemalu.Pisi(rida.Pilt) is Image pilt)
             PildiVahemalu.Joonista(g, pilt, RectangleF.Inflate(kast, -4, -4));
 
         // Nimi ja hind

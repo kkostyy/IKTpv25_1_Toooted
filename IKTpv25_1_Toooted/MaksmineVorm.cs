@@ -475,6 +475,15 @@ public partial class MaksmineVorm : Form
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
 
+            // "Makse õnnestus!" kohe siin (nagu telefonis), enne maksmisakna sulgemist – nii ilmub see alati,
+            // ka siis, kui maksmine on poe sees (moodne disain) või peaaken on peidus (ostja)
+            try
+            {
+                var omanik = TopLevel ? this : TopLevelControl as Form;
+                MakseOnnestusVorm.Naita(omanik != null && omanik.Visible ? omanik : null, ost, PdfFail);
+            }
+            catch { }
+
             DialogResult = DialogResult.OK;
         }
         catch (Exception ex)

@@ -66,7 +66,7 @@ namespace IKTpv25_1_Toooted
         // ← Tagasi, Esc, Alt+←, hiire külgnupp: aken sulgub (muudatuste korral küsib enne)
         protected override CreateParams CreateParams
         {
-            get { var cp = base.CreateParams; if (Teema.Komposiit && TopLevel) cp.ExStyle |= 0x02000000; return cp; }
+            get { var cp = base.CreateParams; if (Teema.KomposiitDialoog && TopLevel) cp.ExStyle |= 0x02000000; return cp; }
         }
 
         public bool MineTagasi()

@@ -50,3 +50,16 @@ public class Toode
     public decimal? UhikuHind => UhikuKogus is decimal k && k > 0 ? Math.Round(Hind / k, 2) : null;
     public int? SoodusProtsent => VanaHind is decimal v && v > Hind ? (int)Math.Round((1 - Hind / v) * 100) : null;
 }
+
+public static class TooteParingud
+{
+    // Ilma pikkade tekstideta (kirjeldus, koostis, lisainfo, toiteväärtus): 9000 toote laadimine on mitu korda kiirem.
+    // Ainult seal, kus neid välju ega Kategooria objekti ei kasutata (müügipaneel, autotellimus).
+    public static IQueryable<Toode> Kerged(this IQueryable<Toode> q) => q.Select(t => new Toode
+    {
+        Id = t.Id, Toodenimetus = t.Toodenimetus, Kogus = t.Kogus, Hind = t.Hind, VanaHind = t.VanaHind, Pilt = t.Pilt,
+        KategooriaId = t.KategooriaId, Kaubamark = t.Kaubamark, Tootja = t.Tootja, Paritolumaa = t.Paritolumaa,
+        Pakend = t.Pakend, Uhik = t.Uhik, UhikuKogus = t.UhikuKogus, Margised = t.Margised, Pant = t.Pant,
+        Ostuhind = t.Ostuhind, Demo = t.Demo
+    });
+}
