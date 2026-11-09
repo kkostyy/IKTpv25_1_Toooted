@@ -37,7 +37,10 @@ internal static class Program
             }
 
             // Sama mis Update-Database, aga iga käivitamisel: andmebaas tekib ka teises arvutis
-            db.Database.Migrate();
+            // Vana/võõra tooded.db ("table ... already exists") parandab AndmebaasiParandus ise
+            string? uusBaas = AndmebaasiParandus.Uuenda();
+            if (uusBaas != null)
+                Teade.Show(uusBaas, "Andmebaas", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             // Kontroll: kas andmebaas vastab programmile? Kui uus migratsioon on tegemata,
             // tuleb viga siin (mitte hiljem poes)
