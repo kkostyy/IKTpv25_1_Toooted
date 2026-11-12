@@ -364,9 +364,39 @@ namespace IKTpv25_1_Toooted
             cmbKategooria.SelectedValue = rida.Cells["KategooriaId"].Value;
 
             uusPiltTee = null;                                  // olemasolevat pilti ei kopeerita uuesti
-            string? pildiNimi = Convert.ToString(rida.Cells["Pilt"].Value);
-            PildiVahemalu.Too(pildiNimi);   // veebipildi puhul alustab allalaadimist
-            NaitaPilti(Kaustad.PildiTee(pildiNimi));
+            valitudPilt = Convert.ToString(rida.Cells["Pilt"].Value);
+            PildiVahemalu.Too(valitudPilt);   // veebipildi puhul alustab allalaadimist
+            NaitaPilti(Kaustad.PildiTee(valitudPilt));
+            if (picPilt.Image == null && Kaustad.OnVeebiPilt(valitudPilt)) OotaPilti();
+        }
+
+        // Valitud toote veebipilt pole veel alla laaditud: näita seda, kui see tuleb
+        private string? valitudPilt;
+        private bool kuulabPilte;
+
+        private void OotaPilti()
+        {
+            if (kuulabPilte) return;
+            kuulabPilte = true;
+            PildiVahemalu.Laetud += ValitudPiltLaetud;
+            FormClosed += (_, _) => PildiVahemalu.Laetud -= ValitudPiltLaetud;
+        }
+
+        private void ValitudPiltLaetud()
+        {
+            if (!IsHandleCreated || IsDisposed) return;
+            try
+            {
+                BeginInvoke(new Action(() =>
+                {
+                    if (IsDisposed || uusPiltTee != null || picPilt.Image != null) return;
+                    if (string.IsNullOrEmpty(valitudPilt)) return;
+                    string? tee = Kaustad.PildiTee(valitudPilt);
+                    if (tee != null && File.Exists(tee)) NaitaPilti(tee);
+                    else PildiVahemalu.Too(valitudPilt);   // ebaõnnestus – proovib hiljem uuesti
+                }));
+            }
+            catch (InvalidOperationException) { }
         }
 
         // ---------------------------------------------------------------
@@ -418,6 +448,7 @@ namespace IKTpv25_1_Toooted
             txtKogus.Clear();
             txtHind.Clear();
             uusPiltTee = null;
+            valitudPilt = null;
             NaitaPilti(null);
         }
 

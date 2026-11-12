@@ -18,6 +18,7 @@ internal static class Program
         Application.AddMessageFilter(new DisainiKlahv());   // Ctrl+Shift+D igas aknas
         Application.AddMessageFilter(new TagasiHiir());     // hiire külgnupp = tagasi
         KiirklahvideFilter.Lisa();                          // F1 = kõik kiirklahvid, F2… = vaated
+        PildiVahemalu.UuendaAknadLaadimisel();              // veebist tulnud pildid ilmuvad kohe kõigis akendes
         ElementidePuu.Lisa();                               // F12 = elementide puu faili (ainult AKT_SILUMINE=1)
 
         try

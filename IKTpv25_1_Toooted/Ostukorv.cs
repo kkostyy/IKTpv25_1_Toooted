@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace IKTpv25_1_Toooted;
 
@@ -152,7 +152,31 @@ public static class PildiVahemalu
     private static readonly Dictionary<string, LinkedListNode<(string Voti, Image? Pilt)>> pildid = new(StringComparer.OrdinalIgnoreCase);
     private static readonly LinkedList<(string Voti, Image? Pilt)> jarjekord = new();   // ees = viimati kasutatud
     private static readonly HashSet<string> laadimisel = new(StringComparer.OrdinalIgnoreCase);
-    private static readonly HttpClient http = new() { Timeout = TimeSpan.FromSeconds(20) };
+    private static readonly HttpClient http = LooHttp();
+    // Ebaõnnestunud allalaadimine: millal uuesti proovida (mitte kogu seansiks tühjaks jätta)
+    private static readonly Dictionary<string, DateTime> uuestiProovida = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly TimeSpan Ooteaeg = TimeSpan.FromSeconds(20);
+
+    private static HttpClient LooHttp()
+    {
+        var h = new HttpClient { Timeout = TimeSpan.FromSeconds(20) };
+        // GDI+ ei oska WebP/AVIF-i – küsime ainult JPEG/PNG
+        h.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AKT");
+        h.DefaultRequestHeaders.TryAddWithoutValidation("Accept", "image/jpeg,image/png;q=0.9");
+        return h;
+    }
+
+    // Kas veebipilt ebaõnnestus hiljuti (siis ei proovi kohe uuesti)
+    private static bool HiljutiEbaonnestus(string voti)
+    {
+        lock (lukk)
+        {
+            if (!uuestiProovida.TryGetValue(voti, out var aeg)) return false;
+            if (DateTime.UtcNow < aeg) return true;
+            uuestiProovida.Remove(voti);
+            return false;
+        }
+    }
     private static readonly SemaphoreSlim veebiPiirang = new(6);
     private static readonly object lukk = new();
     private static System.Threading.Timer? teavitus;
@@ -197,16 +221,25 @@ public static class PildiVahemalu
         if (string.IsNullOrEmpty(failinimi)) return null;
         if (Vahemalus(failinimi, out var olemas)) return olemas;
         lock (lukk) if (laadimisel.Contains(failinimi)) return null;
+        if (HiljutiEbaonnestus(failinimi)) return null;
 
+        bool veeb = Kaustad.OnVeebiPilt(failinimi);
         string? tee = Kaustad.PildiTee(failinimi);
         if (tee == null || !File.Exists(tee))
         {
-            if (Kaustad.OnVeebiPilt(failinimi) && tee != null) AlustaLaadimist(failinimi, tee, veeb: true);
+            if (veeb && tee != null) AlustaLaadimist(failinimi, tee, veeb: true);
             else Pane(failinimi, null);
             return null;
         }
 
         var pilt = Vahenda(Kaustad.LaePilt(tee));
+        if (pilt == null && veeb)
+        {
+            // katkine koopia kettal (nt pooleli jäänud allalaadimine) – kustuta ja lae uuesti
+            KustutaFail(tee);
+            AlustaLaadimist(failinimi, tee, veeb: true);
+            return null;
+        }
         Pane(failinimi, pilt);
         return pilt;
     }
@@ -215,7 +248,9 @@ public static class PildiVahemalu
     public static bool Laeb(string? failinimi)
     {
         if (string.IsNullOrEmpty(failinimi)) return false;
-        lock (lukk) return laadimisel.Contains(failinimi) || !pildid.ContainsKey(failinimi);
+        lock (lukk)
+            return laadimisel.Contains(failinimi) ||
+                   (!pildid.ContainsKey(failinimi) && !uuestiProovida.ContainsKey(failinimi));
     }
 
     // Kaartide jaoks: ei loe kunagi UI-lõimes faili, vaid tagastab null ja laeb taustal ("Laetud" teatab)
@@ -223,6 +258,7 @@ public static class PildiVahemalu
     {
         if (string.IsNullOrEmpty(failinimi)) return null;
         if (Vahemalus(failinimi, out var olemas)) return olemas;
+        if (HiljutiEbaonnestus(failinimi)) return null;
         string? tee = Kaustad.PildiTee(failinimi);
         if (tee == null) return null;
         AlustaLaadimist(failinimi, tee, veeb: Kaustad.OnVeebiPilt(failinimi));
@@ -241,31 +277,111 @@ public static class PildiVahemalu
             Image? pilt = null;
             try
             {
-                if (!File.Exists(tee))
+                if (File.Exists(tee))
                 {
-                    if (!veeb) return;
+                    pilt = Vahenda(Kaustad.LaePilt(tee));
+                    if (pilt == null && veeb) KustutaFail(tee);   // katkine koopia – lae uuesti
+                }
+                if (pilt == null && veeb)
+                {
                     await veebiPiirang.WaitAsync();
-                    try
-                    {
-                        byte[] baidid = await http.GetByteArrayAsync(voti);
-                        Directory.CreateDirectory(Path.GetDirectoryName(tee)!);
-                        await File.WriteAllBytesAsync(tee, baidid);
-                    }
+                    try { pilt = await LaeVeebist(voti, tee); }
                     finally { veebiPiirang.Release(); }
                 }
-                pilt = Vahenda(Kaustad.LaePilt(tee));
             }
-            catch
+            catch (Exception ex)
             {
-                pilt = null;   // internetti pole – kaart näitab ikooni
+                pilt = null;   // internetti pole – kaart näitab ikooni, mõne aja pärast proovitakse uuesti
+                Logi(voti, ex);
             }
             finally
             {
-                Pane(voti, pilt);
-                lock (lukk) laadimisel.Remove(voti);
+                lock (lukk)
+                {
+                    laadimisel.Remove(voti);
+                    if (pilt == null && veeb) uuestiProovida[voti] = DateTime.UtcNow + Ooteaeg;
+                }
+                if (pilt != null || !veeb) Pane(voti, pilt);
                 Teavita();
             }
         });
+    }
+
+    // Laeb pildi veebist; kettale kirjutatakse ainult päris pilt (mitte HTML-veateade vms)
+    private static async Task<Image?> LaeVeebist(string url, string tee)
+    {
+        Exception? viimane = null;
+        for (int katse = 0; katse < 2; katse++)
+        {
+            try
+            {
+                byte[] baidid = await http.GetByteArrayAsync(url);
+                Image? pilt;
+                using (var ms = new MemoryStream(baidid))
+                using (var ajutine = Image.FromStream(ms))   // viga, kui see pole pilt
+                    pilt = new Bitmap(ajutine);
+
+                Directory.CreateDirectory(Path.GetDirectoryName(tee)!);
+                string ajutineFail = tee + ".tmp";
+                await File.WriteAllBytesAsync(ajutineFail, baidid);
+                File.Move(ajutineFail, tee, overwrite: true);
+                return Vahenda(pilt);
+            }
+            catch (Exception ex)
+            {
+                viimane = ex;
+                await Task.Delay(800);
+            }
+        }
+        throw viimane!;
+    }
+
+    private static void KustutaFail(string tee)
+    {
+        try { File.Delete(tee); } catch { }
+    }
+
+    // Esimesed vead faili pildid_viga.txt (AppData\Local\ToodedApp) – näha, miks pildid ei tule
+    private static int logitud;
+    private static void Logi(string url, Exception ex)
+    {
+        if (Interlocked.Increment(ref logitud) > 20) return;
+        try
+        {
+            File.AppendAllText(Path.Combine(Kaustad.Juur, "pildid_viga.txt"),
+                $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} {url}\n  {ex.GetType().Name}: {ex.Message}\n");
+        }
+        catch { }
+    }
+
+    // Kõik avatud aknad joonistavad end uuesti, kui pilte on juurde tulnud
+    // (ka vaated, mis ise "Laetud" sündmust ei kuula)
+    public static void UuendaAknadLaadimisel()
+    {
+        long viimane = 0;
+        Laetud += () =>
+        {
+            // kuni ~3 korda sekundis (suure kataloogi laadimisel tuleb pilte pidevalt)
+            long nyyd = Environment.TickCount64;
+            if (nyyd - Interlocked.Read(ref viimane) < 300) { Teavita(); return; }
+            Interlocked.Exchange(ref viimane, nyyd);
+
+            Form? esimene;
+            try { esimene = Application.OpenForms.Cast<Form>().FirstOrDefault(f => f.IsHandleCreated && !f.IsDisposed); }
+            catch { return; }
+            if (esimene == null) return;
+            try
+            {
+                esimene.BeginInvoke(new Action(() =>
+                {
+                    // pood ja tooteleht värskendavad ainult ootavaid kaarte ise
+                    foreach (Form f in Application.OpenForms.Cast<Form>().ToList())
+                        if (!f.IsDisposed && f is not PoodVorm && f is not PoodKlassikVorm && f is not ToodeVorm)
+                            f.Invalidate(true);
+                }));
+            }
+            catch { }
+        };
     }
 
     // Mitu pilti järjest → üks "Laetud" teade
