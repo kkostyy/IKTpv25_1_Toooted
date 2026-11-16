@@ -464,7 +464,7 @@ namespace IKTpv25_1_Toooted
             txtTest.PlaceholderText = "sinu@email.ee";
             Nupp("Saada testkiri", 296, 415).Click += (s, e) => SaadaTest();
 
-            var maerkus = Silt("Parool hoitakse krüpteeritult failis AppData\\Local\\ToodedApp\\email.json,\nmitte koodis – GitHubi see ei satu.", 20, 465);
+            var maerkus = Silt("Parool hoitakse krüpteeritult andmebaasis (tooded.db),\nmitte koodis – GitHubi see ei satu.", 20, 465);
             maerkus.ForeColor = Color.Gray;
             maerkus.MaximumSize = new Size(380, 0);   // pikk failitee murtakse, ei lähe kaardist välja
 

@@ -64,8 +64,9 @@ Pärast uuendusi: Package Manager Console → `Add-Migration Ostjad` (kui tegema
 ### E-post (juhend 4.2)
 
 Omanik: menüü **Haldus → E-posti seaded** → Gmaili aadress + 16-märgiline **rakenduse parool**
-→ Salvesta → Saada testkiri. Parool hoitakse krüpteeritult failis
-`AppData\Local\ToodedApp\email.json`, mitte koodis, seega GitHubi see ei satu.
+→ Salvesta → Saada testkiri. Parool hoitakse **ainult andmebaasis** (`tooded.db`, tabel `Seaded`)
+krüpteeritult (Windows DPAPI), koodis parooli pole, seega GitHubi see ei satu.
+Vana `email.json` viiakse esimesel käivitamisel automaatselt andmebaasi ja kustutatakse.
 
 ## Kasutajaliides
 

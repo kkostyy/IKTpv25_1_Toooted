@@ -24,7 +24,7 @@
   "1) Google'i kontol sisse lülitada kaheastmeline kinnitamine;": { "ru": "1) включите двухэтапную проверку в аккаунте Google;", "en": "1) turn on 2-step verification in your Google account;" },
   "2) myaccount.google.com → Turvalisus → Rakenduse paroolid;": { "ru": "2) myaccount.google.com → Безопасность → Пароли приложений;", "en": "2) myaccount.google.com → Security → App passwords;" },
   "3) loo uus ja kopeeri 16-märgiline parool siia.": { "ru": "3) создайте новый и скопируйте сюда 16-значный пароль.", "en": "3) create a new one and copy the 16-character password here." },
-  "Parool hoitakse krüpteeritult failis AppData\\Local\\ToodedApp\\email.json,": { "ru": "Пароль хранится в зашифрованном виде в файле AppData\\Local\\ToodedApp\\email.json,", "en": "The password is stored encrypted in AppData\\Local\\ToodedApp\\email.json," },
+  "Parool hoitakse krüpteeritult andmebaasis (tooded.db),": { "ru": "Пароль хранится в зашифрованном виде в базе данных (tooded.db),", "en": "The password is stored encrypted in the database (tooded.db)," },
   "mitte koodis – GitHubi see ei satu.": { "ru": "а не в коде – на GitHub он не попадёт.", "en": "not in the code – it won't end up on GitHub." },
   "PDF-tšekk on manuses.": { "ru": "PDF-чек во вложении.", "en": "The PDF receipt is attached." },
   "Täname ostu eest ({0}).": { "ru": "Спасибо за покупку ({0}).", "en": "Thank you for your purchase ({0})." },

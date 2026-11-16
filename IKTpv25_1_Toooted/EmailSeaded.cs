@@ -1,21 +1,20 @@
+using System.Data.Common;
 using System.Net;
 using System.Net.Mail;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted;
 
-// E-posti seaded: vaikimisi väärtused on allpool koodis. Menüüs Haldus → E-posti seaded
-// sisestatud andmed salvestatakse faili AppData\Local\ToodedApp\email.json
-// (parool krüpteeritult Windowsi DPAPI-ga) ja need on koodis olevatest tähtsamad.
+// E-posti seaded hoitakse AINULT andmebaasis (tooded.db, tabel "Seaded").
+// Koodis parooli ei ole: see sisestatakse menüüs Haldus → E-posti seaded.
+// Parool on krüpteeritud Windowsi DPAPI-ga (mitte räsitud: SMTP vajab sisselogimiseks
+// algset parooli, räsist seda tagasi ei saa).
 public class EmailSeaded
 {
-    // Vaikimisi Gmail ja RAKENDUSE parool (juhend 4.2) – töötab kohe, midagi ei pea sisestama.
-    // Menüüs Haldus → E-posti seaded saab need üle kirjutada.
-    // NB! Enne git push'i asenda parool tekstiga "xxxx" (juhendi kontroll-loend).
     public const string VaikeSaatja = "kosgaponenko@gmail.com";
-    private const string VaikeParool = "wtwu ddsx lgfe ingg";
 
     public string Saatja { get; set; } = "";              // nt pood@gmail.com
     public string ParoolKruptitud { get; set; } = "";     // Gmaili RAKENDUSE parool (16 märki), krüpteeritud
@@ -26,19 +25,42 @@ public class EmailSeaded
 
     public KeeleKood TsekiKeeleKood => Enum.TryParse(TsekiKeel, out KeeleKood k) ? k : KeeleKood.ET;
 
-    private static string Fail => Path.Combine(Kaustad.Juur, "email.json");
+    // Vana seadete fail (enne andmebaasi): loetakse üks kord sisse ja kustutatakse
+    private static string VanaFail => Path.Combine(Kaustad.Juur, "email.json");
 
-    private static bool VaikeParoolOlemas => VaikeParool.Length > 0 && !VaikeParool.StartsWith("xxxx");
+    private const string Tabel = "Seaded";
 
-    public bool OnSeadistatud => Saatja.Length > 0 && (ParoolKruptitud.Length > 0 || VaikeParoolOlemas);
+    public bool OnSeadistatud => Saatja.Length > 0 && ParoolKruptitud.Length > 0;
 
     public static EmailSeaded Lae()
     {
         EmailSeaded seaded = new();
         try
         {
-            if (File.Exists(Fail))
-                seaded = JsonSerializer.Deserialize<EmailSeaded>(File.ReadAllText(Fail)) ?? new EmailSeaded();
+            using var db = new ToodedContext();
+            var yhendus = db.Database.GetDbConnection();
+            db.Database.OpenConnection();
+            try
+            {
+                LooTabel(yhendus);
+                var andmed = LoeKoik(yhendus);
+                if (andmed.Count == 0 && File.Exists(VanaFail))
+                {
+                    // ühekordne üleviimine email.json → andmebaas
+                    seaded = JsonSerializer.Deserialize<EmailSeaded>(File.ReadAllText(VanaFail)) ?? new EmailSeaded();
+                    Kirjuta(yhendus, seaded);
+                    File.Delete(VanaFail);
+                }
+                else
+                {
+                    if (andmed.TryGetValue("Email.Saatja", out var v)) seaded.Saatja = v;
+                    if (andmed.TryGetValue("Email.Parool", out v)) seaded.ParoolKruptitud = v;
+                    if (andmed.TryGetValue("Email.Server", out v)) seaded.Server = v;
+                    if (andmed.TryGetValue("Email.Port", out v) && int.TryParse(v, out int port)) seaded.Port = port;
+                    if (andmed.TryGetValue("Email.TsekiKeel", out v)) seaded.TsekiKeel = v;
+                }
+            }
+            finally { db.Database.CloseConnection(); }
         }
         catch { }
 
@@ -48,8 +70,55 @@ public class EmailSeaded
 
     public void Salvesta()
     {
-        Directory.CreateDirectory(Kaustad.Juur);
-        File.WriteAllText(Fail, JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true }));
+        using var db = new ToodedContext();
+        var yhendus = db.Database.GetDbConnection();
+        db.Database.OpenConnection();
+        try
+        {
+            LooTabel(yhendus);
+            Kirjuta(yhendus, this);
+        }
+        finally { db.Database.CloseConnection(); }
+    }
+
+    // Võti-väärtus tabel; luuakse vajadusel (ei vaja eraldi migratsiooni)
+    private static void LooTabel(DbConnection yhendus)
+    {
+        using var k = yhendus.CreateCommand();
+        k.CommandText = $"CREATE TABLE IF NOT EXISTS \"{Tabel}\" (\"Votim\" TEXT NOT NULL PRIMARY KEY, \"Vaartus\" TEXT NOT NULL)";
+        k.ExecuteNonQuery();
+    }
+
+    private static Dictionary<string, string> LoeKoik(DbConnection yhendus)
+    {
+        var tulemus = new Dictionary<string, string>();
+        using var k = yhendus.CreateCommand();
+        k.CommandText = $"SELECT \"Votim\", \"Vaartus\" FROM \"{Tabel}\" WHERE \"Votim\" LIKE 'Email.%'";
+        using var r = k.ExecuteReader();
+        while (r.Read()) tulemus[r.GetString(0)] = r.GetString(1);
+        return tulemus;
+    }
+
+    private static void Kirjuta(DbConnection yhendus, EmailSeaded s)
+    {
+        using var tx = yhendus.BeginTransaction();
+        foreach (var (votim, vaartus) in new[]
+        {
+            ("Email.Saatja", s.Saatja),
+            ("Email.Parool", s.ParoolKruptitud),
+            ("Email.Server", s.Server),
+            ("Email.Port", s.Port.ToString()),
+            ("Email.TsekiKeel", s.TsekiKeel),
+        })
+        {
+            using var k = yhendus.CreateCommand();
+            k.Transaction = tx;
+            k.CommandText = $"INSERT OR REPLACE INTO \"{Tabel}\" (\"Votim\", \"Vaartus\") VALUES ($v, $a)";
+            var p1 = k.CreateParameter(); p1.ParameterName = "$v"; p1.Value = votim; k.Parameters.Add(p1);
+            var p2 = k.CreateParameter(); p2.ParameterName = "$a"; p2.Value = vaartus ?? ""; k.Parameters.Add(p2);
+            k.ExecuteNonQuery();
+        }
+        tx.Commit();
     }
 
     public void SeaParool(string parool)
@@ -58,8 +127,8 @@ public class EmailSeaded
         ParoolKruptitud = Convert.ToBase64String(kruptitud);
     }
 
-    // Salvestatud parool (kui on), muidu vaikimisi parool koodist
-    private string Parool() => ParoolKruptitud.Length > 0 ? LoeParool() : VaikeParool;
+    // Parool ainult andmebaasist (krüpteeritult)
+    private string Parool() => LoeParool();
 
     private string LoeParool()
     {
