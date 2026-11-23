@@ -5,8 +5,8 @@ namespace IKTpv25_1_Toooted;
 public enum TeateTyyp { Info, Edu, Hoiatus, Viga, Kysimus }
 
 // Programmi stiilis teated:
-//  Teade.Show(...)  – sama kasutus nagu MessageBox.Show, aga teema värvides
-//  Teade.Toast(...) – väike teade paremal all, kaob ise (nt "Lisatud korvi")
+// Teade.Show(...) : sama kasutus nagu MessageBox.Show, aga teema värvides
+// Teade.Toast(...): väike teade paremal all, kaob ise (nt "Lisatud korvi")
 public static class Teade
 {
     // Küsib teksti (nt salvestatava ostukorvi nimi). Tagastab null, kui vajutati "Tühista".
@@ -69,9 +69,7 @@ public static class Teade
         return omanik != null ? vorm.ShowDialog(omanik) : vorm.ShowDialog();
     }
 
-    // ---------------------------------------------------------------
-    //  Toast
-    // ---------------------------------------------------------------
+    // Toast
     private static readonly List<ToastVorm> avatud = new();
 
     public static void Toast(string tekst, TeateTyyp tyyp = TeateTyyp.Edu, int millisekundit = 2800)
@@ -243,36 +241,27 @@ public class TeateVorm : Form
 
         int laius = Math.Max(380, Math.Max(sisuLaius, silt.GetPreferredSize(Size.Empty).Width) + 80 + 32);
         ClientSize = new Size(laius, Math.Max(52 + sisuKorgus, 64) + 28 + riba.Height);
-
-        // Moodne (lõuend 3.2): ümar kaart, ikoon keskel üleval, tekst ja "pill" nupud keskel
-        if (Teema.OnMoodne)
-        {
-            moodne = true;
-            FormBorderStyle = FormBorderStyle.None;
-            int w = Math.Max(400, sisuLaius + 64);
-            ikoon.Bounds = new Rectangle((w - 56) / 2, 28, 56, 56);
-            silt.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
-            silt.Location = new Point((w - silt.GetPreferredSize(Size.Empty).Width) / 2, 98);
-            sisu.TextAlign = ContentAlignment.TopCenter;
-            sisu.AutoSize = false;
-            sisu.Bounds = new Rectangle(32, 132, w - 64, sisuKorgus + 4);
-            riba.BackColor = nupuRida.BackColor = Teema.Pind;
-            riba.Height = 76;
-            nupuRida.Dock = DockStyle.None;
-            nupuRida.Padding = new Padding(0);
-            foreach (Control n in nupuRida.Controls) { n.MinimumSize = new Size(130, 44); n.Margin = new Padding(6, 0, 6, 0); }
-            riba.Resize += (s, e) => nupuRida.Location = new Point((riba.Width - nupuRida.Width) / 2, 12);
-            ClientSize = new Size(w, 132 + sisuKorgus + 20 + riba.Height);
-        }
+        FormBorderStyle = FormBorderStyle.None;
+        int w = Math.Max(400, sisuLaius + 64);
+        ikoon.Bounds = new Rectangle((w - 56) / 2, 28, 56, 56);
+        silt.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
+        silt.Location = new Point((w - silt.GetPreferredSize(Size.Empty).Width) / 2, 98);
+        sisu.TextAlign = ContentAlignment.TopCenter;
+        sisu.AutoSize = false;
+        sisu.Bounds = new Rectangle(32, 132, w - 64, sisuKorgus + 4);
+        riba.BackColor = nupuRida.BackColor = Teema.Pind;
+        riba.Height = 76;
+        nupuRida.Dock = DockStyle.None;
+        nupuRida.Padding = new Padding(0);
+        foreach (Control n in nupuRida.Controls) { n.MinimumSize = new Size(130, 44); n.Margin = new Padding(6, 0, 6, 0); }
+        riba.Resize += (s, e) => nupuRida.Location = new Point((riba.Width - nupuRida.Width) / 2, 12);
+        ClientSize = new Size(w, 132 + sisuKorgus + 20 + riba.Height);
     }
-
-    private readonly bool moodne;
     private double ilmub = 1;
 
     protected override void OnHandleCreated(EventArgs e)
     {
         base.OnHandleCreated(e);
-        if (!moodne) return;
         using var tee = Ymardus.Tee(new Rectangle(0, 0, Width, Height), 28);
         Region = new Region(tee);
     }
@@ -280,7 +269,6 @@ public class TeateVorm : Form
     protected override void OnPaint(PaintEventArgs e)
     {
         base.OnPaint(e);
-        if (!moodne) return;
         e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
         using var p = new Pen(Teema.Joon, 2);
         using var tee = Ymardus.Tee(new RectangleF(1, 1, Width - 3, Height - 3), 27);
@@ -297,7 +285,6 @@ public class TeateVorm : Form
     protected override void OnShown(EventArgs e)
     {
         base.OnShown(e);
-        if (moodne)
         {
             // hüppab sisse: läbipaistvus 0 → 1, 8 px alt üles
             int y0 = Top;
@@ -323,7 +310,7 @@ public class ToastVorm : Form
         get
         {
             var cp = base.CreateParams;
-            cp.ExStyle |= 0x08000000;   // WS_EX_NOACTIVATE – ei võta fookust
+            cp.ExStyle |= 0x08000000;   // WS_EX_NOACTIVATE: ei võta fookust
             return cp;
         }
     }

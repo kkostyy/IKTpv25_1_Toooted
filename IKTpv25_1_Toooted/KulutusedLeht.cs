@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted;
 
-// "Minu kulutused": ostude ajalugu statistikana – sõõrikdiagramm kategooriate kaupa,
+// "Minu kulutused": ostude ajalugu statistikana, sõõrikdiagramm kategooriate kaupa,
 // kuude valik ja virnastatud tulbad kuude kaupa. Ostjal oma ostud, töötajal kogu poe müük.
 public class KulutusedLeht : Leht
 {
@@ -89,7 +89,7 @@ public class KulutusteVaade : Control
     private static CultureInfo Kultuur => Keel.Praegu switch { KeeleKood.RU => new("ru-RU"), KeeleKood.EN => new("en-GB"), _ => new("et-EE") };
     private static string KuuNimi(DateTime d, bool aastaga = false) => d.ToString(aastaga ? "MMMM yyyy" : "MMM", Kultuur).TrimEnd('.');
 
-    // ---- paigutus ----
+    // paigutus
     private const int KiipY = 64, KaardiY = 116;
     private int KaardiKorgus => Math.Max(250, Math.Min(330, (Height - KaardiY - 40) * 55 / 100));
     private RectangleF Vasak => new(0, KaardiY, Width * 0.42f - 8, KaardiKorgus);
@@ -177,7 +177,7 @@ public class KulutusteVaade : Control
         var jaotus = Kulutused.Jaotus(valik);
         decimal kokku = valik.Sum(k => k.Kokku);
 
-        // ---- sõõrik ----
+        // sõõrik
         var vk = Vasak;
         using (var tee = Ymardus.Tee(vk, 22)) using (var b = new SolidBrush(Teema.Pind)) g.FillPath(b, tee);
         float d = Math.Min(vk.Width - 60, vk.Height - 60);
@@ -202,7 +202,7 @@ public class KulutusteVaade : Control
         TextRenderer.DrawText(g, valitud >= 0 ? KuuNimi(kuud[valitud].Algus, true) : Keel.F("viimased {0} kuud", kuud.Count), fs,
             new Rectangle(kesk.X, kesk.Y + kesk.Height / 2 + 8, kesk.Width, 20), Teema.TekstNork, fl | TextFormatFlags.HorizontalCenter);
 
-        // ---- legend ----
+        // legend
         var pk = Parem;
         using (var tee = Ymardus.Tee(pk, 22)) using (var b = new SolidBrush(Teema.Pind)) g.FillPath(b, tee);
         float y = pk.Y + 22;
@@ -229,7 +229,7 @@ public class KulutusteVaade : Control
             }
         }
 
-        // ---- kuude tulbad ----
+        // kuude tulbad
         var a = All;
         using (var tee = Ymardus.Tee(a, 22)) using (var b = new SolidBrush(Teema.Pind)) g.FillPath(b, tee);
         TextRenderer.DrawText(g, Keel.T("Kulutused kuude kaupa"), fb, new Point((int)a.X + 22, (int)a.Y + 16), Teema.Tekst);

@@ -15,9 +15,7 @@ public static class Arve
     public const string PoeNimi = "AKT";
     public const decimal Kaibemaks = 0.24m;   // Eesti käibemaks 24 %
 
-    // ===============================================================
-    //  PDF – kassatšeki rull
-    // ===============================================================
+    // PDF: kassatšeki rull
     public static string LooPdf(Ost ost, bool makstud, decimal makstudSumma)
     {
         using var keel = Keel.Ajutiselt(EmailSeaded.Lae().TsekiKeeleKood);   // tšekk alati valitud tšeki keeles
@@ -52,7 +50,8 @@ public static class Arve
         t.Logo();
         t.Keskel(Keel.T("AKT e-pood ja kassa · õppeprojekt"));
         t.Keskel("IKTpv25 · Tallinn");
-        t.Keskel(EmailSeaded.Lae().Saatja);
+        string poeEmail = EmailSeaded.Lae().Saatja;
+        if (poeEmail.Length > 0) t.Keskel(poeEmail);
         t.Pealkiri(Keel.T("Digitaalne tšekk"));
         if (ost.Klient != null) t.Rida(Keel.F("KLIENT: {0}", Mask(ost.Klient.Kaardinumber)));
         t.Joon();
@@ -288,9 +287,7 @@ public static class Arve
         }
     }
 
-    // ===============================================================
-    //  E-kiri
-    // ===============================================================
+    // E-kiri
     public static string KirjaTeema(Ost ost) => Keel.F("Sinu ostutšekk nr {0} – {1}", ost.Id, PoeNimi);
 
     // Lihttekst (e-posti programmidele, mis HTML-i ei näita)

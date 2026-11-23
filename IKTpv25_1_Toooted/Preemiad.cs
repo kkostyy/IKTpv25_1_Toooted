@@ -20,7 +20,7 @@ public record Kleeps(string Id, string Ikoon, string Nimi, string Kirjeldus, Col
 // Kliendikaardi mängulised osad: tasemed, nädala väljakutsed, kleebised, päeva üllatus
 public static class Preemiad
 {
-    // ---- Tasemed: viimase 12 kuu ostude summa (ilma tarneta, tagastusteta) ----
+    // Tasemed: viimase 12 kuu ostude summa (ilma tarneta, tagastusteta)
     public static readonly (Tase Tase, decimal Alates, decimal Protsent)[] Tasemed =
     {
         (Tase.Pronks, 0m, 0.01m), (Tase.Hobe, 100m, 0.015m), (Tase.Kuld, 300m, 0.02m)
@@ -52,7 +52,7 @@ public static class Preemiad
 
     public static TaseInfo LeiaTase(ToodedContext db, int klientId) => TaseSummast(AastaSumma(db, klientId));
 
-    // ---- Nädala väljakutsed (ISO nädal) ----
+    // Nädala väljakutsed (ISO nädal)
     public static string NadalaKood(DateTime aeg) => $"{ISOWeek.GetYear(aeg)}-W{ISOWeek.GetWeekOfYear(aeg):00}";
 
     private static (DateTime Algus, DateTime Lopp) Nadal(DateTime aeg)
@@ -89,7 +89,7 @@ public static class Preemiad
         };
     }
 
-    // ---- Kleebised (püsivad) ----
+    // Kleebised (püsivad)
     public static List<Kleeps> Kleebised(ToodedContext db, int klientId)
     {
         var ostud = db.Ostud.AsNoTracking().Include(o => o.Read).Where(o => o.KlientId == klientId && !o.Tagastatud).ToList();
@@ -118,7 +118,7 @@ public static class Preemiad
         };
     }
 
-    // ---- Päeva üllatus: kord päevas juhuslik soodustus ühele tootele (ainult täna, ainult sellele kliendile) ----
+    // Päeva üllatus: kord päevas juhuslik soodustus ühele tootele (ainult täna, ainult sellele kliendile)
     public static (Toode Toode, int Protsent)? TananeYllatus(ToodedContext db, int klientId, DateTime aeg)
     {
         string eesliide = $"YL:{aeg:yyyy-MM-dd}:";
@@ -142,7 +142,7 @@ public static class Preemiad
         return TananeYllatus(db, klientId, aeg);
     }
 
-    // ---- Pärast ostu: uued preemiad (tekstid teavitusteks) ----
+    // Pärast ostu: uued preemiad (tekstid teavitusteks)
     public static List<string> KontrolliPealeOstu(ToodedContext db, Ost ost)
     {
         var uued = new List<string>();

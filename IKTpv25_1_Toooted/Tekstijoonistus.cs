@@ -68,7 +68,7 @@ public static class TextRenderer
         var vana = g.TextRenderingHint;
         g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
         using var b = new SolidBrush(c);
-        // GDI jätab vasakule väikese varu – nihutame sama palju, et asukoht klapiks
+        // GDI jätab vasakule väikese varu: nihutame sama palju, et asukoht klapiks
         float varu = (flags & TextFormatFlags.NoPadding) != 0 ? 0 : font.Size * 0.25f;
         g.DrawString(text, font, b, new RectangleF(r.X + varu, r.Y, Math.Max(1, r.Width), Math.Max(1, r.Height)), sf);
         g.TextRenderingHint = vana;

@@ -13,39 +13,13 @@ public class DemoVorm : KujundusVorm
     private readonly Edenemine riba = new() { Visible = false };
     private readonly Label lblOlek;
     private readonly RoundedButton btnLisa, btnEemalda;
-    private readonly DemoSammud? sammud;   // moodne: tume veerg sammudega (lõuend N7)
+    private readonly DemoSammud? sammud;   // tume veerg sammudega
 
-    protected override bool TagasiNupuga => !Teema.OnMoodne;   // moodne: Tagasi on valge kaardi sees
+    protected override bool TagasiNupuga => false;   // Tagasi on valge kaardi sees
 
-    public DemoVorm() : base("Demoandmed", Teema.OnMoodne ? 1000 : 520, Teema.OnMoodne ? 640 : 380)
+    public DemoVorm() : base("Demoandmed", 1000, 640)
     {
-        if (Teema.OnMoodne)
-        {
-            (lblOlek, btnLisa, btnEemalda, sammud) = EhitaMoodne();
-            Load += (s, e) => Uuenda(false);
-            return;
-        }
-        Pealkiri("Demoandmed");
-        Controls.Add(new Label
-        {
-            Text = "Üks nupp lisab 3 klienti ja 60 ostu viimase 30 päeva jooksul (tühja poe korral ka 50 toodet), et programm ei näeks esitlusel tühi välja. Demoandmed on märgitud ja neid saab hiljem korraga eemaldada.",
-            Location = new Point(20, 56), Size = new Size(480, 56), ForeColor = Teema.Tekst2
-        });
-        tooteid.Location = new Point(20, 120);
-        oste.Location = new Point(270, 120);
-        Controls.Add(tooteid);
-        Controls.Add(oste);
-        riba.Bounds = new Rectangle(20, 236, 480, 8);
-        Controls.Add(riba);
-        lblOlek = new Label { Location = new Point(20, 252), Size = new Size(480, 22), ForeColor = Teema.TekstNork };
-        Controls.Add(lblOlek);
-
-        btnLisa = (RoundedButton)Nupp("Lisa demoandmed", 20, 300, true);
-        btnLisa.Click += (s, e) => Lisa();
-        btnEemalda = (RoundedButton)Nupp("Eemalda demoandmed", 200, 300);
-        btnEemalda.Ohtlik = true;
-        btnEemalda.Click += (s, e) => Eemalda();
-
+        (lblOlek, btnLisa, btnEemalda, sammud) = EhitaMoodne();
         Load += (s, e) => Uuenda(false);
     }
 
@@ -101,7 +75,7 @@ public class DemoVorm : KujundusVorm
 
     protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
     {
-        if (Teema.OnMoodne && (keyData == Keys.Escape || keyData == (Keys.Alt | Keys.Left))) { MineTagasi(); return true; }
+        if (keyData == Keys.Escape || keyData == (Keys.Alt | Keys.Left)) { MineTagasi(); return true; }
         return base.ProcessCmdKey(ref msg, keyData);
     }
 

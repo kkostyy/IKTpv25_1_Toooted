@@ -40,8 +40,9 @@ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 // kuni omanik märgib selle makstuks (seade "makstud:<ostId>").
 object Pangamakse {
     const val VIIS = "Pangaülekanne"
-    private const val SAAJA = "KONSTANTIN GAPONENKO"
-    private const val IBAN = "EE502200221075082971"
+    // Päris kontot koodis ei ole: saaja ja IBAN tulevad seadetest (pank_saaja, pank_iban)
+    private const val SAAJA = ""
+    private const val IBAN = ""
     const val SWEDBANK = "com.swedbank"   // "Swedbank Eestis" (Google Play)
 
     fun saaja(pood: Pood) = pood.seade("pank_saaja") ?: SAAJA

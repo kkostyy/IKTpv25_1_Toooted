@@ -3,11 +3,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted;
 
-// ===================================================================
-//  Partiid ja säilivusaeg moodsas disainis (lõuend N10): valgel kaardil
-//  tume reegli riba ja partiide read (eluiga, hind, olek); paremal
-//  "NII NÄEB OSTJA" – kõige kiiremini aeguva soodustusega toote eelvaade.
-// ===================================================================
+// Partiid ja säilivusaeg: valgel kaardil
+// tume reegli riba ja partiide read (eluiga, hind, olek); paremal
+// "NII NÄEB OSTJA": kõige kiiremini aeguva soodustusega toote eelvaade.
 public partial class AegumineVorm
 {
     private FlowLayoutPanel? moodneRead;
@@ -21,7 +19,7 @@ public partial class AegumineVorm
         Padding = new Padding(16);
         var valge = Teema.Pind;
 
-        // ---- Paremal: ostja vaade ----
+        // Paremal: ostja vaade
         var parem = new RoundedPanel { Dock = DockStyle.Right, Width = 340, Radius = 16, FillColor = valge, BorderColor = valge, BackColor = Teema.Taust, Padding = new Padding(22, 20, 22, 20) };
         var nii = new Label { Text = Keel.T("NII NÄEB OSTJA"), Dock = DockStyle.Top, Height = 28, Font = new Font("Segoe UI", 8F, FontStyle.Bold), ForeColor = Teema.Teine, BackColor = valge };
         eelvaade = new OstjaEelvaade { Dock = DockStyle.Top, Height = 340 };
@@ -38,7 +36,7 @@ public partial class AegumineVorm
         parem.Controls.Add(eelvaade);
         parem.Controls.Add(nii);
 
-        // ---- Vasakul: päis, reegel, read ----
+        // Vasakul: päis, reegel, read
         var vasak = new RoundedPanel { Dock = DockStyle.Fill, Radius = 16, FillColor = valge, BorderColor = valge, BackColor = Teema.Taust, Padding = new Padding(24, 20, 24, 16) };
         var pais = new Panel { Dock = DockStyle.Top, Height = 62, BackColor = valge };
         var tagasi = new TagasiNupp { Location = new Point(0, 4) };
@@ -114,7 +112,7 @@ public partial class AegumineVorm
 
     protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
     {
-        if (Teema.OnMoodne && (keyData == Keys.Escape || keyData == (Keys.Alt | Keys.Left))) { MineTagasi(); return true; }
+        if (keyData == Keys.Escape || keyData == (Keys.Alt | Keys.Left)) { MineTagasi(); return true; }
         return base.ProcessCmdKey(ref msg, keyData);
     }
 

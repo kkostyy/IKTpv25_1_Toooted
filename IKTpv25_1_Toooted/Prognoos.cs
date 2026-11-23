@@ -96,7 +96,7 @@ public class PrognoosiGraafik : Control
                 new Rectangle(0, 8, Width - 2, 18), m >= 0 ? Teema.Edu : Teema.Viga, TextFormatFlags.Right);
 
         decimal max = Max;
-        var tulpVarv = Teema.OnMoodne ? Teema.Teine : Teema.Aktsent;
+        var tulpVarv = Teema.Teine;
         var heleVarv = Ymardus.Segu(Teema.Pind, tulpVarv, 0.35f);
         float korgus = Height - Yla - All;
 

@@ -132,11 +132,9 @@ namespace IKTpv25_1_Toooted
         }
     }
 
-    // ===================================================================
-    //  Kliendikaart moodsas disainis (lõuend 2.3): suur kaart, 5 kujundust
-    //  horisontaalselt, oma foto üleslaadimine; paremal vöötkood, boonus,
-    //  tase, viimased ostud ja nupud.
-    // ===================================================================
+    // Kliendikaart: suur kaart, 5 kujundust
+    // horisontaalselt, oma foto üleslaadimine; paremal vöötkood, boonus,
+    // tase, viimased ostud ja nupud.
     public class KliendikaartMoodneVorm : Form, ITagasi
     {
         private readonly SuurKaart kaart;
@@ -172,7 +170,7 @@ namespace IKTpv25_1_Toooted
             catch { }
             int kasutaja = AktiivneKasutaja.Id;
 
-            // ---- Vasak valge kaart ----
+            // Vasak valge kaart
             var vasak = new RoundedPanel { Bounds = new Rectangle(16, 16, 688, 688), Radius = 16, FillColor = Teema.Pind, BorderColor = Teema.Pind, BackColor = Teema.Taust };
             var tagasi = new TagasiNupp { Location = new Point(28, 26) };
             tagasi.Click += (s, e) => Close();
@@ -206,7 +204,7 @@ namespace IKTpv25_1_Toooted
             vasak.Controls.Add(fotoInfo);
             Controls.Add(vasak);
 
-            // ---- Paremal ----
+            // Paremal
             var kood = new VootkoodiKaart(AktiivneKasutaja.Kaardinumber ?? "") { Bounds = new Rectangle(720, 16, 264, 180) };
             Controls.Add(kood);
             var boonusPlaat = new VarviPlaat("Boonus", Ostukorv.Eur(AktiivneKasutaja.Boonus), Color.FromArgb(226, 6, 19)) { Bounds = new Rectangle(720, 208, 126, 90) };

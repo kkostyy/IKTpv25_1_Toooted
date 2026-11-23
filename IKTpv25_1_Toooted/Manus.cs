@@ -1,20 +1,20 @@
 ﻿namespace IKTpv25_1_Toooted;
 
-// Aken, mis oskab teisi vorme enda sisse paigutada (üks aken kogu programmile, moodne disain)
+// Aken, mis oskab teisi vorme enda sisse paigutada (üks aken kogu programmile)
 public interface IVormiHost
 {
     bool VoibManustada { get; }
     void Manusta(Form vorm, Action? suletud);
 }
 
-// Vormide avamine: moodsas disainis avaneb vorm peaakna sees (nagu leht), muidu dialoogina.
+// Vormide avamine: avaneb vorm peaakna sees (nagu leht), muidu dialoogina.
 // "suletud" käivitatakse pärast sulgemist mõlemal juhul.
 public static class Aken
 {
     public static void Ava(IWin32Window? omanik, Form vorm, Action? suletud = null)
     {
         // läbipaistvusega "leht" (nt pere dialoog oma tumeda kihiga) jääb hüpikaknaks
-        if (Teema.OnMoodne && vorm.Opacity >= 1 && Host(omanik) is IVormiHost h)
+        if (vorm.Opacity >= 1 && Host(omanik) is IVormiHost h)
         {
             h.Manusta(vorm, suletud);
             return;
@@ -56,7 +56,7 @@ public static class Aken
             vorm.Shown += (s, e) => Keskele();
             Keskele();
             // valge dialoog hallil alusel: ümarad nurgad
-            if (Teema.OnMoodne && vorm.BackColor.ToArgb() != konteiner.BackColor.ToArgb())
+            if (vorm.BackColor.ToArgb() != konteiner.BackColor.ToArgb())
             {
                 void Ymarda() { using var tee = Ymardus.Tee(new RectangleF(0, 0, vorm.Width, vorm.Height), 24); vorm.Region = new Region(tee); }
                 vorm.SizeChanged += (s, e) => Ymarda();

@@ -49,7 +49,7 @@ public static class Dieet
     // lõimekindel: pood analüüsib kõik tooted taustal ette (Eelarvuta)
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<int, (string Voti, DieediInfo Info)> vahemalu = new();
 
-    // Kõik tooted taustalõimes läbi – pärast seda on poe dieedifilter ja kaartide kiibid kohe käes
+    // Kõik tooted taustalõimes läbi: pärast seda on poe dieedifilter ja kaartide kiibid kohe käes
     public static void Eelarvuta(IEnumerable<Toode> tooted)
     {
         foreach (var t in tooted) { try { Analuusi(t); } catch { } }

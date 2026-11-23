@@ -2,15 +2,12 @@
 
 namespace IKTpv25_1_Toooted
 {
-    // ===================================================================
-    //  E-pood moodsas disainis (Ctrl+Shift+M), nagu lõuendil "1.2 Pood":
-    //  vasakul valge ikoonimenüü, ülal otsingu "pill" + tumedad vahelehed + keel,
-    //  avalehel "bento" (nädala pakkumine, tasuta tarne rõngas, kategooriad),
-    //  paremal ümar ostukorv.
-    // ===================================================================
+    // E-pood:
+    // vasakul valge ikoonimenüü, ülal otsingu "pill" + tumedad vahelehed + keel,
+    // avalehel "bento" (nädala pakkumine, tasuta tarne rõngas, kategooriad),
+    // paremal ümar ostukorv.
     public partial class PoodVorm
     {
-        private readonly bool moodne = Teema.OnMoodne;
         private Panel? korviVeerg;   // paremal ostukorv (maksmise lehel peidetud)
         private MoodneKylgriba? kylgriba;
         private MoodneTabid? tabid;
@@ -22,7 +19,7 @@ namespace IKTpv25_1_Toooted
             lilla.Visible = pais.Visible = nav.Visible = rail.Visible = false;
             kulg.PeidaMoodsas = true;
 
-            // ---- Vasak valge ikoonimenüü ----
+            // Vasak valge ikoonimenüü
             kylgriba = new MoodneKylgriba { Dock = DockStyle.Left, Width = 72 };
             kylgriba.Lisa("avaleht", "", "Avaleht", NaitaAvaleht);
             kylgriba.Lisa("kampaaniad", "", "Kampaaniad", () => NaitaRuudustik(Vaade.Kampaaniad));
@@ -38,7 +35,7 @@ namespace IKTpv25_1_Toooted
             Controls.Add(new Panel { Dock = DockStyle.Left, Width = 16, BackColor = Teema.Taust });
             Controls.Add(kylgriba);
 
-            // ---- Ülariba: otsing, vahelehed, keel ----
+            // Ülariba: otsing, vahelehed, keel
             var yla = new Panel { Dock = DockStyle.Top, Height = 72, BackColor = Teema.Taust, Padding = new Padding(0, 0, 0, 16) };
             var otsing = new RoundedPanel { Location = new Point(0, 0), Size = new Size(330, 56), Radius = 14, FillColor = Teema.Pind, BorderColor = Teema.Pind, BackColor = Teema.Taust, Padding = new Padding(58, 17, 16, 0) };
             var luup = new Label { Size = new Size(40, 40), Location = new Point(8, 8), TextAlign = ContentAlignment.MiddleCenter, ForeColor = Color.White, BackColor = Teema.Pind, Cursor = Cursors.Hand };
@@ -78,7 +75,7 @@ namespace IKTpv25_1_Toooted
             keskmine.Controls.Add(yla);
             yla.SendToBack();   // kõige üles
 
-            // ---- Ostukorv: ümar valge kaart, vahe keskosast ----
+            // Ostukorv: ümar valge kaart, vahe keskosast
             korv.Resize += (s, e) =>
             {
                 using var tee = Ymardus.Tee(new Rectangle(0, 0, korv.Width, korv.Height), 32);
@@ -96,7 +93,6 @@ namespace IKTpv25_1_Toooted
 
         private void MoodneValik()
         {
-            if (!moodne) return;
             kylgriba?.Vali(vaade switch { Vaade.Avaleht => "avaleht", Vaade.Kampaaniad => "kampaaniad", Vaade.Lemmikud => "lemmikud", _ => null });
             tabid?.Vali(vaade);
         }

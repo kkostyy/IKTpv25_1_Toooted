@@ -96,7 +96,7 @@ public class KorviReaKontroll : Control
         this.rida = rida;
         SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint |
                  ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
-        Height = Teema.OnMoodne && rida.Pant > 0 ? 96 : 72;   // moodne: pandi alarida (lõuend N8)
+        Height = rida.Pant > 0 ? 96 : 72;   // pandi alarida
         BackColor = Teema.Pind;
 
         miinus = VaikeNupp("−");
@@ -178,7 +178,7 @@ public class KorviReaKontroll : Control
             TextRenderer.DrawText(g, Ostukorv.Eur(rida.Summa), summa, new Rectangle(Width - 110, 36, 102, 28), Teema.Tekst,
                 TextFormatFlags.Right | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix);
 
-        if (Teema.OnMoodne && rida.Pant > 0) Pandirida(g, 70, 70, Width - 8, rida.Kogus, rida.Pant);
+        if (rida.Pant > 0) Pandirida(g, 70, 70, Width - 8, rida.Kogus, rida.Pant);
 
         using var joon = new Pen(Teema.Joon);
         g.DrawLine(joon, 8, Height - 1, Width - 8, Height - 1);

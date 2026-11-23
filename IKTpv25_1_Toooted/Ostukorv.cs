@@ -140,11 +140,11 @@ public static class Ostukorv
 }
 
 // Toodete pildid mälus. Kiiruse jaoks:
-//  * pilt vähendatakse laadimisel (max 300 px) ja hoitakse PArgb-vormingus – joonistamine on mitu korda kiirem
+// * pilt vähendatakse laadimisel (max 300 px) ja hoitakse PArgb-vormingus: joonistamine on mitu korda kiirem
 //    kui suure veebipildi skaleerimine igal kaardi joonistamisel;
-//  * mälus on kuni MaxPilte pilti (vanimad unustatakse), muidu 9000 toote sirvimine sööb mälu;
-//  * Pisi() laeb ka kettal oleva pildi taustalõimes (kerimine ei hakka), Too() laeb kohalikku faili kohe;
-//  * veebist laaditakse korraga kuni 6 pilti; teade "Laetud" antakse koondatult (~ iga 120 ms), mitte iga pildi järel.
+// * mälus on kuni MaxPilte pilti (vanimad unustatakse), muidu 9000 toote sirvimine sööb mälu;
+// * Pisi() laeb ka kettal oleva pildi taustalõimes (kerimine ei hakka), Too() laeb kohalikku faili kohe;
+// * veebist laaditakse korraga kuni 6 pilti; teade "Laetud" antakse koondatult (~ iga 120 ms), mitte iga pildi järel.
 public static class PildiVahemalu
 {
     private const int MaxKylg = 300, MaxPilte = 700;
@@ -158,7 +158,7 @@ public static class PildiVahemalu
     private static System.Threading.Timer? teavitus;
     private static int ootelTeade;
 
-    // Käivitub (taustalõimes), kui pilte on alla laaditud – vormid joonistavad end uuesti
+    // Käivitub (taustalõimes), kui pilte on alla laaditud: vormid joonistavad end uuesti
     public static event Action? Laetud;
 
     private static bool Vahemalus(string voti, out Image? pilt)
@@ -182,7 +182,7 @@ public static class PildiVahemalu
         {
             if (pildid.TryGetValue(voti, out var vana)) jarjekord.Remove(vana);
             pildid[voti] = jarjekord.AddFirst((voti, pilt));
-            // vanimad välja; Dispose'i ei kutsu – pilt võib olla veel PictureBoxis (GC vabastab)
+            // vanimad välja; Dispose'i ei kutsu: pilt võib olla veel PictureBoxis (GC vabastab)
             while (pildid.Count > MaxPilte && jarjekord.Last is { } viimane)
             {
                 jarjekord.RemoveLast();
@@ -257,7 +257,7 @@ public static class PildiVahemalu
             }
             catch
             {
-                pilt = null;   // internetti pole – kaart näitab ikooni
+                pilt = null;   // internetti pole: kaart näitab ikooni
             }
             finally
             {

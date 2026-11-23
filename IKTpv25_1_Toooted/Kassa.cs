@@ -35,9 +35,7 @@ namespace IKTpv25_1_Toooted
             UuendaKokku();
         }
 
-        // ---------------------------------------------------------------
-        //  Ostukorvi kaart (näha Kassa vahelehel)
-        // ---------------------------------------------------------------
+        // Ostukorvi kaart (näha Kassa vahelehel)
         private void LooKorviKaart()
         {
             korvVaade = new KorvVaade();
@@ -60,9 +58,7 @@ namespace IKTpv25_1_Toooted
             txtKokku.Text = Ostukorv.Eur(Ostukorv.Kokku + Ostukorv.PantKokku);   // koos pandiga
         }
 
-        // ---------------------------------------------------------------
-        //  Valin: lisa tabelis valitud toode ostukorvi
-        // ---------------------------------------------------------------
+        // Valin: lisa tabelis valitud toode ostukorvi
         private void Valin()
         {
             if (ValitudId() is not int id) return;
@@ -81,10 +77,8 @@ namespace IKTpv25_1_Toooted
             else Teade.Toast(Keel.F("{0} lisati korvi", nimi), TeateTyyp.Edu, 1500);
         }
 
-        // ---------------------------------------------------------------
-        //  Ostan / Maksta: üks aken (klient, boonus, e-post, makse)
-        //  Tagastab true, kui ost tehti (avalik, et ka Pood saaks seda kasutada)
-        // ---------------------------------------------------------------
+        // Ostan / Maksta: üks aken (klient, boonus, e-post, makse)
+        // Tagastab true, kui ost tehti (avalik, et ka Pood saaks seda kasutada)
         public void Vormista(Action? tehtud = null, IWin32Window? omanik = null)
         {
             if (Ostukorv.Ridad.Count == 0)
@@ -94,7 +88,7 @@ namespace IKTpv25_1_Toooted
             }
 
             var vorm = new MaksmineVorm();
-            // moodne: maksmine avaneb samas aknas (poe leht / peaakna sisu)
+            // maksmine avaneb samas aknas (poe leht / peaakna sisu)
             Aken.Ava(omanik ?? Form.ActiveForm ?? (IWin32Window)this, vorm, () =>
             {
                 if (vorm.DialogResult == DialogResult.OK && vorm.Tulemus != null && PealeMaksmist(vorm, omanik)) tehtud?.Invoke();
@@ -161,9 +155,7 @@ namespace IKTpv25_1_Toooted
             }
         }
 
-        // ---------------------------------------------------------------
-        //  Saada arve: viimase ostu tšekk uuesti (soovi korral teisele aadressile)
-        // ---------------------------------------------------------------
+        // Saada arve: viimase ostu tšekk uuesti (soovi korral teisele aadressile)
         public void SaadaArve()
         {
             if (viimaneOst == null)
@@ -208,29 +200,19 @@ namespace IKTpv25_1_Toooted
             }
         }
 
-        // ---------------------------------------------------------------
-        //  Pood: visuaalne kassa
-        // ---------------------------------------------------------------
-        // Disaini järgi: e-poe (Rimi) pood või klassikaline pood.
-        // Kui poes vajutati Ctrl+Shift+D, avatakse kohe teise disaini pood.
+        // Pood: visuaalne kassa
         private void AvaPood()
         {
-            // Moodne: pood avaneb peaakna sees (üks aken); disaini vahetusel avatakse uuesti
-            if (Teema.OnMoodne && Teema.OnRimi && Visible && VoibManustada)
+            // Pood avaneb peaakna sees (üks aken)
+            if (Visible && VoibManustada)
             {
                 var pood = new PoodVorm(this);
-                moodneMenuu?.Vali("pood");   // menüüs pole ühtki punkti valitud – lahti on pood
-                Aken.Ava(this, pood, () =>
-                {
-                    if (Equals(pood.Tag, "disain") && Teema.OnMoodne) BeginInvoke(new Action(AvaPood));
-                    LaadiTooted();
-                });
+                moodneMenuu?.Vali("pood");   // menüüs pole ühtki punkti valitud: lahti on pood
+                Aken.Ava(this, pood, LaadiTooted);
                 return;
             }
-            bool uuesti;
-            do
+            using (Form vorm = new PoodVorm(this))
             {
-                using Form vorm = Teema.OnRimi ? new PoodVorm(this) : new PoodKlassikVorm(this);
                 if (Visible) vorm.ShowDialog(this);
                 else
                 {
@@ -239,8 +221,7 @@ namespace IKTpv25_1_Toooted
                     vorm.ShowInTaskbar = true;
                     vorm.ShowDialog();
                 }
-                uuesti = Equals(vorm.Tag, "disain");
-            } while (uuesti);
+            }
             LaadiTooted();   // laoseis võis muutuda
         }
     }

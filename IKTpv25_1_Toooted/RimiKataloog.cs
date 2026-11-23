@@ -66,10 +66,10 @@ public static class RimiKataloog
         return m.Success ? m.Groups[1].Value : null;
     }
 
-    // ---- Taustal laadimine: programm avaneb kohe, tooted lisanduvad 2000 kaupa ----
+    // Taustal laadimine: programm avaneb kohe, tooted lisanduvad 2000 kaupa
     public static bool Kaib { get; private set; }
     public static (int Tehtud, int Kokku) Viimane { get; private set; }
-    public static event Action<int, int>? Edenemine;   // (tehtud, kokku) – taustalõimest!
+    public static event Action<int, int>? Edenemine;   // (tehtud, kokku): taustalõimest!
     public static event Action? Valmis;                 // taustalõimest!
 
     public static void AlustaTaustal()
@@ -117,7 +117,7 @@ public static class RimiKataloog
             else db.Kategooriatabel.Add(new Kategooria { Id = kat.Id, Kategooria_nimetus = kat.Nimi });
         }
         db.SaveChanges();
-        tehing.Commit();   // vanad tooted on läinud; uued lisanduvad osade kaupa (iga osa eraldi tehing – programm saab samal ajal lugeda)
+        tehing.Commit();   // vanad tooted on läinud; uued lisanduvad osade kaupa (iga osa eraldi tehing: programm saab samal ajal lugeda)
         tehing.Dispose();
         edenemine?.Invoke(0, k.Tooted.Count);
 

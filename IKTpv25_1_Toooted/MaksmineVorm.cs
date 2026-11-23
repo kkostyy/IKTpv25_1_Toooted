@@ -39,7 +39,7 @@ public partial class MaksmineVorm : Form
         BackColor = Teema.Taust;
         ClientSize = new Size(620, 884);
 
-        // ================= 1. Ostukorv =================
+        // 1. Ostukorv
         var korv = Kaart("Ostukorv", 16, 16, 588, 134);
         var list = new ListBox
         {
@@ -56,7 +56,7 @@ public partial class MaksmineVorm : Form
         korv.Controls.Add(list);
         korv.Controls.Add(lblVahesumma);
 
-        // ================= 2. Klient ja tšekk =================
+        // 2. Klient ja tšekk
         var klient = Kaart("Klient ja tšekk", 16, 162, 588, 206);
         klient.Controls.Add(Silt("Kliendikaardi number (valikuline)", 14, 36));
         var raamKaart = UiStiil.LooSisend(out txtKaart, 200, false, "nt 100001");
@@ -64,7 +64,7 @@ public partial class MaksmineVorm : Form
         klient.Controls.Add(raamKaart);
         txtKaart.TextChanged += (s, e) => OtsiKlient();
 
-        // Kassapidaja saab uue kliendi kohe luua – kaart antakse ise
+        // Kassapidaja saab uue kliendi kohe luua: kaart antakse ise
         var uusKlient = new LinkLabel { Text = "+ Uus klient (kaart kohe)", Location = new Point(400, 36), AutoSize = true, BackColor = Teema.Pind, LinkBehavior = LinkBehavior.HoverUnderline, Visible = !AktiivneKasutaja.OnOstja };
         uusKlient.LinkClicked += (s, e) => LooUusKlient();
         klient.Controls.Add(uusKlient);
@@ -81,7 +81,7 @@ public partial class MaksmineVorm : Form
         raamEmail.Location = new Point(14, 148);
         klient.Controls.Add(raamEmail);
 
-        // ================= 3. Kättesaamine =================
+        // 3. Kättesaamine
         var tarne = Kaart("Kättesaamine", 16, 380, 588, 230);
         rbPoest = new RadioButton { Text = "Poest kaasa (tasuta)", Location = new Point(16, 34), AutoSize = true, Checked = true, BackColor = Teema.Pind, ForeColor = Teema.Tekst, Font = new Font("Segoe UI", 10F) };
         rbKojuvedu = new RadioButton { Location = new Point(220, 34), AutoSize = true, BackColor = Teema.Pind, ForeColor = Teema.Tekst, Font = new Font("Segoe UI", 10F) };
@@ -100,7 +100,7 @@ public partial class MaksmineVorm : Form
         tarneAeg.Enabled = false;
         tarne.Controls.AddRange(new Control[] { rbPoest, rbKojuvedu, raamAadress, lblTarne, tarneRiba, aegSilt, tarneAeg });
 
-        // ================= 4. Makse =================
+        // 4. Makse
         var makse = Kaart("Makse", 16, 622, 588, 170);
         rbSularaha = new RadioButton { Text = "Sularaha", Location = new Point(16, 36), AutoSize = true, Checked = true, BackColor = Teema.Pind, ForeColor = Teema.Tekst, Font = new Font("Segoe UI", 10F) };
         rbKaart = new RadioButton { Text = "Pangakaart", Location = new Point(130, 36), AutoSize = true, BackColor = Teema.Pind, ForeColor = Teema.Tekst, Font = new Font("Segoe UI", 10F) };
@@ -108,6 +108,7 @@ public partial class MaksmineVorm : Form
         rbPank = new RadioButton { Text = "Pangaülekanne", Location = new Point(262, 36), AutoSize = true, BackColor = Teema.Pind, ForeColor = Teema.Tekst, Font = new Font("Segoe UI", 10F) };
         rbSularaha.CheckedChanged += (s, e) => MakseviisMuutus();
         rbPank.CheckedChanged += (s, e) => MakseviisMuutus();
+        rbPank.Enabled = MakseSeaded.Lae().OnSeadistatud;   // ilma kontota ülekannet pakkuda ei saa
         makse.Controls.Add(rbSularaha);
         makse.Controls.Add(rbKaart);
         makse.Controls.Add(rbPank);
@@ -132,7 +133,7 @@ public partial class MaksmineVorm : Form
         lblTagasi = new Label { Location = new Point(14, 132), Size = new Size(560, 26), Font = new Font("Segoe UI Semibold", 11F), BackColor = Teema.Pind };
         makse.Controls.Add(lblTagasi);
 
-        // ================= Alumine riba =================
+        // Alumine riba
         var riba = new Panel { Dock = DockStyle.Bottom, Height = 84, BackColor = Teema.Paneel };
         var maksta = new Label { Text = "MAKSTA", Location = new Point(20, 12), AutoSize = true, Font = UiStiil.AlapealkiriFont, ForeColor = Teema.TekstNork, BackColor = Teema.Paneel };
         lblSoodustus = new Label { Location = new Point(130, 12), Size = new Size(200, 18), ForeColor = Teema.Edu, BackColor = Teema.Paneel };
@@ -151,7 +152,7 @@ public partial class MaksmineVorm : Form
         Controls.AddRange(new Control[] { korv, klient, tarne, makse, riba });
         AcceptButton = btnMaksa;
         CancelButton = tuhista;
-        if (Teema.OnMoodne) RakendaMoodne(korv, klient, tarne, makse, riba, tuhista);   // lõuend 2.2
+        RakendaMoodne(korv, klient, tarne, makse, riba, tuhista);
 
         Arvuta();
     }
@@ -166,8 +167,7 @@ public partial class MaksmineVorm : Form
             tarneAeg.Laadi(DateTime.Now, Tarne.Hoivatud(db, DateTime.Now));
         }
         catch { tarneAeg.Laadi(DateTime.Now, new Dictionary<DateTime, int>()); }
-        if (Teema.OnMoodne) MoodneStiil.Rakenda(this);
-        if (!Teema.OnMoodne) UiStiil.LisaTagasiNupp(this);   // ← Tagasi = tühista (moodsas disainis kaardil endal)
+        MoodneStiil.Rakenda(this);
         Teema.Rakenda(this);
         txtSaadud.Text = Summa().ToString("0.00", CultureInfo.InvariantCulture);
 
@@ -177,7 +177,8 @@ public partial class MaksmineVorm : Form
             AktiivneKasutaja.Uuenda();
             if (AktiivneKasutaja.TsekkEmailile) txtEmail.Text = AktiivneKasutaja.Email ?? "";
             if (AktiivneKasutaja.Kaardinumber != null) txtKaart.Text = AktiivneKasutaja.Kaardinumber;
-            rbPank.Checked = true;    // e-poes: päris makse pangaülekandega poe kontole
+            if (rbPank.Enabled) rbPank.Checked = true;   // e-poes: makse pangaülekandega poe kontole
+            else rbKaart.Checked = true;
             rbKojuvedu.Checked = true; // e-poest tuuakse koju (aadress seadetest)
             txtAadress.Text = AktiivneKasutaja.Aadress ?? "";
             txtEmail.Focus();
@@ -228,9 +229,7 @@ public partial class MaksmineVorm : Form
     private static Label Silt(string tekst, int x, int y) =>
         new() { Text = tekst, Location = new Point(x, y), AutoSize = true, ForeColor = Teema.Tekst2, BackColor = Teema.Pind };
 
-    // ---------------------------------------------------------------
-    //  Klient
-    // ---------------------------------------------------------------
+    // Klient
     private void OtsiKlient()
     {
         string kaart = txtKaart.Text.Trim();
@@ -278,9 +277,7 @@ public partial class MaksmineVorm : Form
         Arvuta();
     }
 
-    // ---------------------------------------------------------------
-    //  Summad
-    // ---------------------------------------------------------------
+    // Summad
     private decimal Soodustus() =>
         chkBoonus.Checked && klientId != null ? Math.Min(klientBoonus, Ostukorv.Kokku) : 0;
 
@@ -352,9 +349,7 @@ public partial class MaksmineVorm : Form
         }
     }
 
-    // ---------------------------------------------------------------
-    //  Maksmine: ost + makse + PDF
-    // ---------------------------------------------------------------
+    // Maksmine: ost + makse + PDF
     private void Maksa()
     {
         if (Ostukorv.Ridad.Count == 0) { Teade.Show("Ostukorv on tühi."); return; }
@@ -364,7 +359,7 @@ public partial class MaksmineVorm : Form
         if (!Vanusepiirang.Kontrolli(TopLevelControl as Form ?? this)) return;
         if (Ostukorv.Ridad.Count != ridu)
         {
-            Arvuta();   // piiranguga tooted eemaldati – uus summa enne maksmist üle vaadata
+            Arvuta();   // piiranguga tooted eemaldati: uus summa enne maksmist üle vaadata
             Teade.Toast("Ostukorv muutus – kontrolli summat ja vajuta uuesti „Maksa“.", TeateTyyp.Info, 4000);
             return;
         }
@@ -496,8 +491,8 @@ public partial class MaksmineVorm : Form
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
 
-            // "Makse õnnestus!" kohe siin (nagu telefonis), enne maksmisakna sulgemist – nii ilmub see alati,
-            // ka siis, kui maksmine on poe sees (moodne disain) või peaaken on peidus (ostja)
+            // "Makse õnnestus!" kohe siin (nagu telefonis), enne maksmisakna sulgemist: nii ilmub see alati,
+            // ka siis, kui maksmine on poe sees või peaaken on peidus (ostja)
             try
             {
                 var omanik = TopLevel ? this : TopLevelControl as Form;

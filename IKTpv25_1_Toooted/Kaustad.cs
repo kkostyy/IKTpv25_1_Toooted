@@ -60,7 +60,7 @@ public static class Kaustad
         }
         catch
         {
-            return null; // vigane pildifail – jäta pilt tühjaks
+            return null; // vigane pildifail: jäta pilt tühjaks
         }
     }
 }

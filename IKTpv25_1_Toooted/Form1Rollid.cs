@@ -66,8 +66,6 @@
             MainMenuStrip = menuu;
             menuu.SendToBack();   // menüü kõige üles
 
-            LooEpoePais();
-
             // Olekuriba all: kes on sisse logitud
             var olek = new StatusStrip { BackColor = UiStiil.PaneeliTaust };
             olek.Items.Add(lblKasutaja);
@@ -76,8 +74,7 @@
             // Külgmenüü paremal: menüü, päise ja olekuriba vahel (dokkimise järjekord)
             LooKulgMenuu();
             Controls.Add(kulg);
-            int koht = new[] { Controls.GetChildIndex(menuu), Controls.GetChildIndex(olek),
-                               Controls.GetChildIndex(epoePais), Controls.GetChildIndex(epoeRiba) }.Min();
+            int koht = Math.Min(Controls.GetChildIndex(menuu), Controls.GetChildIndex(olek));
             Controls.SetChildIndex(kulg, koht);
             ClientSize = new Size(ClientSize.Width + KulgMenuu.MenuuLaius, ClientSize.Height);
 
@@ -107,7 +104,7 @@
             menuPartiid.Visible = omanik;
             menuOhtu.Visible = omanik;
 
-            // Ostja (klient) ei näe kassat ega ladu – talle avaneb kohe e-pood
+            // Ostja (klient) ei näe kassat ega ladu: talle avaneb kohe e-pood
             if (AktiivneKasutaja.OnOstja)
             {
                 Opacity = 0;
@@ -128,93 +125,15 @@
             string roll = Keel.T(AktiivneKasutaja.Roll);
             Text = $"{Keel.T(algneTiitel)} – {AktiivneKasutaja.Nimi} ({roll})";
             lblKasutaja.Text = Keel.F("Sisse logitud: {0}   |   Roll: {1}", AktiivneKasutaja.Nimi, roll);
-            lblTere.Text = Keel.F("Tere, {0}!   ·   {1}   ·   {2}", AktiivneKasutaja.Kuvanimi, roll, DateTime.Now.ToString("dd.MM.yyyy"));
             UuendaOtsinguKategooriad();
             NaitaTooted();
-        }
-
-        // E-poe stiilis päis: lilla riba + valge päis logoga (luuakse koodis, Designer-faili ei muudeta)
-        private readonly Label lblTere = new();
-
-        private Panel epoePais = null!, epoeRiba = null!;
-        private Label epoePealkiri = null!;
-
-        private void LooEpoePais()
-        {
-            var pais = new Panel { Dock = DockStyle.Top, Height = 68, BackColor = Teema.Pind };
-            epoePais = pais;
-            var logo = new Logo { Location = new Point(18, 11), Size = new Size(116, 46) };
-            var pealkiri = epoePealkiri = new Label
-            {
-                Text = "Kassa ja ladu",
-                Location = new Point(156, 22),
-                AutoSize = true,
-                Font = new Font("Segoe UI Semibold", 13F),
-                ForeColor = Teema.Teine,
-                BackColor = Teema.Pind
-            };
-            var pood = UiStiil.LooSuurNupp("Ava e-pood  ›", (s, e) => AvaPood());
-            pood.Size = new Size(170, 42);
-            pood.Radius = 6;
-            pood.Font = new Font("Segoe UI Semibold", 10F);
-            var seaded = UiStiil.LooSuurNupp("⚙  Seaded", (s, e) => SeadedVorm.Ava(this), peamine: false);
-            seaded.Size = new Size(120, 42);
-            seaded.Radius = 6;
-            var nimekiri = UiStiil.LooSuurNupp("☑  Ostunimekiri", (s, e) => AvaNimekiri(), peamine: false);
-            nimekiri.Size = new Size(160, 42);
-            nimekiri.Radius = 6;
-            pais.Controls.AddRange(new Control[] { logo, pealkiri, nimekiri, seaded, pood });
-            pais.Resize += (s, e) =>
-            {
-                pood.Location = new Point(pais.Width - pood.Width - 18, 13);
-                seaded.Location = new Point(pood.Left - seaded.Width - 10, 13);
-                nimekiri.Location = new Point(seaded.Left - nimekiri.Width - 10, 13);
-            };
-            pais.Paint += (s, e) =>
-            {
-                using var p = new Pen(Teema.Joon);
-                e.Graphics.DrawLine(p, 0, pais.Height - 1, pais.Width, pais.Height - 1);
-            };
-
-            var lilla = new Panel { Dock = DockStyle.Top, Height = 34, BackColor = Teema.Teine };
-            epoeRiba = lilla;
-            lblTere.AutoSize = true;
-            lblTere.Location = new Point(18, 9);
-            lblTere.ForeColor = Color.White;
-            lblTere.BackColor = Teema.Teine;
-            lblTere.Font = new Font("Segoe UI Semibold", 9F);
-            lilla.Controls.Add(lblTere);
-            var keeled = new KeeleLingid(Color.White) { BackColor = Teema.Teine };
-            lilla.Controls.Add(keeled);
-            lilla.Resize += (s, e) => keeled.Location = new Point(lilla.Width - keeled.Width - 20, (lilla.Height - keeled.Height) / 2);
-
-            // Menüü on juba kõige üleval; päis ja lilla riba tulevad selle kohale
-            Controls.Add(pais);
-            pais.SendToBack();
-            Controls.Add(lilla);
-            lilla.SendToBack();
-
-            ClientSize = new Size(ClientSize.Width, ClientSize.Height + lilla.Height + pais.Height);
-            NaitaDisain();
-        }
-
-        // E-poe päis on nähtav ainult Rimi disainis; klassikalises on esimene (Wordi-laadne) vaade
-        private void NaitaDisain()
-        {
-            epoePais.Visible = epoeRiba.Visible = Teema.OnRimi && !moodne;
-            epoeRiba.BackColor = lblTere.BackColor = Teema.Teine;
-            epoePealkiri.ForeColor = Teema.Teine;
-            epoePais.Invalidate(true);
         }
 
         // Vaade: hele/tume teema ja poe värv
         private readonly ToolStripMenuItem menuHele = new("Hele teema");
         private readonly ToolStripMenuItem menuTume = new("Tume teema");
         private readonly List<ToolStripMenuItem> menuVarvid = new();
-        private readonly ToolStripMenuItem menuDisainRimi = new("E-poe disain (Rimi)");
         private readonly List<ToolStripMenuItem> menuKeeled = new();
-        private readonly ToolStripMenuItem menuDisainKlassik = new("Klassikaline disain");
-        private readonly ToolStripMenuItem menuDisainMoodne = new("Moodne disain") { ShortcutKeyDisplayString = "Ctrl+Shift+M" };
 
         private ToolStripMenuItem LooVaadeMenuu()
         {
@@ -244,15 +163,6 @@
             }
             vaade.DropDownItems.Add(varv);
             vaade.DropDownItems.Add(new ToolStripSeparator());
-            menuDisainRimi.ShortcutKeyDisplayString = "Ctrl+Shift+D";
-            menuDisainKlassik.ShortcutKeyDisplayString = "Ctrl+Shift+D";
-            menuDisainRimi.Click += (s, e) => Teema.SeaDisain(Disain.Rimi);
-            menuDisainKlassik.Click += (s, e) => Teema.SeaDisain(Disain.Klassikaline);
-            menuDisainMoodne.Click += (s, e) => Teema.SeaDisain(Disain.Moodne);
-            vaade.DropDownItems.Add(menuDisainRimi);
-            vaade.DropDownItems.Add(menuDisainKlassik);
-            vaade.DropDownItems.Add(menuDisainMoodne);
-            vaade.DropDownItems.Add(new ToolStripSeparator());
 
             // Keel: nimed alati oma keeles (Eesti / Русский / English)
             var keel = new ToolStripMenuItem("Keel");
@@ -276,9 +186,6 @@
             menuHele.Checked = !Teema.Tume;
             menuTume.Checked = Teema.Tume;
             foreach (var m in menuVarvid) m.Checked = Equals(m.Tag, Teema.AktsendiNimi);
-            menuDisainRimi.Checked = Teema.Stiil == Disain.Rimi;
-            menuDisainKlassik.Checked = !Teema.OnRimi;
-            menuDisainMoodne.Checked = Teema.OnMoodne;
             foreach (var m in menuKeeled) m.Checked = Equals(m.Tag, Keel.Praegu);
         }
 
@@ -379,7 +286,7 @@
             });
         }
 
-        // Moodsas disainis avaneb vorm peaakna sees, muidu dialoogina; "parast" pärast sulgemist
+        // Vorm avaneb peaakna sees, muidu dialoogina; "parast" käivitub pärast sulgemist
         private void AvaVorm(Form vorm, Action? parast = null) => Aken.Ava(this, vorm, parast);
     }
 }

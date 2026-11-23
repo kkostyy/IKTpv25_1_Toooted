@@ -19,12 +19,12 @@ public class Toode
     public int KategooriaId { get; set; }
     public Kategooria Kategooria { get; set; } = null!;
 
-    // ---- Toote andmed (toote lehel "Tooteinfo") ----
+    // Toote andmed (toote lehel "Tooteinfo")
     public string? Kaubamark { get; set; }
     public string? Tootja { get; set; }
     public string? Paritolumaa { get; set; }
     public string? Pakend { get; set; }             // nt "0.5 kg", "2 l", "10 tk"
-    public string? Uhik { get; set; }               // kg / l / tk – ühikuhinna jaoks
+    public string? Uhik { get; set; }               // kg / l / tk: ühikuhinna jaoks
 
     [Precision(10, 3)]
     public decimal? UhikuKogus { get; set; }        // nt 0.5 (kg) → ühikuhind = Hind / 0.5

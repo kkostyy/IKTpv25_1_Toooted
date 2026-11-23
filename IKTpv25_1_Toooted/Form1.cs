@@ -37,7 +37,7 @@ namespace IKTpv25_1_Toooted
             var viimati = DateTime.MinValue;
             KataloogiEdenemine.Kuula(this, () =>
             {
-                // 18 000 rida tabelisse on aeglane – vahepeal ainult üks kord (et midagi oleks näha), siis lõpus
+                // 18 000 rida tabelisse on aeglane: vahepeal ainult üks kord (et midagi oleks näha), siis lõpus
                 if (RimiKataloog.Kaib && viimati != DateTime.MinValue) return;
                 viimati = DateTime.Now;
                 try { LaadiKategooriad(); LaadiTooted(); } catch { }
@@ -49,14 +49,14 @@ namespace IKTpv25_1_Toooted
             tabToode.Click += (s, e) => ValiVaheleht(tabToode);
             tabKassa.Click += (s, e) => ValiVaheleht(tabKassa);
 
-            // Toote lisaandmed (kaubamärk, koostisosad, toiteväärtus ...) – nupp tööriistaribal
+            // Toote lisaandmed (kaubamärk, koostisosad, toiteväärtus ...): nupp tööriistaribal
             var btnTooteinfo = UiStiil.LooNupp("Tooteinfo…", (s, e) => MuudaTooteinfot());
             btnTooteinfo.Margin = btnLisa.Margin;
             ridaToode.Controls.Add(btnTooteinfo);
 
             LooOtsing();
             SeadistaKassa();
-            if (Teema.OnMoodne) RakendaMoodne();   // Ctrl+Shift+M: tume menüü vasakul, KPI-d, paneel paremal
+            RakendaMoodne();   // tume menüü vasakul, KPI-d, paneel paremal
 
             try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch { }
 
@@ -83,9 +83,7 @@ namespace IKTpv25_1_Toooted
         // Teema muutus menüüst Vaade: värvime kõik ümber
         private void VarviUmber()
         {
-            KontrolliMoodneVahetust();
-            if (moodne) BackColor = Teema.Taust;
-            NaitaDisain();
+            BackColor = Teema.Taust;
             UuendaKeeleTekstid();
             Teema.Rakenda(this);
             korvVaade.VarviUmber();
@@ -96,8 +94,8 @@ namespace IKTpv25_1_Toooted
         {
             tabToode.Valitud = tab == tabToode;
             tabKassa.Valitud = tab == tabKassa;
-            pnlTop.Visible = !moodne && tab == tabToode;   // moodsas disainis vana lint ei ilmu (ka hetkeks mitte)
-            pnlKassaRibbon.Visible = !moodne && tab == tabKassa;
+            pnlTop.Visible = false;   // vana lint ei ilmu (ka hetkeks mitte)
+            pnlKassaRibbon.Visible = false;
 
             // Kassa vahelehel on toote sisestuse asemel ostukorv
             kaartSisestus.Visible = tab == tabToode;
@@ -111,9 +109,7 @@ namespace IKTpv25_1_Toooted
             UiStiil.LisaFookus(raam, sisu);
         }
 
-        // ---------------------------------------------------------------
-        //  Käivitamine (andmebaas luuakse Program.cs-is: db.Database.Migrate())
-        // ---------------------------------------------------------------
+        // Käivitamine (andmebaas luuakse Program.cs-is: db.Database.Migrate())
         private void Form1_Load(object? sender, EventArgs e)
         {
             try
@@ -128,9 +124,7 @@ namespace IKTpv25_1_Toooted
             }
         }
 
-        // ---------------------------------------------------------------
-        //  Andmete laadimine (EF Core)
-        // ---------------------------------------------------------------
+        // Andmete laadimine (EF Core)
         private void LaadiKategooriad()
         {
             object? eelmine = cmbKategooria.SelectedValue;
@@ -183,9 +177,7 @@ namespace IKTpv25_1_Toooted
             }
         }
 
-        // ---------------------------------------------------------------
-        //  Sisestuskontroll
-        // ---------------------------------------------------------------
+        // Sisestuskontroll
         private void txtKogus_KeyPress(object? sender, KeyPressEventArgs e)
         {
             if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
@@ -248,9 +240,7 @@ namespace IKTpv25_1_Toooted
             return true;
         }
 
-        // ---------------------------------------------------------------
-        //  Toode: lisa / uuenda / kustuta
-        // ---------------------------------------------------------------
+        // Toode: lisa / uuenda / kustuta
         private void btnLisa_Click(object? sender, EventArgs e)
         {
             try
@@ -350,9 +340,7 @@ namespace IKTpv25_1_Toooted
             }
         }
 
-        // ---------------------------------------------------------------
-        //  Tabeli klikk -> näita andmed väljadel
-        // ---------------------------------------------------------------
+        // Tabeli klikk -> näita andmed väljadel
         private void dataGridTooted_CellClick(object? sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0) return;                         // klikk päisel
@@ -369,9 +357,7 @@ namespace IKTpv25_1_Toooted
             NaitaPilti(Kaustad.PildiTee(pildiNimi));
         }
 
-        // ---------------------------------------------------------------
-        //  Pildid
-        // ---------------------------------------------------------------
+        // Pildid
         private void btnOtsiFail_Click(object? sender, EventArgs e)
         {
             using var dlg = new OpenFileDialog { Filter = "Pildifailid|*.jpg;*.jpeg;*.png;*.bmp;*.gif" };
@@ -421,9 +407,7 @@ namespace IKTpv25_1_Toooted
             NaitaPilti(null);
         }
 
-        // ---------------------------------------------------------------
-        //  Kategooriad
-        // ---------------------------------------------------------------
+        // Kategooriad
         private void btnLisaKategooria_Click(object? sender, EventArgs e)
         {
             string? uus = KysiTekst("Lisa kategooria", "Sisesta uue kategooria nimi:");

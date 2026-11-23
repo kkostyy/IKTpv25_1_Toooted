@@ -2,7 +2,7 @@
 
 namespace IKTpv25_1_Toooted;
 
-// Ostu vormistamine moodsas disainis (lõuend 2.2): vasakul valge kaart sammudega
+// Ostu vormistamine: vasakul valge kaart sammudega
 // (kättesaamine, klient ja tšekk, makse), paremal tume kokkuvõte ja punane "Maksa".
 public partial class MaksmineVorm
 {
@@ -18,7 +18,7 @@ public partial class MaksmineVorm
         korv.Visible = false;
         riba.Visible = false;
 
-        // ---- Vasak valge kaart ----
+        // Vasak valge kaart
         var paa = new RoundedPanel { Bounds = new Rectangle(16, 16, 712, 768), Radius = 16, FillColor = Teema.Pind, BorderColor = Teema.Pind, BackColor = Teema.Taust };
         var tagasi = new TagasiNupp { Location = new Point(26, 24) };
         tagasi.Click += (s, e) => { DialogResult = DialogResult.Cancel; Close(); };
@@ -31,7 +31,7 @@ public partial class MaksmineVorm
         foreach (var (kaart, h0) in new[] { (tarne, 230), (klient, 206), (makse, 170) })
         {
             int h = h0;
-            // valikud muutuvad kõrgemateks "pillideks" – nende all olevad read nihkuvad allapoole
+            // valikud muutuvad kõrgemateks "pillideks": nende all olevad read nihkuvad allapoole
             if (kaart.Controls.OfType<RadioButton>().Any())
             {
                 int rTop = kaart.Controls.OfType<RadioButton>().Max(r => r.Top);
@@ -55,7 +55,7 @@ public partial class MaksmineVorm
         paa.AutoScroll = true;   // väiksemal ekraanil keritakse (kojuveo aeg teeb vormi pikemaks)
         paa.Controls.Add(new Panel { Bounds = new Rectangle(0, y, 1, 14), BackColor = Teema.Pind });   // alumine vahe kerimisel
 
-        // ---- Parem tume kokkuvõte ----
+        // Parem tume kokkuvõte
         kokkuvote = new MaksmineKokkuvote { Bounds = new Rectangle(744, 16, 340, 768) };
         riba.Controls.Remove(btnMaksa);
         btnMaksa.Text = Keel.T("Maksa");
@@ -66,7 +66,7 @@ public partial class MaksmineVorm
         kokkuvote.Controls.Add(btnMaksa);
         Controls.Add(kokkuvote);
 
-        // paigutus akna laiuse järgi: kokkuvõte 260–340 px paremal, vasak kaart ülejäänud
+        // paigutus akna laiuse järgi: kokkuvõte 260-340 px paremal, vasak kaart ülejäänud
         void Paiguta()
         {
             int W = ClientSize.Width, H = ClientSize.Height;
@@ -76,7 +76,7 @@ public partial class MaksmineVorm
             kokkuvote.Bounds = new Rectangle(kx, 16, kw, H - 32);
             btnMaksa.Bounds = new Rectangle(20, kokkuvote.Height - 84, kw - 40, 60);
         }
-        // kaardid mahuvad kerimisriba kõrvale (ClientSize ilma kerimisribata) – horisontaalset kerimist ei teki
+        // kaardid mahuvad kerimisriba kõrvale (ClientSize ilma kerimisribata): horisontaalset kerimist ei teki
         void Laiused()
         {
             int w = paa.ClientSize.Width;

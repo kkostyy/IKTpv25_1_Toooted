@@ -1,6 +1,6 @@
 namespace IKTpv25_1_Toooted;
 
-// Pere ühise ostukorvi rida (kes, mida, mitu, millal) – vt PereKorv
+// Pere ühise ostukorvi rida (kes, mida, mitu, millal): vt PereKorv
 public class PereKorviRida
 {
     public int Id { get; set; }

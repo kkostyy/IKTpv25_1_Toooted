@@ -6,10 +6,8 @@ using PdfSharpCore.Pdf;
 
 namespace IKTpv25_1_Toooted;
 
-// ===================================================================
-//  Autotellimus (omanik): mida tarnijatelt juurde tellida müügitempo ja
-//  laoseisu järgi. Kogust saab tabelis muuta; eksport CSV ja PDF tarnijale.
-// ===================================================================
+// Autotellimus (omanik): mida tarnijatelt juurde tellida müügitempo ja
+// laoseisu järgi. Kogust saab tabelis muuta; eksport CSV ja PDF tarnijale.
 public class AutotellimusVorm : KujundusVorm
 {
     private static readonly CultureInfo Eesti = new("et-EE");
@@ -39,7 +37,7 @@ public class AutotellimusVorm : KujundusVorm
         var kateSilt = new Label { Text = "Kaup peab jätkuma", Location = new Point(20, 98), AutoSize = true, ForeColor = Teema.Tekst2, BackColor = Teema.Taust, Font = new Font("Segoe UI Semibold", 9.5F) };
         yla.Controls.Add(kateSilt);
         kate = new MoodneFilter { Location = new Point(160, 84) };
-        // Tagasi-nupp nihutab päise elemente – filter jääb alati sildi järele
+        // Tagasi-nupp nihutab päise elemente: filter jääb alati sildi järele
         kateSilt.LocationChanged += (s, e) => kate.Location = new Point(kateSilt.Right + 12, kateSilt.Top - 12);
         kateSilt.SizeChanged += (s, e) => kate.Location = new Point(kateSilt.Right + 12, kateSilt.Top - 12);
         kate.Sea(new[] { (Keel.F("{0} päeva", 7), -1), (Keel.F("{0} päeva", 14), -1), (Keel.F("{0} päeva", 30), -1) }, 1);

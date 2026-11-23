@@ -4,11 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted
 {
-    // ===================================================================
-    //  Kliendikaart nagu iPhone'i rahakotis (Wallet):
-    //  kaart libiseb alt üles, klõps pöörab kaardi ümber (taga vöötkood),
-    //  all viimased ostud ja boonuse muutus. Esc / ✕ / klõps mujal sulgeb.
-    // ===================================================================
+    // Kliendikaart nagu iPhone'i rahakotis (Wallet):
+    // kaart libiseb alt üles, klõps pöörab kaardi ümber (taga vöötkood),
+    // all viimased ostud ja boonuse muutus. Esc / ✕ / klõps mujal sulgeb.
     public class KliendikaartVorm : Form, ITagasi
     {
         // Avab kaardi; kui kaarti pole, pakub selle kohe luua
@@ -31,16 +29,8 @@ namespace IKTpv25_1_Toooted
                 catch (Exception ex) { Teade.Show("Viga:\n" + ex.Message); return; }
             }
 
-            // Moodne disain (lõuend 2.3): kujunduse valik, oma foto, vöötkood, ostud
-            if (Teema.OnMoodne)
-            {
-                Aken.Ava(omanik, new KliendikaartMoodneVorm());
-                return;
-            }
-
-            using var vorm = new KliendikaartVorm();
-            if (omanik != null) vorm.ShowDialog(omanik);
-            else { vorm.StartPosition = FormStartPosition.CenterScreen; vorm.ShowDialog(); }
+            // Kujunduse valik, oma foto, vöötkood, ostud
+            Aken.Ava(omanik, new KliendikaartMoodneVorm());
         }
 
         private record Tehing(DateTime Aeg, decimal Summa, decimal Lisatud, decimal Kasutatud);
@@ -325,7 +315,7 @@ namespace IKTpv25_1_Toooted
             }
         }
 
-        // ---- Kaardi esikülg: värviline, logo, boonus, nimi, number ----
+        // Kaardi esikülg: värviline, logo, boonus, nimi, number
         private void Esikulg(Graphics g, RectangleF r)
         {
             // Taust taseme järgi: Pronks vask, Hõbe harjatud hõbe + läige, Kuld + hologramm ja sädemed
@@ -384,7 +374,7 @@ namespace IKTpv25_1_Toooted
                 g.DrawString(Ruumidega(number), f, b, 20, r.Height - 40);
         }
 
-        // ---- Tagakülg: valge, vöötkood (EAN-13) ----
+        // Tagakülg: valge, vöötkood (EAN-13)
         private void Tagakulg(Graphics g, RectangleF r)
         {
             using var tee = Ymardus.Tee(r, 9);
@@ -416,7 +406,7 @@ namespace IKTpv25_1_Toooted
             string.Join(" ", Enumerable.Range(0, (n.Length + 2) / 3).Select(i => n.Substring(i * 3, Math.Min(3, n.Length - i * 3))));
     }
 
-    // EAN-13 vöötkood (päris kodeering – telefoniga skannitav)
+    // EAN-13 vöötkood (päris kodeering: telefoniga skannitav)
     public static class Triipkood
     {
         private static readonly string[] L = { "0001101", "0011001", "0010011", "0111101", "0100011", "0110001", "0101111", "0111011", "0110111", "0001011" };

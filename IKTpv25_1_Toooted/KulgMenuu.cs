@@ -2,11 +2,9 @@ using System.Drawing.Drawing2D;
 
 namespace IKTpv25_1_Toooted
 {
-    // ===================================================================
-    //  Külgmenüü: ümar "pill" ikoonidega (nagu kaasaegsetes e-poodides).
-    //  Üleval poe ring, keskel ikoonid (aktiivne = tume ruut), märgid (korvis 3),
-    //  all väljumine ja kasutaja ring initsiaalidega. Vihje hiire all.
-    // ===================================================================
+    // Külgmenüü: ümar "pill" ikoonidega (nagu kaasaegsetes e-poodides).
+    // Üleval poe ring, keskel ikoonid (aktiivne = tume ruut), märgid (korvis 3),
+    // all väljumine ja kasutaja ring initsiaalidega. Vihje hiire all.
     public class KulgMenuu : Control
     {
         public class Punkt
@@ -47,9 +45,9 @@ namespace IKTpv25_1_Toooted
             Visible = Teema.Umarad;
         }
 
-        // Moodsas disainis on peaaknal oma tume menüü – see külgmenüü peitu
+        // Peaaknal on oma tume menüü, seega see külgmenüü peidetakse
         private bool peidaMoodsas;
-        public bool PeidaMoodsas { get => peidaMoodsas; set { peidaMoodsas = value; Visible = Teema.Umarad && !(value && Teema.OnMoodne); } }
+        public bool PeidaMoodsas { get => peidaMoodsas; set { peidaMoodsas = value; Visible = Teema.Umarad && !value; } }
 
         protected override void Dispose(bool disposing)
         {
@@ -65,7 +63,7 @@ namespace IKTpv25_1_Toooted
 
         private void TeemaMuutus()
         {
-            Visible = Teema.Umarad && !(peidaMoodsas && Teema.OnMoodne);   // seadetes "Ümarad nurgad ja külgmenüü"
+            Visible = Teema.Umarad && !peidaMoodsas;   // seadetes "Ümarad nurgad ja külgmenüü"
             Invalidate();
         }
 
@@ -82,7 +80,7 @@ namespace IKTpv25_1_Toooted
             if (IsHandleCreated) BeginInvoke(new Action(Invalidate));
         }
 
-        // ---- Hiir ----
+        // Hiir
         private int Leia(Point p)
         {
             if (valjuKoht.Contains(p) && Valju != null) return -2;
@@ -129,7 +127,7 @@ namespace IKTpv25_1_Toooted
             else if (i == -4) LogoKlikk?.Invoke();
         }
 
-        // ---- Joonistamine ----
+        // Joonistamine
         protected override void OnPaint(PaintEventArgs e)
         {
             var g = e.Graphics;

@@ -5,19 +5,21 @@ using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted;
 
-// ===================================================================
-//  Pangaülekanne: raha tuleb otse poe pangakontole.
-//  Ostja näeb pärast tellimist saajat, IBAN-i, summat ja selgitust + EPC QR-koodi
-//  (pangaäpp täidab makse ise). Tellimus on "Maksmata", kuni omanik märgib selle
-//  Ostude ajaloos makstuks (raha laekus kontole).
-// ===================================================================
+// Pangaülekanne: raha tuleb otse poe pangakontole.
+// Ostja näeb pärast tellimist saajat, IBAN-i, summat ja selgitust + EPC QR-koodi
+// (pangaäpp täidab makse ise). Tellimus on "Maksmata", kuni omanik märgib selle
+// Ostude ajaloos makstuks (raha laekus kontole).
 public class MakseSeaded
 {
     public const string Pangaulekanne = "Pangaülekanne";
 
-    // Vaikimisi saaja (muudetav: Haldus → Makse seaded, fail AppData\Local\ToodedApp\makse.json)
-    public string Saaja { get; set; } = "KONSTANTIN GAPONENKO";
-    public string Iban { get; set; } = "EE502200221075082971";
+    // Saaja ja konto sisestab omanik: Haldus → Makse seaded (fail AppData\Local\ToodedApp\makse.json).
+    // Koodis päris kontot ei ole.
+    public string Saaja { get; set; } = "";
+    public string Iban { get; set; } = "";
+
+    // Pangaülekanne on valitav ainult siis, kui konto on seadetes olemas
+    public bool OnSeadistatud => Iban.Trim().Length > 0;
 
     private static string Fail => Path.Combine(Kaustad.Juur, "makse.json");
 

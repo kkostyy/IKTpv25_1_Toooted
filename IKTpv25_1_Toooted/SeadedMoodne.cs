@@ -2,7 +2,7 @@
 
 namespace IKTpv25_1_Toooted
 {
-    // Seaded moodsas disainis (lõuend 3.3): vasakul jaotised, valikud segmentidena
+    // Seaded: vasakul jaotised, valikud segmentidena
     // (teema, disain, keel) ja poe värv värvitäppidena.
     public partial class SeadedVorm
     {
@@ -21,12 +21,10 @@ namespace IKTpv25_1_Toooted
 
             // Teema: Hele / Tume
             var teema = new Segmendid(new[] { "Hele", "Tume" }, () => Teema.Tume ? 1 : 0, i => cmbTeema.SelectedIndex = i) { Location = cmbTeema.Location, Width = 250 };
-            // Disain: Rimi / Klassikaline / Moodne
-            var disain = new Segmendid(new[] { "Rimi", "Klassik", "Moodne" }, () => cmbDisain.SelectedIndex, i => cmbDisain.SelectedIndex = i) { Location = cmbDisain.Location, Width = 250 };
             var keel = new KeelePill { Location = cmbKeel.Location };
             var varvid = new VarviTapid(cmbVarv) { Location = cmbVarv.Location, Width = 250 };
-            foreach (var c in new[] { cmbTeema, cmbDisain, cmbKeel, cmbVarv }) c.Visible = false;
-            Controls.AddRange(new Control[] { teema, disain, keel, varvid });
+            foreach (var c in new[] { cmbTeema, cmbKeel, cmbVarv }) c.Visible = false;
+            Controls.AddRange(new Control[] { teema, keel, varvid });
 
             // Jaotised päris vahelehtedena: igaüks oma paneelil, nähtav ainult valitud
             var piirid = new[] { 58, 368, 446, 620 };

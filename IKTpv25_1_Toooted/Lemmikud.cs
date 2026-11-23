@@ -38,7 +38,7 @@ public static class Lemmikud
         Muutus?.Invoke();
     }
 
-    // ---- "Taas laos" teavitus ----
+    // "Taas laos" teavitus
     // Lemmikud, mis olid viimati otsas (fail lemmikud_otsas.json). Kui mõni neist on jälle laos,
     // teatab pood sellest ja kaardil on kiip "Taas laos!" (kuni programmi sulgemiseni).
     private static string OtsasFail => Path.Combine(Kaustad.Juur, "lemmikud_otsas.json");

@@ -1,7 +1,7 @@
 namespace IKTpv25_1_Toooted;
 
 // Ühtne lõpphinna arvutus: kampaania (juba Toode.Hind-is), säilivusaja allahindlus,
-// õhtune küpsetiste soodustus ja päeva üllatus. Soodustused ei liitu – kehtib suurim.
+// õhtune küpsetiste soodustus ja päeva üllatus. Soodustused ei liitu: kehtib suurim.
 public static class Hinnad
 {
     public record Tulemus(decimal Hind, decimal TavaHind, string? Allikas)

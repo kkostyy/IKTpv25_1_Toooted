@@ -13,58 +13,12 @@ public class DieediKaart : Panel
 
     public DieediKaart()
     {
-        if (Teema.OnMoodne)
-        {
-            (kiibid, lblSobib, lblTeada) = EhitaMoodne();
-            MinuDieet.Muutus += Uuenda;
-            Keel.Muutus += Uuenda;
-            return;
-        }
-        Height = 76;
-        Padding = new Padding(30, 4, 20, 8);
-        BackColor = Teema.Taust;
-        DoubleBuffered = true;
-
-        var kaart = new RoundedPanel { Dock = DockStyle.Fill, Radius = 22, FillColor = Teema.Pind, BorderColor = Teema.Joon, BackColor = Teema.Taust, Padding = new Padding(64, 0, 16, 0) };
-        kaart.Paint += (s, e) =>
-        {
-            // roheline ring lehega
-            var g = e.Graphics;
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-            var r = new Rectangle(14, (kaart.Height - 40) / 2, 40, 40);
-            using (var b = new SolidBrush(Teema.Edu)) g.FillEllipse(b, r);
-            Ikoonid.Joonista(g, "", r, Color.White, 13f);   // leht
-        };
-        var pealkiri = new Label { Text = "Minu dieet", AutoSize = true, Font = new Font("Segoe UI Semibold", 11.5F), ForeColor = Teema.Tekst, BackColor = Teema.Pind, Margin = new Padding(0, 19, 14, 0) };
-        kiibid = new FlowLayoutPanel { Dock = DockStyle.Fill, WrapContents = false, BackColor = Teema.Pind, Padding = new Padding(0, 0, 0, 0) };
-        kiibid.Controls.Add(pealkiri);
-        foreach (var (mark, nimi) in new[] { (DieediMark.Laktoosivaba, "Laktoosivaba"), (DieediMark.Gluteenivaba, "Gluteenivaba"), (DieediMark.Vegan, "Vegan"), (DieediMark.Pahklivaba, "Pähklivaba"), (DieediMark.Eesti, "Eesti toode") })
-        {
-            var k = new DieediKiip(nimi, () => MinuDieet.Valik.HasFlag(mark)) { Margin = new Padding(0, 16, 8, 0) };
-            k.Click += (s, e) => MinuDieet.Vaheta(mark);
-            kiibid.Controls.Add(k);
-        }
-        var range = new DieediKiip("Range režiim", () => MinuDieet.Range, lyliti: true) { Margin = new Padding(14, 16, 8, 0) };
-        range.Click += (s, e) => MinuDieet.SeaRange(!MinuDieet.Range);
-        var peida = new DieediKiip("Peida sobimatud", () => MinuDieet.Peida, lyliti: true) { Margin = new Padding(0, 16, 8, 0) };
-        peida.Click += (s, e) => MinuDieet.SeaPeida(!MinuDieet.Peida);
-        kiibid.Controls.Add(range);
-        kiibid.Controls.Add(peida);
-
-        var parem = new Panel { Dock = DockStyle.Right, Width = 210, BackColor = Teema.Pind };
-        lblSobib = new Label { Location = new Point(0, 10), AutoSize = true, Font = new Font("Segoe UI Semibold", 10.5F), ForeColor = Teema.Tekst, BackColor = Teema.Pind };
-        lblTeada = new Label { Location = new Point(0, 34), AutoSize = true, Font = new Font("Segoe UI", 8.5F), ForeColor = Teema.TekstNork, BackColor = Teema.Pind };
-        parem.Controls.Add(lblSobib);
-        parem.Controls.Add(lblTeada);
-        kaart.Controls.Add(kiibid);
-        kaart.Controls.Add(parem);
-        Controls.Add(kaart);
-
+        (kiibid, lblSobib, lblTeada) = EhitaMoodne();
         MinuDieet.Muutus += Uuenda;
         Keel.Muutus += Uuenda;
     }
 
-    // Moodne (lõuend N3): valge kaart kahe reaga – ülal pealkiri, loendur ja lülitid, all suured kiibid
+    // Valge kaart kahe reaga: ülal pealkiri, loendur ja lülitid, all suured kiibid
     private (FlowLayoutPanel, Label, Label) EhitaMoodne()
     {
         Height = 150;
@@ -145,7 +99,6 @@ public class DieediKaart : Panel
         int sobib = koik.Count(MinuDieet.Sobib);
         int teada = koik.Count(t => Dieet.Analuusi(t).KoostisTeada);
         lblSobib.Text = Keel.F("Sulle sobib {0} / {1} toodet", sobib, koik.Count);
-        if (!Teema.OnMoodne) lblTeada.Left = lblSobib.Left;
         lblTeada.Text = Keel.F("Koostis on teada {0} tootel", teada);
         viimaneArv = sobib;
         foreach (var k in kiibid.Controls.OfType<DieediKiip>()) k.Invalidate();
@@ -182,12 +135,8 @@ public class DieediKiip : Control
 
     private void Sobita()
     {
-        if (Teema.OnMoodne)
-        {
-            Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            Size = new Size(TextRenderer.MeasureText(Keel.T(tekst), Font).Width + (lyliti ? 66 : 52), 42);
-        }
-        else Size = new Size(TextRenderer.MeasureText(Keel.T(tekst), Font).Width + (lyliti ? 52 : 38), 32);
+        Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+        Size = new Size(TextRenderer.MeasureText(Keel.T(tekst), Font).Width + (lyliti ? 66 : 52), 42);
         Invalidate();
     }
 
@@ -213,45 +162,10 @@ public class DieediKiip : Control
         bool v = valitud();
         var r = new RectangleF(0.5f, 0.5f, Width - 2, Height - 2);
 
-        if (Teema.OnMoodne) { JoonistaMoodne(g, v, r); return; }
-        if (lyliti)
-        {
-            // väike lüliti + tekst
-            var rada = new RectangleF(4, (Height - 18) / 2f, 32, 18);
-            using (var tee = Ymardus.Tee(rada, 9))
-            using (var b = new SolidBrush(v ? Teema.Edu : Teema.Raam))
-                g.FillPath(b, tee);
-            float s = (float)Animatsioon.Sujuv(pop), vasak = rada.X + 2, parem = rada.Right - 16;
-            float x = vasak + (parem - vasak) * (v ? s : 1 - s);
-            using (var b = new SolidBrush(Color.White)) g.FillEllipse(b, x, rada.Y + 2, 14, 14);
-            TextRenderer.DrawText(g, Keel.T(tekst), Font, new Rectangle(42, 0, Width - 42, Height), hover ? Teema.Tekst : Teema.Tekst2,
-                TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix);
-            return;
-        }
-
-        Color taust = v ? Teema.Edu : hover ? Teema.Paneel2 : Ymardus.Segu(Teema.Pind, Teema.Paneel2, 0.7f);
-        using (var tee = Ymardus.Tee(r, r.Height / 2))
-        using (var b = new SolidBrush(taust))
-            g.FillPath(b, tee);
-
-        if (v)
-        {
-            // linnuke "pop": kasvab üle 1 ja tuleb tagasi
-            float k = (float)Animatsioon.Pop(pop);
-            var c = new PointF(18, Height / 2f);
-            using var p = new Pen(Color.White, 2.2f) { StartCap = LineCap.Round, EndCap = LineCap.Round, LineJoin = LineJoin.Round };
-            g.DrawLines(p, new[] { new PointF(c.X - 5 * k, c.Y), new PointF(c.X - 1.5f * k, c.Y + 3.5f * k), new PointF(c.X + 5 * k, c.Y - 4 * k) });
-        }
-        else
-        {
-            using var b = new SolidBrush(Teema.Raam);
-            g.FillEllipse(b, 13, Height / 2f - 4, 8, 8);
-        }
-        TextRenderer.DrawText(g, Keel.T(tekst), Font, new Rectangle(28, 0, Width - 30, Height), v ? Color.White : Teema.Tekst2,
-            TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix);
+        JoonistaMoodne(g, v, r);
     }
 
-    // Moodne: suur roheline kiip valge ringiga (linnuke), lüliti 52×30 (range = ploom)
+    // Suur roheline kiip valge ringiga (linnuke), lüliti 52×30 (range = ploom)
     private void JoonistaMoodne(Graphics g, bool v, RectangleF r)
     {
         float s = (float)Animatsioon.Sujuv(pop);

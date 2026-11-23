@@ -1,7 +1,7 @@
 namespace IKTpv25_1_Toooted;
 
 // "Mida ostetakse koos": seosreeglid ostude põhjal (A → B).
-// Toetus = mitmes ostus mõlemad; kindlus = P(B | A); tõus (lift) = kindlus / P(B) – üle 1 tähendab tõelist seost.
+// Toetus = mitmes ostus mõlemad; kindlus = P(B | A); tõus (lift) = kindlus / P(B): üle 1 tähendab tõelist seost.
 public static class Ostukorvianalyys
 {
     public record Reegel(string A, string B, int Koos, int OsteA, double Kindlus, double Tous, int? ToodeA = null, int? ToodeB = null);

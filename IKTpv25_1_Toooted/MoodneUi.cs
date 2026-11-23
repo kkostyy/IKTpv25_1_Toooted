@@ -2,10 +2,8 @@
 
 namespace IKTpv25_1_Toooted;
 
-// ===================================================================
-//  Moodsa disaini (Ctrl+Shift+M) ühised osad: tume brändipaneel
-//  hõljuvate kaartidega, keelevalik "pillina", noolega peanupp.
-// ===================================================================
+// Moodsa disaini ühised osad: tume brändipaneel
+// hõljuvate kaartidega, keelevalik "pillina", noolega peanupp.
 
 // Tume paneel (raadius 32): AKT logo, kaks hõljuvat kliendikaarti, "Tere tulemast!"
 public class MoodneBrand : Control
@@ -303,7 +301,7 @@ public static class MoodneStiil
         };
     }
 
-    // Vormi dokitud osad valgele ümarale kaardile hallil taustal (lõuendi "bento" stiil)
+    // Vormi dokitud osad valgele ümarale kaardile hallil taustal
     public static RoundedPanel KaardiSisse(Form vorm, params Control[] osad)
     {
         vorm.BackColor = Teema.Taust;

@@ -108,16 +108,8 @@ public class Navigaator
         Muutus?.Invoke();
         uus.Avatud();
 
-        // Moodne: kohe, ilma libisemiseta (paljude elementidega leht "rebenes" liikudes)
-        if (suund == 0 || Teema.OnMoodne)
-        {
-            uus.Dock = DockStyle.Fill;
-            return;
-        }
-        int nihe = 70 * suund;
-        libisemine = Animatsioon.Kaivita(uus, 450,
-            t => uus.Left = (int)Math.Round(nihe * (1 - Animatsioon.Sujuv(t))),
-            () => { uus.Left = 0; uus.Dock = DockStyle.Fill; });
+        // Kohe, ilma libisemiseta (paljude elementidega leht "rebenes" liikudes)
+        uus.Dock = DockStyle.Fill;
     }
 }
 

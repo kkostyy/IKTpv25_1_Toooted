@@ -3,14 +3,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted
 {
-    // ===================================================================
-    //  Moodne disain (Ctrl+Shift+M) peaaknale: vasakul tume menüü,
-    //  keskel pealkiri + 3 KPI plaati + tabel, paremal "Toote andmed" / ostukorv.
-    //  Designeri elemendid tõstetakse ümber koodis (Form1.Designer.cs ei muutu).
-    // ===================================================================
+    // Moodne disain peaaknale: vasakul tume menüü,
+    // keskel pealkiri + 3 KPI plaati + tabel, paremal "Toote andmed" / ostukorv.
+    // Designeri elemendid tõstetakse ümber koodis (Form1.Designer.cs ei muutu).
     public partial class Form1
     {
-        private bool moodne;
         private Label? moodneKokku;
 
         private void UuendaMoodneKokku()
@@ -20,14 +17,9 @@ namespace IKTpv25_1_Toooted
         private MoodneMenuu? moodneMenuu;
         private Label? moodnePealkiri;
         private MoodneKpi? kpiTooteid, kpiVahe, kpiMyyk;
-        private bool taasAvada;
-
-        // Program: kui disain vahetati moodsa ja tavalise vahel, avatakse peaaken uuesti
-        public bool TaasAvada => taasAvada;
 
         private void RakendaMoodne()
         {
-            moodne = true;
             BackColor = Teema.Taust;
             if (WindowState == FormWindowState.Normal)
             {
@@ -38,11 +30,10 @@ namespace IKTpv25_1_Toooted
             // Vana päis, menüü, vahelehed, lindid ja külgmenüü peitu
             if (MainMenuStrip != null) MainMenuStrip.Visible = false;
             foreach (var ss in Controls.OfType<StatusStrip>()) ss.Visible = false;
-            epoePais.Visible = epoeRiba.Visible = false;
             pnlTabid.Visible = pnlTop.Visible = pnlKassaRibbon.Visible = pnlJoon.Visible = false;
             kulg.PeidaMoodsas = true;
 
-            // ---- Vasak tume menüü ----
+            // Vasak tume menüü
             moodneMenuu = new MoodneMenuu { Dock = DockStyle.Left, Width = 252 };
             moodneMenuu.Lisa("tooted", "", "Tooted", () => ValiVaheleht(tabToode), () => AktiivneKasutaja.OnOmanik);
             moodneMenuu.Lisa("kassa", "", "Kassa", () => ValiVaheleht(tabKassa));
@@ -59,7 +50,7 @@ namespace IKTpv25_1_Toooted
             moodneMenuu.Profiil = NaitaProfiil;
             Controls.Add(moodneMenuu);
 
-            // ---- Keskosa: pealkiri, KPI-d, tabel ----
+            // Keskosa: pealkiri, KPI-d, tabel
             var kesk = new Panel { Dock = DockStyle.Fill, BackColor = Teema.Taust };
             var pais = new Panel { Dock = DockStyle.Top, Height = 64, BackColor = Teema.Taust };
             moodnePealkiri = new Label { Text = "Tooted", AutoSize = true, Location = new Point(4, 8), Font = new Font("Segoe UI", 24F, FontStyle.Bold), ForeColor = Teema.Tekst, BackColor = Teema.Taust };
@@ -85,7 +76,7 @@ namespace IKTpv25_1_Toooted
             kesk.Controls.Add(kpiRida);
             kesk.Controls.Add(pais);
 
-            // ---- Paremal: toote andmed (Tooted) või ostukorv (Kassa) ----
+            // Paremal: toote andmed (Tooted) või ostukorv (Kassa)
             pnlSisu.Padding = new Padding(16);
             pnlVahe.Dock = DockStyle.Right;
             pnlVahe.Width = 16;
@@ -165,7 +156,7 @@ namespace IKTpv25_1_Toooted
         // KPI-d: tooteid, väike laoseis, tänane müük
         private void UuendaMoodneKpi()
         {
-            if (!moodne || kpiTooteid == null || kpiVahe == null || kpiMyyk == null) return;
+            if (kpiTooteid == null || kpiVahe == null || kpiMyyk == null) return;
             kpiTooteid.Naita(koikTooted.Count.ToString());
             int vahe = koikTooted.Count(t => t.Kogus < VaikeLaoseis);
             kpiVahe.Naita(Keel.F("{0} toodet", vahe));
@@ -179,12 +170,12 @@ namespace IKTpv25_1_Toooted
             catch { kpiMyyk.Naita("—"); }
         }
 
-        // ---- Üks aken: vormid avanevad peaakna sisualal (vasak menüü jääb alles) ----
+        // Üks aken: vormid avanevad peaakna sisualal (vasak menüü jääb alles)
         private Panel? manuseAla;
         private readonly List<Form> manused = new();
         private bool viimaneTooted = true, sulgen;
 
-        public bool VoibManustada => moodne && Visible;
+        public bool VoibManustada => Visible;
 
         public void Manusta(Form vorm, Action? suletud)
         {
@@ -224,29 +215,12 @@ namespace IKTpv25_1_Toooted
 
         private void MoodneVaheleht(bool tooted)
         {
-            if (!moodne) return;
             viimaneTooted = tooted;
             if (!sulgen && manused.Count > 0) SulgeManused();
             pnlTop.Visible = pnlKassaRibbon.Visible = false;
             if (moodnePealkiri != null) moodnePealkiri.Text = Keel.T(tooted ? "Tooted" : "Kassa");
             moodneMenuu?.Vali(tooted ? "tooted" : "kassa");
             UuendaMoodneKpi();
-        }
-
-        // Teema muutus: kui moodne disain lülitati sisse/välja, ehitatakse peaaken uuesti (kui dialooge pole lahti)
-        private void KontrolliMoodneVahetust()
-        {
-            if (Teema.OnMoodne == moodne || taasAvada) return;
-            taasAvada = true;
-            void Proovi()
-            {
-                if (OwnedForms.Any(f => f.Visible && f.Modal) || Application.OpenForms.Cast<Form>().Any(f => f != this && f.Modal)) return;
-                Activated -= ProoviSyndmus;
-                BeginInvoke(new Action(Close));
-            }
-            void ProoviSyndmus(object? s, EventArgs e) => Proovi();
-            Activated += ProoviSyndmus;
-            if (ContainsFocus) Proovi();
         }
 
         private void NaitaRohkem()
@@ -264,9 +238,6 @@ namespace IKTpv25_1_Toooted
             ToolStripMenuItem V(string t, Action a, bool valitud) { var i = new ToolStripMenuItem(Keel.T(t), null, (s, e) => a()) { Checked = valitud }; m.Items.Add(i); return i; }
             V("Hele teema", () => Teema.Sea(false, Teema.AktsendiNimi), !Teema.Tume);
             V("Tume teema", () => Teema.Sea(true, Teema.AktsendiNimi), Teema.Tume);
-            V("Moodne disain", () => Teema.SeaDisain(Disain.Moodne), Teema.OnMoodne);
-            V("E-poe disain (Rimi)", () => Teema.SeaDisain(Disain.Rimi), Teema.Stiil == Disain.Rimi);
-            V("Klassikaline disain", () => Teema.SeaDisain(Disain.Klassikaline), Teema.Stiil == Disain.Klassikaline);
             V("Hooajaline kujundus", () => Hooajad.Sees = !Hooajad.Sees, Hooajad.Sees);
             m.Items.Add(new ToolStripSeparator());
             foreach (var k in Enum.GetValues<KeeleKood>())

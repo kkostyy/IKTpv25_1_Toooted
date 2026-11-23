@@ -3,16 +3,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted;
 
-// ===================================================================
-//  Kampaaniad (omanik): ülal filter, ajatelg (4 nädalat), tabel;
-//  paremal "Uus kampaania" – toode, soodustus, periood, eelvaade.
-// ===================================================================
+// Kampaaniad (omanik): ülal filter, ajatelg (4 nädalat), tabel;
+// paremal "Uus kampaania": toode, soodustus, periood, eelvaade.
 public class KampaaniadVorm : KujundusVorm
 {
     private readonly KampaaniaTelg telg = new() { Dock = DockStyle.Top, Height = 200 };
     private readonly DataGridView vork;
     private readonly FlowLayoutPanel filtrid;
-    private readonly MoodneFilter? moodneFilter;   // moodne: vahelehed valgel "pillil" (lõuend N2)
+    private readonly MoodneFilter? moodneFilter;   // vahelehed valgel "pillil"
     private readonly Label? lblOlek;
     private readonly TextBox txtNimi;
     private readonly ComboBox cmbToode;
@@ -34,36 +32,30 @@ public class KampaaniadVorm : KujundusVorm
         MinimumSize = new Size(1080, 680);
         BackColor = Teema.Taust;
 
-        // ---- Ülal: pealkiri + filtri "pillid" ----
+        // Ülal: pealkiri + filtri "pillid"
         var yla = new Panel { Dock = DockStyle.Top, Height = 64, BackColor = Teema.Taust };
         yla.Controls.Add(new Label { Text = "Kampaaniad", Location = new Point(18, 14), AutoSize = true, Font = UiStiil.PealkirjaFont, ForeColor = Teema.Tekst, BackColor = Teema.Taust });
         filtrid = new FlowLayoutPanel { Location = new Point(200, 16), AutoSize = true, WrapContents = false, BackColor = Teema.Taust };
         yla.Controls.Add(filtrid);
-        if (Teema.OnMoodne)
-        {
-            yla.Height = 76;
-            filtrid.Visible = false;
-            moodneFilter = new MoodneFilter { Anchor = AnchorStyles.Top | AnchorStyles.Right, Top = 14 };
-            moodneFilter.Valitud += i => { filter = i switch { 1 => KampaaniaOlek.Kaib, 2 => KampaaniaOlek.Tulekul, 3 => KampaaniaOlek.Loppenud, _ => null }; Laadi(); };
-            moodneFilter.Resize += (s, e) => moodneFilter.Left = yla.Width - moodneFilter.Width - 16;
-            yla.Resize += (s, e) => moodneFilter.Left = yla.Width - moodneFilter.Width - 16;
-            yla.Controls.Add(moodneFilter);
-        }
+        yla.Height = 76;
+        filtrid.Visible = false;
+        moodneFilter = new MoodneFilter { Anchor = AnchorStyles.Top | AnchorStyles.Right, Top = 14 };
+        moodneFilter.Valitud += i => { filter = i switch { 1 => KampaaniaOlek.Kaib, 2 => KampaaniaOlek.Tulekul, 3 => KampaaniaOlek.Loppenud, _ => null }; Laadi(); };
+        moodneFilter.Resize += (s, e) => moodneFilter.Left = yla.Width - moodneFilter.Width - 16;
+        yla.Resize += (s, e) => moodneFilter.Left = yla.Width - moodneFilter.Width - 16;
+        yla.Controls.Add(moodneFilter);
 
-        // ---- Paremal: uus / muudetav kampaania ----
-        var parem = new Panel { Dock = DockStyle.Right, Width = Teema.OnMoodne ? 430 : 380, Padding = new Padding(0, 0, 16, 16), BackColor = Teema.Taust };
+        // Paremal: uus / muudetav kampaania
+        var parem = new Panel { Dock = DockStyle.Right, Width = 430, Padding = new Padding(0, 0, 16, 16), BackColor = Teema.Taust };
         var vorm = new Panel { BackColor = Teema.Pind };
         int x = 4, w = 330, y = 0;
         lblVorm = new Label { Text = "Uus kampaania", Location = new Point(x, y), AutoSize = true, Font = new Font("Segoe UI Semibold", 13F), ForeColor = Teema.Tekst, BackColor = Teema.Pind };
         vorm.Controls.Add(lblVorm);
-        if (Teema.OnMoodne)
-        {
-            lblVorm.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            lblOlek = new Label { AutoSize = false, Size = new Size(84, 26), TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 8.5F, FontStyle.Bold), ForeColor = Color.FromArgb(160, 35, 110), BackColor = Color.FromArgb(246, 230, 239) };
-            using (var t = Ymardus.Tee(new RectangleF(0, 0, lblOlek.Width, lblOlek.Height), 13)) lblOlek.Region = new Region(t);   // ümar kiip
-            lblOlek.Location = new Point(x + w - 84 - 70, y + 6);
-            vorm.Controls.Add(lblOlek);
-        }
+        lblVorm.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+        lblOlek = new Label { AutoSize = false, Size = new Size(84, 26), TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 8.5F, FontStyle.Bold), ForeColor = Color.FromArgb(160, 35, 110), BackColor = Color.FromArgb(246, 230, 239) };
+        using (var t = Ymardus.Tee(new RectangleF(0, 0, lblOlek.Width, lblOlek.Height), 13)) lblOlek.Region = new Region(t);   // ümar kiip
+        lblOlek.Location = new Point(x + w - 84 - 70, y + 6);
+        vorm.Controls.Add(lblOlek);
         var uus = new IkoonTekst(Ikoonid.Pluss, "Uus", Teema.Teine, new Font("Segoe UI Semibold", 9.5F)) { BackColor = Teema.Pind };
         uus.Location = new Point(x + w - uus.Width, y + 4);
         uus.Click += (s, e) => Tyhjenda();
@@ -135,11 +127,11 @@ public class KampaaniadVorm : KujundusVorm
         vorm.Controls.Add(btnLopeta);
         vorm.Controls.Add(btnKustuta);
 
-        var vormiKaart = UiStiil.LooKaardiPaneel(Teema.OnMoodne ? "" : "Haldus", vorm);
+        var vormiKaart = UiStiil.LooKaardiPaneel("", vorm);
         vormiKaart.Dock = DockStyle.Fill;
         parem.Controls.Add(vormiKaart);
 
-        // ---- Keskel: ajatelg + tabel ----
+        // Keskel: ajatelg + tabel
         vork = new DataGridView
         {
             AllowUserToAddRows = false,
@@ -164,15 +156,12 @@ public class KampaaniadVorm : KujundusVorm
         vork.Columns["Olek"]!.FillWeight = 22;
         vork.CellClick += (s, e) => { if (e.RowIndex >= 0 && vork.Rows[e.RowIndex].Tag is int id) Vali(id); };
         vork.CellPainting += OlekuKiip;
-        if (Teema.OnMoodne)
-        {
-            vork.RowTemplate.Height = 62;
-            vork.CellPainting += MoodneRakk;
-        }
+        vork.RowTemplate.Height = 62;
+        vork.CellPainting += MoodneRakk;
 
         var tabeliKaart = UiStiil.LooKaardiPaneel("Kõik kampaaniad", vork);
         tabeliKaart.Dock = DockStyle.Fill;
-        var telgKaart = UiStiil.LooKaardiPaneel(Teema.OnMoodne ? Keel.F("Ajatelg · {0:dd.MM} – {1:dd.MM}", TelgAlgus, TelgAlgus.AddDays(27)) : "Ajatelg · 4 nädalat", telg);
+        var telgKaart = UiStiil.LooKaardiPaneel(Keel.F("Ajatelg · {0:dd.MM} – {1:dd.MM}", TelgAlgus, TelgAlgus.AddDays(27)), telg);
         telgKaart.Dock = DockStyle.Top;
         telgKaart.Height = 236;
         var keskel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(16, 0, 16, 16), BackColor = Teema.Taust };

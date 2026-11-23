@@ -2,10 +2,8 @@
 
 namespace IKTpv25_1_Toooted;
 
-// ===================================================================
-//  Kiirklahvid kõikjal: aknad (peaaken, pood) annavad oma klahvid,
-//  üks sõnumifilter käivitab need. F1 näitab kõiki klahve.
-// ===================================================================
+// Kiirklahvid kõikjal: aknad (peaaken, pood) annavad oma klahvid,
+// üks sõnumifilter käivitab need. F1 näitab kõiki klahve.
 public record Kiirklahv(Keys Klahv, string Ruhm, string Kirjeldus, Action Tegevus, Func<bool>? Lubatud = null);
 
 public interface IKiirklahvid
@@ -24,7 +22,6 @@ public sealed class KiirklahvideFilter : IMessageFilter
     {
         ("F1", "Kõik kiirklahvid (see aken)"),
         ("Esc / Alt+←", "Tagasi eelmisele lehele"),
-        ("Ctrl+Shift+M", "Vaheta disaini (moodne / klassikaline)"),
         ("Enter", "Kinnita / vali (dialoogides)"),
     };
 

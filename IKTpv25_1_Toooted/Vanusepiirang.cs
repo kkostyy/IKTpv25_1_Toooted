@@ -2,11 +2,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted;
 
-// ===================================================================
-//  Vanusepiirang: alkohol 18+, energiajoogid 16+.
-//  Maksmisel küsitakse ostja sünnikuupäeva (e-poes kinnitab ostja, kuller kontrollib dokumenti;
-//  kassas kontrollib müüja dokumenti). Alaealisele piiranguga tooteid ei müüda.
-// ===================================================================
+// Vanusepiirang: alkohol 18+, energiajoogid 16+.
+// Maksmisel küsitakse ostja sünnikuupäeva (e-poes kinnitab ostja, kuller kontrollib dokumenti;
+// kassas kontrollib müüja dokumenti). Alaealisele piiranguga tooteid ei müüda.
 public static class Vanusepiirang
 {
     public const int Alkohol = 18, Energiajook = 16;
@@ -44,7 +42,7 @@ public static class Vanusepiirang
         return v;
     }
 
-    // Selle seansi jooksul meelde jäetud sünnikuupäev (kasutaja kaupa) – ei pea iga kord uuesti valima
+    // Selle seansi jooksul meelde jäetud sünnikuupäev (kasutaja kaupa): ei pea iga kord uuesti valima
     private static readonly Dictionary<string, DateTime> meeles = new();
     internal static DateTime? Meeles => meeles.TryGetValue(AktiivneKasutaja.Nimi ?? "", out var d) ? d : null;
     internal static void JataMeelde(DateTime d) { if (AktiivneKasutaja.OnOstja) meeles[AktiivneKasutaja.Nimi ?? ""] = d; }

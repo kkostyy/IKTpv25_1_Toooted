@@ -4,8 +4,6 @@ using System.Text.Json;
 
 namespace IKTpv25_1_Toooted;
 
-public enum Disain { Rimi, Klassikaline, Moodne }
-
 // Värviroll: mida see värv kasutajaliideses tähendab (sama roll = sama värv igas teemas)
 public enum Roll
 {
@@ -14,10 +12,10 @@ public enum Roll
 }
 
 // Hele/tume teema + poe värv (aktsent). Valik salvestatakse faili AppData\Local\ToodedApp\teema.json.
-// Teema.Rakenda(vorm) värvib kõik elemendid ümber – ka Designeris loodud (Designer-faili ei muudeta).
+// Teema.Rakenda(vorm) värvib kõik elemendid ümber: ka Designeris loodud (Designer-faili ei muudeta).
 public static class Teema
 {
-    // ---- Poe värvid: (hele teema, tume teema) ----
+    // Poe värvid: (hele teema, tume teema)
     public static readonly Dictionary<string, (Color Hele, Color Tume)> Aktsendid = new()
     {
         ["Punane"] = (Color.FromArgb(226, 6, 19), Color.FromArgb(240, 80, 90)),
@@ -29,18 +27,14 @@ public static class Teema
 
     public static bool Tume { get; private set; }
 
-    // Disain: e-poe (Rimi) stiil või esimene, klassikaline (sinine, Wordi-laadne). Vahetus: Ctrl+Shift+D
-    public static Disain Stiil { get; private set; } = Disain.Rimi;
-    public static bool OnRimi => Stiil != Disain.Klassikaline;   // e-poe disain (ka Moodne põhineb sellel)
-    // Moodne: kaardid ilma raamita, suured ümarused, nupud "pillid", vajutus väikseks (Ctrl+Shift+M)
-    public static bool OnMoodne => Stiil == Disain.Moodne;
+    // Disain: kaardid ilma raamita, suured ümarused, nupud on "pillid".
 
     // WS_EX_COMPOSITED (kogu aken joonistatakse korraga, animatsioonid ei rebene); AKT_KOMPOSIIT=0 lülitab välja
     // Suurtes akendes (pood, peaaken) on see vaikimisi VÄLJAS: iga väike muutus joonistas terve akna
     // (sadu tootekaarte) uuesti ja kerimine hakkis. AKT_KOMPOSIIT=1 lülitab tagasi sisse.
-    public static bool Komposiit => OnMoodne && Environment.GetEnvironmentVariable("AKT_KOMPOSIIT") == "1";
+    public static bool Komposiit => Environment.GetEnvironmentVariable("AKT_KOMPOSIIT") == "1";
     // Väikesed dialoogid: endiselt sees (seal on vähe elemente ja animatsioonid ei rebene)
-    public static bool KomposiitDialoog => OnMoodne && Environment.GetEnvironmentVariable("AKT_KOMPOSIIT") != "0";
+    public static bool KomposiitDialoog => Environment.GetEnvironmentVariable("AKT_KOMPOSIIT") != "0";
     public static string AktsendiNimi { get; private set; } = "Punane";
 
     // Ümarad nurgad (suuremad raadiused) ja külgmenüü
@@ -56,25 +50,24 @@ public static class Teema
     // Käivitub, kui teema muutub (avatud vormid värvivad end ümber)
     public static event Action? Muutus;
 
-    // ---- Värvid ----
+    // Värvid
     public static Color Aktsent => Tume ? Aktsendid[AktsendiNimi].Tume : Aktsendid[AktsendiNimi].Hele;
     public static Color AktsentHele => Ymardus.Segu(Pind, Aktsent, Tume ? 0.32f : 0.14f);
     public static Color AktsentTume => Ymardus.Segu(Aktsent, Color.Black, 0.18f);
 
-    // Teine värv: lingid, kategooriate menüü (nagu e-poodides lilla-punane)
-    // Teine värv: Rimi stiilis lilla (lingid, kategooriad), klassikalises stiilis sama mis aktsent
-    public static Color Teine => !OnRimi ? Aktsent : Tume ? Color.FromArgb(235, 120, 175) : Color.FromArgb(160, 35, 110);
+    // Teine värv: lingid, kategooriate menüü (lilla-punane)
+    public static Color Teine => Tume ? Color.FromArgb(235, 120, 175) : Color.FromArgb(160, 35, 110);
 
-    // Heledad toonid: e-pood = sinakashall taust; klassikaline = esimese kujunduse hallid
-    public static Color Taust => Tume ? Color.FromArgb(24, 25, 28) : OnMoodne ? Color.FromArgb(233, 237, 239) : OnRimi ? Color.FromArgb(238, 241, 242) : Color.FromArgb(235, 237, 240);
-    public static Color Paneel => Tume ? Color.FromArgb(34, 35, 39) : OnRimi ? Color.FromArgb(246, 248, 249) : Color.FromArgb(245, 246, 248);
-    public static Color Paneel2 => Tume ? Color.FromArgb(50, 52, 57) : OnMoodne ? Color.FromArgb(241, 243, 244) : OnRimi ? Color.FromArgb(232, 237, 239) : Color.FromArgb(232, 234, 238);
+    // Heledad toonid: sinakashall taust
+    public static Color Taust => Tume ? Color.FromArgb(24, 25, 28) : Color.FromArgb(233, 237, 239);
+    public static Color Paneel => Tume ? Color.FromArgb(34, 35, 39) : Color.FromArgb(246, 248, 249);
+    public static Color Paneel2 => Tume ? Color.FromArgb(50, 52, 57) : Color.FromArgb(241, 243, 244);
     public static Color Pind => Tume ? Color.FromArgb(40, 41, 46) : Color.White;
-    public static Color PindAlt => Tume ? Color.FromArgb(46, 47, 52) : OnRimi ? Color.FromArgb(247, 249, 250) : Color.FromArgb(248, 249, 251);
-    public static Color PildiTaust => Tume ? Color.FromArgb(54, 56, 61) : OnRimi ? Color.FromArgb(240, 243, 244) : Color.FromArgb(240, 242, 245);
-    public static Color Joon => Tume ? Color.FromArgb(62, 64, 70) : OnMoodne ? Color.FromArgb(226, 230, 232) : OnRimi ? Color.FromArgb(221, 226, 229) : Color.FromArgb(210, 214, 220);
-    public static Color Raam => Tume ? Color.FromArgb(82, 85, 92) : OnRimi ? Color.FromArgb(205, 211, 215) : Color.FromArgb(200, 204, 210);
-    public static Color Tekst => Tume ? Color.FromArgb(234, 236, 239) : OnMoodne ? Color.FromArgb(27, 28, 31) : OnRimi ? Color.FromArgb(46, 46, 46) : Color.FromArgb(40, 40, 40);
+    public static Color PindAlt => Tume ? Color.FromArgb(46, 47, 52) : Color.FromArgb(247, 249, 250);
+    public static Color PildiTaust => Tume ? Color.FromArgb(54, 56, 61) : Color.FromArgb(240, 243, 244);
+    public static Color Joon => Tume ? Color.FromArgb(62, 64, 70) : Color.FromArgb(226, 230, 232);
+    public static Color Raam => Tume ? Color.FromArgb(82, 85, 92) : Color.FromArgb(205, 211, 215);
+    public static Color Tekst => Tume ? Color.FromArgb(234, 236, 239) : Color.FromArgb(27, 28, 31);
 
     // Vana kujunduse (Designer-faili) värvid → roll
     private static readonly Dictionary<int, Roll> vanadVarvid = new()
@@ -144,33 +137,26 @@ public static class Teema
 
         if (vanadVarvid.TryGetValue(argb, out Roll vana)) return vana;
 
-        // Võrdleme kõigi teemade ja mõlema disaini värvidega
+        // Võrdleme mõlema teema (hele/tume) värvidega
         bool praegu = Tume;
-        Disain praeguneStiil = Stiil;
         Roll? leitud = null;
-        foreach (Disain d in new[] { Disain.Rimi, Disain.Klassikaline, Disain.Moodne })
+        foreach (bool tume in new[] { false, true })
         {
-            foreach (bool tume in new[] { false, true })
+            Tume = tume;
+            foreach (Roll r in Enum.GetValues<Roll>())
             {
-                Tume = tume;
-                Stiil = d;
-                foreach (Roll r in Enum.GetValues<Roll>())
-                {
-                    if (r is Roll.Aktsent or Roll.Valge) continue;
-                    if (Varv(r).ToArgb() == argb) { leitud = r; break; }
-                }
-                if (leitud != null) break;
+                if (r is Roll.Aktsent or Roll.Valge) continue;
+                if (Varv(r).ToArgb() == argb) { leitud = r; break; }
             }
             if (leitud != null) break;
         }
         Tume = praegu;
-        Stiil = praeguneStiil;
         // tume taust (nt kaardi tume värv = teksti värv) ei tohi tumedas teemas valgeks minna
         if (!onTekst && leitud is Roll.Tekst or Roll.Tekst2 or Roll.TekstNork) return null;
         return leitud;
     }
 
-    // ---- Iga elemendi algsed rollid (leitakse esimesel korral) ----
+    // Iga elemendi algsed rollid (leitakse esimesel korral)
     private class Rollid
     {
         public Roll? Taust, Tekst, Taide, Aar;
@@ -180,7 +166,7 @@ public static class Teema
     // Värvib vormi (või paneeli) koos kõigi alamelementidega praeguse teema järgi
     public static void Rakenda(Control juur)
     {
-        // Tag "omavarv": element värvib end ise (nt tume tootekaart) – ainult tõlgime
+        // Tag "omavarv": element värvib end ise (nt tume tootekaart), ainult tõlgime
         if (juur.Tag as string == "omavarv") { TolgiPuu(juur); return; }
         try { RakendaUks(juur); }
         catch (Exception ex)
@@ -207,8 +193,8 @@ public static class Teema
     {
         Keel.TolgiElement(c);   // tekstid valitud keelde
 
-        // Moodne: tavalised paneelid joonistavad tausta puhvrisse ja suuruse muutusel uuesti (muidu jäi riba joonistamata)
-        if (OnMoodne && c is Panel and not RoundedPanel && c.GetType().Namespace?.StartsWith("System.Windows.Forms") == true)
+        // Tavalised paneelid joonistavad tausta puhvrisse ja suuruse muutusel uuesti (muidu jäi riba joonistamata)
+        if (c is Panel and not RoundedPanel && c.GetType().Namespace?.StartsWith("System.Windows.Forms") == true)
             SeaStiil?.Invoke(c, new object[] { ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.ResizeRedraw, true });
 
         var r = rollid.GetValue(c, k => new Rollid
@@ -291,10 +277,10 @@ public static class Teema
         dgv.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
         dgv.RowHeadersVisible = false;
         dgv.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
-        dgv.ColumnHeadersHeight = OnMoodne ? 42 : 36;
-        dgv.RowTemplate.Height = OnMoodne ? 44 : 32;   // moodne: õhulisemad read
+        dgv.ColumnHeadersHeight = 42;
+        dgv.RowTemplate.Height = 44;   // õhulisemad read
 
-        // NB: getter annab poolikult täidetud stiili puhul KOOPIA – muudame koopiat ja omistame tagasi
+        // NB: getter annab poolikult täidetud stiili puhul KOOPIA, muudame koopiat ja omistame tagasi
         var pais = new DataGridViewCellStyle(dgv.ColumnHeadersDefaultCellStyle);
         pais.BackColor = Paneel;
         pais.ForeColor = TekstNork;
@@ -314,21 +300,18 @@ public static class Teema
         dgv.AlternatingRowsDefaultCellStyle.SelectionBackColor = AktsentHele;
         dgv.AlternatingRowsDefaultCellStyle.SelectionForeColor = Tekst;
 
-        if (OnMoodne)
-        {
-            dgv.GridColor = Pind;                                   // jooni pole, ainult vaheldumisi taust
-            pais.BackColor = pais.SelectionBackColor = Pind;
-            rida.SelectionBackColor = Paneel2;
-            dgv.AlternatingRowsDefaultCellStyle.BackColor = Ymardus.Segu(Pind, Paneel2, 0.5f);
-            dgv.AlternatingRowsDefaultCellStyle.SelectionBackColor = Paneel2;
-        }
+        dgv.GridColor = Pind;                                   // jooni pole, ainult vaheldumisi taust
+        pais.BackColor = pais.SelectionBackColor = Pind;
+        rida.SelectionBackColor = Paneel2;
+        dgv.AlternatingRowsDefaultCellStyle.BackColor = Ymardus.Segu(Pind, Paneel2, 0.5f);
+        dgv.AlternatingRowsDefaultCellStyle.SelectionBackColor = Paneel2;
         dgv.ColumnHeadersDefaultCellStyle = pais;
         dgv.DefaultCellStyle = rida;
-        foreach (DataGridViewRow r in dgv.Rows) r.Height = OnMoodne ? 44 : 32;
+        foreach (DataGridViewRow r in dgv.Rows) r.Height = 44;
         dgv.Invalidate();
     }
 
-    // ---- Tume tiitliriba (Windows 10 20H1+ / Windows 11) ----
+    // Tume tiitliriba (Windows 10 20H1+ / Windows 11)
     [DllImport("dwmapi.dll")]
     private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int value, int size);
 
@@ -354,7 +337,7 @@ public static class Teema
         if (sender is Form f) TumeTiitliriba(f);
     }
 
-    // ---- Muutmine ja salvestamine ----
+    // Muutmine ja salvestamine
     // Keele vahetusel: kõik kuulajad (vormid) värvivad ja tõlgivad end uuesti
     public static void TeavitaMuutusest() => Muutus?.Invoke();
 
@@ -366,32 +349,10 @@ public static class Teema
         Muutus?.Invoke();
     }
 
-    // Ctrl+Shift+D: e-pood <-> klassikaline. Iga disain saab oma värvi (punane / sinine).
-    public static void VahetaDisain()
-    {
-        Stiil = OnRimi ? Disain.Klassikaline : Disain.Rimi;
-        AktsendiNimi = OnRimi ? "Punane" : "Sinine";
-        Salvesta();
-        Muutus?.Invoke();
-    }
-
-    // Ctrl+Shift+M: uus moodne disain <-> tavaline e-poe disain
-    public static void VahetaMoodne() => SeaDisain(OnMoodne ? Disain.Rimi : Disain.Moodne);
-
-    public static void SeaDisain(Disain d)
-    {
-        if (d == Stiil) return;
-        Stiil = d;
-        AktsendiNimi = d == Disain.Klassikaline ? "Sinine" : "Punane";
-        Salvesta();
-        Muutus?.Invoke();
-    }
-
     private class Seaded
     {
         public bool Tume { get; set; }
         public string Aktsent { get; set; } = "Punane";
-        public Disain Stiil { get; set; } = Disain.Rimi;
         public bool Umarad { get; set; } = true;
     }
 
@@ -407,7 +368,6 @@ public static class Teema
                 if (s != null)
                 {
                     Tume = s.Tume;
-                    Stiil = s.Stiil;
                     Umarad = s.Umarad;
                     if (Aktsendid.ContainsKey(s.Aktsent)) AktsendiNimi = s.Aktsent;
                 }
@@ -424,7 +384,7 @@ public static class Teema
         try
         {
             Directory.CreateDirectory(Kaustad.Juur);
-            File.WriteAllText(Fail, JsonSerializer.Serialize(new Seaded { Tume = Tume, Aktsent = AktsendiNimi, Stiil = Stiil, Umarad = Umarad }));
+            File.WriteAllText(Fail, JsonSerializer.Serialize(new Seaded { Tume = Tume, Aktsent = AktsendiNimi, Umarad = Umarad }));
         }
         catch { }
     }

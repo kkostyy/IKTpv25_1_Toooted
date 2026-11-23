@@ -50,7 +50,7 @@ namespace IKTpv25_1_Toooted
                 if (KysiSulgemisel) JalgiMuudatusi(this);
             }
             Teema.Rakenda(this);     // siis värvime kõik teema järgi
-            if (Teema.OnMoodne) MoodneStiil.Rakenda(this);   // lülitid ja "pill" valikud
+            MoodneStiil.Rakenda(this);   // lülitid ja "pill" valikud
 
             // Teema või keel muutus, kui aken on lahti (nt seadetes): värvime ja tõlgime uuesti
             Teema.Muutus += UuendaTeema;
@@ -91,7 +91,7 @@ namespace IKTpv25_1_Toooted
         {
             foreach (Control c in juur.Controls)
             {
-                if (c.Tag as string == "ei-jalgi") continue;   // nt teema/keel – rakenduvad kohe, pole "salvestamata"
+                if (c.Tag as string == "ei-jalgi") continue;   // nt teema/keel: rakenduvad kohe, pole "salvestamata"
                 switch (c)
                 {
                     case TextBox t: t.TextChanged += (s, e) => Muudetud = true; break;
@@ -147,7 +147,7 @@ namespace IKTpv25_1_Toooted
                 Text = tekst,
                 AutoSize = true,
                 Location = new Point(18, 14),
-                Font = Teema.OnMoodne ? new Font("Segoe UI", 17F, FontStyle.Bold) : UiStiil.PealkirjaFont,
+                Font = new Font("Segoe UI", 17F, FontStyle.Bold),
                 ForeColor = Teema.Tekst
             };
             Controls.Add(l);
@@ -175,108 +175,21 @@ namespace IKTpv25_1_Toooted
         }
     }
 
-    // ===================================================================
-    //  Sisselogimine: vasakul poe "bränd", paremal vorm
-    // ===================================================================
+    // Sisselogimine: vasakul poe "bränd", paremal vorm
     public class LoginVorm : KujundusVorm
     {
         private TextBox txtNimi = null!, txtParool = null!;
         private Label lblViga = null!;
-        private BrandPaneel? bränd;
         private LinkLabel teemaLink = null!;
-        private readonly Disain disain = Teema.Stiil;
 
         protected override bool TagasiNupuga => false;
 
-        // Disain vahetati (Ctrl+Shift+M / D): aken ehitatakse uues disainis uuesti (vt Program)
-        public bool EhitaUuesti { get; private set; }
-
         public LoginVorm() : base(Keel.F("Sisselogimine – {0}", Arve.PoeNimi), 740, 450)
         {
-            Teema.Muutus += DisainMuutus;
-            FormClosed += (s, e) => Teema.Muutus -= DisainMuutus;
-            if (Teema.OnMoodne) { EhitaMoodne(); return; }
-
-            bränd = new BrandPaneel { Dock = DockStyle.Left, Width = 320 };
-            Controls.Add(bränd);
-
-            const int x = 368, w = 330;
-
-            Controls.Add(new Label { Text = "Tere tulemast!", Location = new Point(x - 2, 44), AutoSize = true, Font = new Font("Segoe UI Semibold", 20F), ForeColor = Teema.Tekst });
-            Controls.Add(new Label { Text = "Logi sisse, et kassat kasutada", Location = new Point(x, 88), AutoSize = true, ForeColor = Teema.TekstNork, Font = new Font("Segoe UI", 10F) });
-
-            Silt("Kasutajanimi", x, 132);
-            var raamNimi = UiStiil.LooSisend(out txtNimi, w, false, "nt admin");
-            raamNimi.Location = new Point(x, 152);
-            Controls.Add(raamNimi);
-
-            Silt("Parool", x, 198);
-            var raamParool = UiStiil.LooSisend(out txtParool, w, true, "••••••");
-            raamParool.Location = new Point(x, 218);
-            Controls.Add(raamParool);
-
-            var naita = new CheckBox { Text = "Näita parooli", Location = new Point(x + 2, 258), AutoSize = true, ForeColor = Teema.Tekst2 };
-            naita.CheckedChanged += (s, e) => txtParool.UseSystemPasswordChar = !naita.Checked;
-            Controls.Add(naita);
-
-            lblViga = new Label { Location = new Point(x, 284), Size = new Size(w, 22), ForeColor = Teema.Viga };
-            Controls.Add(lblViga);
-
-            var login = UiStiil.LooSuurNupp("Logi sisse", (s, e) => LogiSisse());
-            login.Bounds = new Rectangle(x, 310, w, 44);
-            Controls.Add(login);
-            AcceptButton = login;   // Enter-klahv vajutab nuppu
-
-            var registreeri = new LinkLabel
-            {
-                Text = "Pole kontot? Registreeru (kliendikaart kohe)",
-                AutoSize = true,
-                Location = new Point(x, 368),
-                LinkBehavior = LinkBehavior.HoverUnderline
-            };
-            registreeri.LinkClicked += (s, e) =>
-            {
-                using var vorm = new RegistreerimineVorm(lubaOmanik: false);
-                if (vorm.ShowDialog(this) == DialogResult.OK)
-                {
-                    txtNimi.Text = vorm.UusKasutajanimi;
-                    txtParool.Clear();
-                    txtParool.Focus();
-                }
-            };
-            Controls.Add(registreeri);
-
-            var vihje = Silt("Vaikimisi: admin / admin123  ·  myyja / myyja123", x, 404);
-            vihje.ForeColor = Teema.TekstNork;
-
-            // Teema vahetus otse sisselogimisaknas
-            teemaLink = new LinkLabel { AutoSize = true, Location = new Point(640, 12), LinkBehavior = LinkBehavior.HoverUnderline };
-            teemaLink.LinkClicked += (s, e) =>
-            {
-                Teema.Sea(!Teema.Tume, Teema.AktsendiNimi);
-                Teema.Rakenda(this);
-                MargiTeema();
-            };
-            Controls.Add(teemaLink);
-            MargiTeema();
-
-            // Keele valik (Eesti / Русский / English)
-            var keeled = new KeeleLingid(Teema.Teine) { Location = new Point(368, 14) };
-            Controls.Add(keeled);
-            Keel.Muutus += KeelMuutus;
-            FormClosed += (s, e) => Keel.Muutus -= KeelMuutus;
-
-            Shown += (s, e) => txtNimi.Focus();
+            EhitaMoodne();
         }
 
-        private void DisainMuutus()
-        {
-            if ((Teema.Stiil == Disain.Moodne) == (disain == Disain.Moodne) || !IsHandleCreated) return;
-            EhitaUuesti = true;
-            BeginInvoke(new Action(() => { DialogResult = DialogResult.Retry; }));
-        }
-
-        // ---- Moodne disain: tume brändipaneel vasakul, valge kaart paremal (raadius 32) ----
+        // Moodne disain: tume brändipaneel vasakul, valge kaart paremal (raadius 32)
         private void EhitaMoodne()
         {
             ClientSize = new Size(960, 640);
@@ -364,8 +277,6 @@ namespace IKTpv25_1_Toooted
         private void MargiTeema()
         {
             teemaLink.Text = Keel.T(Teema.Tume ? "☀ Hele teema" : "☾ Tume teema");
-            if (bränd != null) teemaLink.Left = ClientSize.Width - teemaLink.PreferredWidth - 16;
-            bränd?.Invalidate();
         }
 
         private void LogiSisse()
@@ -397,51 +308,9 @@ namespace IKTpv25_1_Toooted
         }
     }
 
-    // Sisselogimisakna vasak pool: aktsentvärvi taust, logo ja poe nimi
-    public class BrandPaneel : Panel
-    {
-        public BrandPaneel()
-        {
-            SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint |
-                     ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
-        }
-
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            var g = e.Graphics;
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-            if (Width <= 0 || Height <= 0) return;
-
-            using (var taust = new LinearGradientBrush(ClientRectangle, Teema.Teine, Ymardus.Segu(Teema.Teine, Color.Black, 0.3f), 60f))
-                g.FillRectangle(taust, ClientRectangle);
-
-            // Dekoratiivsed ringid
-            using (var ring = new SolidBrush(Color.FromArgb(24, Color.White)))
-            {
-                g.FillEllipse(ring, Width - 160, -70, 260, 260);
-                g.FillEllipse(ring, -90, Height - 150, 220, 220);
-            }
-
-            // AKT logo
-            Logo.Joonista(g, new RectangleF(40, 52, 190, 72), valgeTaustal: false);
-
-            using (var nimi = new Font("Segoe UI Semibold", 19F))
-                TextRenderer.DrawText(g, Keel.T("Kassa ja e-pood"), nimi, new Rectangle(40, 150, Width - 60, 40), Color.White,
-                    TextFormatFlags.NoPrefix);
-            using (var vaike = new Font("Segoe UI", 10.5F))
-                TextRenderer.DrawText(g, Keel.T("Tooted  ·  Kassa  ·  Kliendid  ·  Statistika"), vaike, new Rectangle(42, 196, Width - 60, 24),
-                    Color.FromArgb(225, Color.White), TextFormatFlags.NoPrefix);
-            using (var allkiri = new Font("Segoe UI", 8.5F))
-                TextRenderer.DrawText(g, "IKTpv25  ·  WinForms .NET 8 + EF Core", allkiri, new Rectangle(42, Height - 40, Width - 60, 20),
-                    Color.FromArgb(170, Color.White), TextFormatFlags.NoPrefix);
-        }
-    }
-
-    // ===================================================================
-    //  Registreerimine. Sisselogimisaknast: ostja (klient) või müüja.
-    //  Ostjale luuakse kohe kliendikaart; e-post jääb meelde ja täidetakse
-    //  maksmisel ise (seal saab seda muuta).
-    // ===================================================================
+    // Registreerimine. Sisselogimisaknast: ostja (klient) või müüja.
+    // Ostjale luuakse kohe kliendikaart; e-post jääb meelde ja täidetakse
+    // maksmisel ise (seal saab seda muuta).
     public class RegistreerimineVorm : KujundusVorm
     {
         private readonly TextBox txtNimi, txtTaisNimi, txtEmail, txtParool, txtKorda;
@@ -569,9 +438,7 @@ namespace IKTpv25_1_Toooted
         }
     }
 
-    // ===================================================================
-    //  Kliendid (administraatori paneel): nimi, kaardinumber, e-post, boonus
-    // ===================================================================
+    // Kliendid (administraatori paneel): nimi, kaardinumber, e-post, boonus
     public class KlientVaade
     {
         public int Id { get; set; }
@@ -596,7 +463,7 @@ namespace IKTpv25_1_Toooted
             MinimumSize = new Size(780, 560);
             BackColor = Teema.Taust;
 
-            // ---- Ülal: pealkiri + otsing ----
+            // Ülal: pealkiri + otsing
             var yla = new Panel { Dock = DockStyle.Top, Height = 64, BackColor = Teema.Taust };
             yla.Controls.Add(new Label { Text = "Kliendid", Location = new Point(18, 14), AutoSize = true, Font = UiStiil.PealkirjaFont, ForeColor = Teema.Tekst, BackColor = Teema.Taust });
             lblArv = new Label { Location = new Point(140, 24), AutoSize = true, ForeColor = Teema.TekstNork, BackColor = Teema.Taust };
@@ -607,7 +474,7 @@ namespace IKTpv25_1_Toooted
             yla.Controls.Add(otsing);
             yla.Resize += (s, e) => otsing.Left = Math.Max(240, yla.Width - otsing.Width - 18);   // paremasse serva
 
-            // ---- Keskel: tabel kaardis ----
+            // Keskel: tabel kaardis
             vork = new DataGridView
             {
                 AllowUserToAddRows = false,
@@ -623,7 +490,7 @@ namespace IKTpv25_1_Toooted
             tabeliKaart.Dock = DockStyle.Fill;
             keskel.Controls.Add(tabeliKaart);
 
-            // ---- All: andmete kaart ----
+            // All: andmete kaart
             var valjad = new TableLayoutPanel { Dock = DockStyle.Top, Height = 64, ColumnCount = 4, RowCount = 1, BackColor = Teema.Pind };
             valjad.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
             valjad.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
@@ -826,9 +693,7 @@ namespace IKTpv25_1_Toooted
         }
     }
 
-    // ===================================================================
-    //  Müügistatistika: kaardid, graafik, väike laoseis, enim müüdud
-    // ===================================================================
+    // Müügistatistika: kaardid, graafik, väike laoseis, enim müüdud
     public class StatistikaVorm : KujundusVorm
     {
         private readonly DataGridView ladu, top;
@@ -842,7 +707,7 @@ namespace IKTpv25_1_Toooted
             MinimumSize = new Size(840, 620);
             BackColor = Teema.Taust;
 
-            // ---- Ülal: pealkiri + nupud ----
+            // Ülal: pealkiri + nupud
             var yla = new Panel { Dock = DockStyle.Top, Height = 64, BackColor = Teema.Taust };
             yla.Controls.Add(new Label { Text = "Müügistatistika", Location = new Point(18, 14), AutoSize = true, Font = UiStiil.PealkirjaFont, ForeColor = Teema.Tekst, BackColor = Teema.Taust });
             var nupud = new FlowLayoutPanel
@@ -862,14 +727,14 @@ namespace IKTpv25_1_Toooted
             yla.Controls.Add(nupud);
             yla.Resize += (s, e) => nupud.Location = new Point(yla.Width - nupud.Width - 14, 16);
 
-            // ---- Numbrikaardid ----
+            // Numbrikaardid
             var kaardid = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 100, Padding = new Padding(12, 0, 12, 0), BackColor = Teema.Taust, WrapContents = false };
             kaardid.Controls.Add(NumbriKaart("Müük täna", lblTana));
             kaardid.Controls.Add(NumbriKaart("Müük kokku", lblKokku));
             kaardid.Controls.Add(NumbriKaart("Oste kokku", lblOste));
             kaardid.Controls.Add(NumbriKaart("Kliente", lblKliente));
 
-            // ---- Graafik ja tabelid ----
+            // Graafik ja tabelid
             ladu = Tabel();
             top = Tabel();
             var tabel = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 2, Padding = new Padding(12, 4, 12, 12), BackColor = Teema.Taust };

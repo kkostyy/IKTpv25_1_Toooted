@@ -9,7 +9,7 @@ public class Kampaania
     public string Nimi { get; set; } = "";
     public int ToodeId { get; set; }
     public Toode Toode { get; set; } = null!;
-    public int SoodusProtsent { get; set; }          // 1–90
+    public int SoodusProtsent { get; set; }          // 1-90
     public DateTime Algus { get; set; }
     public DateTime Lopp { get; set; }
     public bool Automaatne { get; set; } = true;     // hind muutub ise alguses ja lõpus

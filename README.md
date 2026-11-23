@@ -32,7 +32,7 @@ Omaniku konto saab luua ainult omanik (Haldus → **Kasutajad**: eraldi tabel k�
 kliendikaart, uus parool, kustutamine).
 
 - **Seaded** (Kasutaja → Seaded, nupp päises, poes ⚙ või klõps kasutaja nimel): nimi, e-post, kliendikaart,
-  parool, teema, poe värv, disain, keel.
+  parool, teema, poe värv, keel.
 - **Ostunimekiri** (Kasutaja → Ostunimekiri / Ctrl+L, nupp päises ja poes, toote lehel „Lisa ostunimekirja“):
   linnuke = ostetud, filter Kõik / Ostmata / Ostetud, „Lisa ostmata korvi“. Ostu järel märgitakse ostetud
   tooted ise. Andmed tabelis `Ostunimekiri`.
@@ -64,13 +64,14 @@ Pärast uuendusi: Package Manager Console → `Add-Migration Ostjad` (kui tegema
 ### E-post (juhend 4.2)
 
 Omanik: menüü **Haldus → E-posti seaded** → Gmaili aadress + 16-märgiline **rakenduse parool**
-→ Salvesta → Saada testkiri. Parool hoitakse krüpteeritult failis
-`AppData\Local\ToodedApp\email.json`, mitte koodis, seega GitHubi see ei satu.
+→ Salvesta → Saada testkiri. Parool hoitakse **ainult andmebaasis** (`tooded.db`, tabel `Seaded`)
+krüpteeritult (Windows DPAPI), koodis parooli pole, seega GitHubi see ei satu.
+Vana `email.json` viiakse esimesel käivitamisel automaatselt andmebaasi ja kustutatakse.
 
 ## Kasutajaliides
 
-- **Ctrl+Shift+D** (igas aknas) või **Vaade → E-poe disain / Klassikaline disain** – vahetab disaini:
-  e-poe (Rimi) stiil ↔ esimene, klassikaline (sinine, Wordi-laadne) kujundus. Avatud pood vahetub kohe.
+- Programmil on üks, **moodne disain**: vasakul tume menüü, valged ümarate nurkadega kaardid,
+  "pill" nupud (vana e-poe ja klassikaline disain on eemaldatud).
 
 - **Keel: Eesti / Русский / English** – lingid lilla riba paremas servas (peaaken, pood, sisselogimine)
   või **Vaade → Keel**. Tõlgitakse menüüd, nupud, tabelite päised, teated, PDF-tšekk ja e-kiri;

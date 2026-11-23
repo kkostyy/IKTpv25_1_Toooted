@@ -9,7 +9,7 @@ public record KategooriaMarginaal(string Nimi, decimal Kaive, decimal Marginaal,
 // Müügianalüüs (puhtad arvutused): soojuskaart, KPI-d, kategooriate marginaal
 public static class Myygianalyys
 {
-    public const int AlgusTund = 8, LoppTund = 22;          // soojuskaardi tunnid 8–22
+    public const int AlgusTund = 8, LoppTund = 22;          // soojuskaardi tunnid 8-22
     public const decimal HinnangulineMarginaal = 0.30m;     // kui sisseostuhinda pole
 
     public static List<Ost> Ostud(ToodedContext db, DateTime alates, DateTime kuni) =>
@@ -62,7 +62,7 @@ public static class Myygianalyys
             .OrderByDescending(k => k.Marginaal).ToList();
     }
 
-    // ---- Prognoos ----
+    // Prognoos
 
     // Käive päevade kaupa: [0] = algus, [paevi-1] = algus + paevi-1 (tarne ei lähe käibe sisse)
     public static decimal[] PaevaKaive(IEnumerable<Ost> ostud, DateTime algus, int paevi)

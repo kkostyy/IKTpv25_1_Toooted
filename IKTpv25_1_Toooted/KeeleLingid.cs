@@ -1,6 +1,6 @@
 namespace IKTpv25_1_Toooted;
 
-// "Eesti   Русский   English" – keele valik (nagu e-poe lilla riba ülal)
+// "Eesti   Русский   English": keele valik (nagu e-poe lilla riba ülal)
 public class KeeleLingid : Control
 {
     private readonly Color varv;

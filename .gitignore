@@ -367,3 +367,10 @@ FodyWeavers.xsd
 *.ldf
 viga.log
 Arved/
+
+# Valmis programmifailid (exe, apk) ei kuulu lähtekoodi hulka: need on GitHub Releases all
+exe/
+apk/
+*.exe
+*.apk
+*.msi

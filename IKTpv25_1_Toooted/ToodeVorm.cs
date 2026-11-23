@@ -4,7 +4,7 @@ namespace IKTpv25_1_Toooted;
 
 // Toote leht: pilt, nimi, hind, "Lisa ostukorvi" ning "Toote andmed"
 // (Tooteinfo: päritolumaa, kaubamärk, tootja, kogus, kirjeldus, koostisosad, lisainfo, toiteväärtus;
-//  Soovitatud tooted: sama kategooria tooted)
+// Soovitatud tooted: sama kategooria tooted)
 public class ToodeVorm : Form
 {
     private const int Laius = 740;
@@ -24,7 +24,7 @@ public class ToodeVorm : Form
         this.koik = koik;
 
         StartPosition = FormStartPosition.CenterParent;
-        FormBorderStyle = Teema.OnMoodne ? FormBorderStyle.Sizable : FormBorderStyle.FixedDialog;   // moodne: täidab poe lehe, kerib ise
+        FormBorderStyle = FormBorderStyle.Sizable;   // täidab poe lehe, kerib ise
         MaximizeBox = false;
         MinimizeBox = false;
         ShowInTaskbar = false;
@@ -54,7 +54,7 @@ public class ToodeVorm : Form
         base.OnLoad(e);
         UiStiil.LisaTagasiNupp(this);   // ← Tagasi poodi (ka Esc, Alt+←)
         Teema.Rakenda(this);
-        if (Teema.OnMoodne && ylemine != null) MoodneYlemine(ylemine);   // teema värvimine ei tohi tumedat kaarti valgeks teha
+        if (ylemine != null) MoodneYlemine(ylemine);   // teema värvimine ei tohi tumedat kaarti valgeks teha
     }
 
     private RoundedPanel? ylemine;
@@ -94,10 +94,8 @@ public class ToodeVorm : Form
         return n > 0 ? Keel.F("✓ Ostukorvis: {0} tk", n) : "";
     }
 
-    // ---------------------------------------------------------------
-    //  Lehe ehitamine (ka siis, kui avatakse soovitatud toode)
-    // ---------------------------------------------------------------
-    // Moodne (lõuend 1.4): tume ülemine kaart, toode valgel ümaral alusel, valge tekst
+    // Lehe ehitamine (ka siis, kui avatakse soovitatud toode)
+    // Tume ülemine kaart, toode valgel ümaral alusel, valge tekst
     private static void MoodneYlemine(RoundedPanel kaart)
     {
         var tume = Color.FromArgb(27, 28, 31);
@@ -182,7 +180,7 @@ public class ToodeVorm : Form
         sisu.ResumeLayout();
         sisu.AutoScrollPosition = new Point(0, 0);
         Teema.Rakenda(sisu);
-        if (Teema.OnMoodne && ylemine != null && ylemine.IsHandleCreated) MoodneYlemine(ylemine);
+        if (ylemine != null && ylemine.IsHandleCreated) MoodneYlemine(ylemine);
     }
 
     // Ehitame uuesti veidi hiljem: element, millele klõpsati, kustutatakse ehitamisel
@@ -195,7 +193,7 @@ public class ToodeVorm : Form
     private RoundedPanel YlemineKaart()
     {
         var kaart = new RoundedPanel { Size = new Size(Laius, 280), Radius = 6, Margin = new Padding(0) };
-        if (Teema.OnMoodne) kaart.HandleCreated += (s, e) => MoodneYlemine(kaart);
+        kaart.HandleCreated += (s, e) => MoodneYlemine(kaart);
 
         var pilt = new PictureBox
         {
@@ -230,8 +228,7 @@ public class ToodeVorm : Form
             var g = e.Graphics;
             var h = Hinnad.Lopphind(toode);   // ka õhtune / säilivusaja / üllatuse soodustus
             bool soodus = h.Soodus;
-            bool tume = Teema.OnMoodne;
-            int w = Ikoonid.JoonistaHind(g, h.Hind, "tk", 0, 0, soodus ? (tume ? Color.FromArgb(255, 110, 120) : Teema.Aktsent) : (tume ? Color.White : Teema.Tekst), 24f);
+            int w = Ikoonid.JoonistaHind(g, h.Hind, "tk", 0, 0, soodus ? Color.FromArgb(255, 110, 120) : Color.White, 24f);
             string lisa = "";
             if (toode.UhikuHind is decimal uh && toode.Uhik is string u && u != "tk") lisa = $"{Ikoonid.Hind(uh)}/{u}";
             using var v = new Font("Segoe UI", 9F);
@@ -329,9 +326,7 @@ public class ToodeVorm : Form
         return kaart;
     }
 
-    // ---------------------------------------------------------------
-    //  Toote andmed: vahelehed
-    // ---------------------------------------------------------------
+    // Toote andmed: vahelehed
     private RoundedPanel AndmeteKaart()
     {
         var kaart = new RoundedPanel

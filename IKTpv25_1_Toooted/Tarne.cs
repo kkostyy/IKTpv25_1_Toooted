@@ -16,7 +16,7 @@ public static class Tarne
     // Kui palju on veel puudu tasuta tarneni (0 = juba tasuta)
     public static decimal Puudu(decimal korviSumma) => Math.Max(0, TasutaAlates - korviSumma);
 
-    // ---- Kojuveo ajaaknad: 2 tundi, 10–22, 7 päeva ette; aknas kuni 3 tellimust ----
+    // Kojuveo ajaaknad: 2 tundi, 10-22, 7 päeva ette; aknas kuni 3 tellimust
     public const int AknaTunde = 2;
     public const int MaxAknas = 3;
     public static readonly int[] AknaAlgused = { 10, 12, 14, 16, 18, 20 };
@@ -47,7 +47,7 @@ public static class Tarne
     public static string PaevaNimi(DateTime paev, DateTime tana) =>
         paev.Date == tana.Date ? Keel.T("Täna") : paev.Date == tana.Date.AddDays(1) ? Keel.T("Homme") : Keel.T(PaevaNimed[(int)paev.DayOfWeek]);
 
-    // "Homme 26.10 · 18–20"
+    // "Homme 26.10 · 18-20"
     public static string AknaTekst(DateTime aken, DateTime tana) =>
         $"{PaevaNimi(aken, tana)} {aken:dd.MM} · {aken.Hour}–{aken.Hour + AknaTunde}";
 

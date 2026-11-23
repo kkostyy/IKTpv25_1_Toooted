@@ -16,9 +16,7 @@ namespace IKTpv25_1_Toooted
         public string Staatus { get; set; } = "";
     }
 
-    // ===================================================================
-    //  Ostude ajalugu: tšeki korduv printimine, tagastamine (ainult Omanik), CSV
-    // ===================================================================
+    // Ostude ajalugu: tšeki korduv printimine, tagastamine (ainult Omanik), CSV
     public partial class OstudVorm : KujundusVorm
     {
         private readonly bool lubaTagastus;
@@ -77,7 +75,7 @@ namespace IKTpv25_1_Toooted
             nupud.Controls.Add(sulge);
             CancelButton = sulge;
             Controls.Add(nupud);
-            if (Teema.OnMoodne) RakendaMoodne(nupud, readSilt);   // lõuend 3.1: tabel + tšekk paberil
+            RakendaMoodne(nupud, readSilt);   // tabel + tšekk paberil
 
             Load += (s, e) => Laadi();
         }
@@ -279,9 +277,7 @@ namespace IKTpv25_1_Toooted
         }
     }
 
-    // ===================================================================
-    //  Parooli muutmine (sisseloginud kasutaja)
-    // ===================================================================
+    // Parooli muutmine (sisseloginud kasutaja)
     public class ParooliMuutmineVorm : KujundusVorm
     {
         private readonly TextBox txtVana, txtUus, txtKorda;
@@ -331,9 +327,7 @@ namespace IKTpv25_1_Toooted
         }
     }
 
-    // ===================================================================
-    //  CSV eksport (avaneb Excelis; eraldaja ; ja koma kümnendmurrus)
-    // ===================================================================
+    // CSV eksport (avaneb Excelis; eraldaja ; ja koma kümnendmurrus)
     public static class CsvEksport
     {
         private static readonly CultureInfo Eesti = new("et-EE");
@@ -411,9 +405,7 @@ namespace IKTpv25_1_Toooted
 
 namespace IKTpv25_1_Toooted
 {
-    // ===================================================================
-    //  E-posti seaded: Gmaili aadress + rakenduse parool (ainult Omanik)
-    // ===================================================================
+    // E-posti seaded: Gmaili aadress + rakenduse parool (ainult Omanik)
     public class EmailSeadedVorm : KujundusVorm
     {
         private readonly TextBox txtSaatja, txtParool, txtTest;
@@ -447,7 +439,7 @@ namespace IKTpv25_1_Toooted
             var salvesta = Nupp("Salvesta", 20, 285, true);
             salvesta.Click += (s, e) => Salvesta();
 
-            // Tšeki ja e-kirja keel (eraldi programmi keelest) – salvestub kohe
+            // Tšeki ja e-kirja keel (eraldi programmi keelest): salvestub kohe
             Silt("Tšeki ja e-kirja keel", 20, 336);
             cmbKeel = new ComboBox { Location = new Point(20, 356), Width = 380, DropDownStyle = ComboBoxStyle.DropDownList };
             foreach (KeeleKood k in Enum.GetValues<KeeleKood>()) cmbKeel.Items.Add(Keel.Nimi(k));
@@ -464,7 +456,7 @@ namespace IKTpv25_1_Toooted
             txtTest.PlaceholderText = "sinu@email.ee";
             Nupp("Saada testkiri", 296, 415).Click += (s, e) => SaadaTest();
 
-            var maerkus = Silt("Parool hoitakse krüpteeritult failis AppData\\Local\\ToodedApp\\email.json,\nmitte koodis – GitHubi see ei satu.", 20, 465);
+            var maerkus = Silt("Parool hoitakse krüpteeritult andmebaasis (tooded.db),\nmitte koodis – GitHubi see ei satu.", 20, 465);
             maerkus.ForeColor = Color.Gray;
             maerkus.MaximumSize = new Size(380, 0);   // pikk failitee murtakse, ei lähe kaardist välja
 

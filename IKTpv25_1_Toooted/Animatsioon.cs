@@ -9,7 +9,7 @@ public static class Animatsioon
     // Kõik üleminekud kestavad kaks korda kauem (pehmem, vähem "hüplik")
     public const double Kordaja = 2.0;
 
-    // Windowsi taimeri täpsus 1 ms (vaikimisi ~15,6 ms) – kaadreid tuleb ~100 sekundis, mitte ~64
+    // Windowsi taimeri täpsus 1 ms (vaikimisi ~15,6 ms): kaadreid tuleb ~100 sekundis, mitte ~64
     [System.Runtime.InteropServices.DllImport("winmm.dll")] private static extern uint timeBeginPeriod(uint ms);
     private static bool tapsus;
     private static void Tapsus()
@@ -75,8 +75,8 @@ public static class Animatsioon
     {
         if (!Lubatud) { faas(0); return null; }
         // Lõputud kaunistused (hõljuvad ringid, pulss): kuni ~30 kaadrit sekundis ja ainult siis, kui element
-        // on päriselt ekraanil – kerimisega välja jäänud, peidetud või mitteaktiivse akna animatsioon seisab.
-        // Varem töötas iga selline taimer 20–25 ms tagant ka nähtamatult ja koormas kogu akna joonistamist.
+        // on päriselt ekraanil: kerimisega välja jäänud, peidetud või mitteaktiivse akna animatsioon seisab.
+        // Varem töötas iga selline taimer 20-25 ms tagant ka nähtamatult ja koormas kogu akna joonistamist.
         var taimer = new System.Windows.Forms.Timer { Interval = Math.Max(33, intervall) };
         var kell = Stopwatch.StartNew();
         taimer.Tick += (s, e) =>
@@ -107,7 +107,7 @@ public static class Animatsioon
     }
 }
 
-// Isejoonistatud elemendi sujuv ilmumine: OnPaint lõpus kutsu Kata(g) – element tuleb esile
+// Isejoonistatud elemendi sujuv ilmumine: OnPaint lõpus kutsu Kata(g), element tuleb esile
 // taustavärvist (läbipaistvus). Mitu elementi järjest: viivitus = järjekord × 60 ms.
 public sealed class Ilmumine
 {

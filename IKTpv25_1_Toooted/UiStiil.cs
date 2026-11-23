@@ -10,9 +10,8 @@
         public static Color Joon => Teema.Joon;
 
         public static readonly Font Põhifont = new Font("Segoe UI", 9F);
-        private static readonly Font tavaPealkiri = new Font("Segoe UI Semibold", 15F);
         private static readonly Font moodnePealkiri = new Font("Segoe UI", 19F, FontStyle.Bold);
-        public static Font PealkirjaFont => Teema.OnMoodne ? moodnePealkiri : tavaPealkiri;   // moodne: suur ja paks
+        public static Font PealkirjaFont => moodnePealkiri;   // suur ja paks
         public static readonly Font AlapealkiriFont = new Font("Segoe UI", 8.5F, FontStyle.Bold);
 
         public static FlowLayoutPanel LooTopPaneel()
@@ -81,14 +80,13 @@
         // Ümardatud raamiga sisestusväli (nagu peavormil): raam läheb fookuses aktsentvärvi
         public static RoundedPanel LooSisend(out TextBox tekst, int laius, bool parool = false, string vihje = "")
         {
-            bool m = Teema.OnMoodne;   // moodne: hall täidetud "pill" ilma raamita
             var raam = new RoundedPanel
             {
-                Size = new Size(laius, m ? 38 : 34),
+                Size = new Size(laius, 38),
                 Radius = 8,
-                Padding = m ? new Padding(16, 10, 14, 0) : new Padding(10, 8, 10, 0),
-                BorderColor = m ? Teema.Paneel2 : Teema.Raam,
-                FillColor = m ? Teema.Paneel2 : Teema.Pind,
+                Padding = new Padding(16, 10, 14, 0),
+                BorderColor = Teema.Paneel2,
+                FillColor = Teema.Paneel2,
                 Margin = new Padding(0, 0, 0, 4)
             };
             var t = new TextBox
@@ -97,7 +95,7 @@
                 Dock = DockStyle.Fill,
                 UseSystemPasswordChar = parool,
                 PlaceholderText = vihje,
-                BackColor = m ? Teema.Paneel2 : Teema.Pind,
+                BackColor = Teema.Paneel2,
                 ForeColor = Teema.Tekst,
                 Font = new Font("Segoe UI", 10F)
             };
@@ -109,23 +107,22 @@
 
         public static void LisaFookus(RoundedPanel raam, Control sisu)
         {
-            sisu.Enter += (s, e) => { raam.BorderColor = Teema.OnMoodne ? Teema.Teine : Teema.Aktsent; raam.Invalidate(); };
-            sisu.Leave += (s, e) => { raam.BorderColor = Teema.OnMoodne ? raam.FillColor : Teema.Raam; raam.Invalidate(); };
+            sisu.Enter += (s, e) => { raam.BorderColor = Teema.Teine; raam.Invalidate(); };
+            sisu.Leave += (s, e) => { raam.BorderColor = raam.FillColor; raam.Invalidate(); };
             raam.Click += (s, e) => sisu.Focus();
         }
 
         // Kaart: ümardatud valge paneel, ülal väike pealkiri, sees sisu (täidab ülejäänud ruumi)
         public static RoundedPanel LooKaardiPaneel(string pealkiri, Control sisu)
         {
-            bool m = Teema.OnMoodne;   // moodne: tavaline paks pealkiri, mitte väikesed suurtähed
-            var kaart = new RoundedPanel { Padding = m ? new Padding(20, 14, 20, 18) : new Padding(14, 10, 14, 14), Radius = 12 };
+            var kaart = new RoundedPanel { Padding = new Padding(20, 14, 20, 18), Radius = 12 };
             var silt = new Label
             {
-                Text = m ? pealkiri : pealkiri.ToUpper(),
+                Text = pealkiri,
                 Dock = DockStyle.Top,
-                Height = m ? 34 : 26,
-                Font = m ? new Font("Segoe UI", 12.5F, FontStyle.Bold) : AlapealkiriFont,
-                ForeColor = m ? Teema.Tekst : Teema.TekstNork,
+                Height = 34,
+                Font = new Font("Segoe UI", 12.5F, FontStyle.Bold),
+                ForeColor = Teema.Tekst,
                 BackColor = Teema.Pind
             };
             sisu.Dock = DockStyle.Fill;
@@ -205,11 +202,9 @@
             nupp.Cursor = lubatud ? Cursors.Hand : Cursors.Default;
         }
 
-        // ---------------------------------------------------------------
-        //  Nupp "← Tagasi" akna vasakus ülanurgas: sulgeb akna (dialoogil Cancel).
-        //  Kui akna ülaosas on päisepaneel, läheb nupp sinna; muidu tekib uus päis
-        //  ja ülejäänud elemendid nihkuvad allapoole. Esc ja Alt+← sulgevad samuti.
-        // ---------------------------------------------------------------
+        // Nupp "← Tagasi" akna vasakus ülanurgas: sulgeb akna (dialoogil Cancel).
+        // Kui akna ülaosas on päisepaneel, läheb nupp sinna; muidu tekib uus päis
+        // ja ülejäänud elemendid nihkuvad allapoole. Esc ja Alt+← sulgevad samuti.
         private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Form, TagasiNupp> tagasiNupud = new();
 
         public static TagasiNupp? AknaTagasiNupp(Form vorm) => tagasiNupud.TryGetValue(vorm, out var n) ? n : null;

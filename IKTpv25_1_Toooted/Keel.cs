@@ -16,7 +16,7 @@ public static partial class Keel
     public static KeeleKood Praegu { get => ajutine ?? praegu; private set => praegu = value; }
 
     // Ajutiselt teine keel (tšekk ja e-kiri kliendi keeles, programmi keel ei muutu):
-    //   using (Keel.Ajutiselt(KeeleKood.ET)) { ... }
+    // using (Keel.Ajutiselt(KeeleKood.ET)) { ... }
     public static IDisposable Ajutiselt(KeeleKood k)
     {
         var vana = ajutine;
@@ -33,7 +33,7 @@ public static partial class Keel
 
     public static string Nimi(KeeleKood k) => k switch { KeeleKood.RU => "Русский", KeeleKood.EN => "English", _ => "Eesti" };
 
-    // ---- Tõlkimine ----
+    // Tõlkimine
     public static string T(string et)
     {
         if (Praegu == KeeleKood.ET || string.IsNullOrEmpty(et)) return et;
@@ -82,7 +82,7 @@ public static partial class Keel
         return string.Join("\n", read);
     }
 
-    // ---- Vormide elementide tõlkimine (algne eestikeelne tekst jäetakse meelde) ----
+    // Vormide elementide tõlkimine (algne eestikeelne tekst jäetakse meelde)
     private class Algne { public string? Tekst, Viimane, Vihje, ViimaneVihje; }
     private static readonly ConditionalWeakTable<object, Algne> algsed = new();
 
@@ -131,7 +131,7 @@ public static partial class Keel
         }
     }
 
-    // ---- Keele vahetus ----
+    // Keele vahetus
     public static event Action? Muutus;
 
     public static void Sea(KeeleKood k)
@@ -160,7 +160,7 @@ public static partial class Keel
         catch { }
     }
 
-    // ---- Sõnastik: eesti → (vene, inglise) ----
+    // Sõnastik: eesti → (vene, inglise)
     private static readonly Dictionary<string, (string ru, string en)> sonastik = new(StringComparer.Ordinal);
     private static readonly List<string> algused = new();
 
@@ -179,8 +179,8 @@ public static partial class Keel
     }
 
     // Tõlked on failis Keel/tolked.json (programmi sisse põimitud ressurss):
-    //   "eestikeelne tekst": { "ru": "vene", "en": "inglise" }
-    //   "algus": true – teate algus, mille järel tuleb muutuv tekst (nt "Viga:" + veateade)
+    // "eestikeelne tekst": { "ru": "vene", "en": "inglise" }
+    // "algus": true, teate algus, mille järel tuleb muutuv tekst (nt "Viga:" + veateade)
     // Uue tõlke lisamiseks lisa rida JSON-faili (programmi koodi pole vaja muuta).
     static Keel()
     {

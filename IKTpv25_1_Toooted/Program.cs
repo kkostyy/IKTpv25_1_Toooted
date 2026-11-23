@@ -15,7 +15,6 @@ internal static class Program
         ApplicationConfiguration.Initialize();
         Teema.Lae();   // hele/tume teema ja poe värv (salvestatud valik)
         Keel.Lae();    // eesti / vene / inglise
-        Application.AddMessageFilter(new DisainiKlahv());   // Ctrl+Shift+D igas aknas
         Application.AddMessageFilter(new TagasiHiir());     // hiire külgnupp = tagasi
         KiirklahvideFilter.Lisa();                          // F1 = kõik kiirklahvid, F2… = vaated
         ElementidePuu.Lisa();                               // F12 = elementide puu faili (ainult AKT_SILUMINE=1)
@@ -59,7 +58,7 @@ internal static class Program
             try { db.Database.ExecuteSqlRaw("PRAGMA journal_mode=WAL;"); } catch { }
 
             // Rimi kataloog: esimesel käivitamisel (või uue versiooni korral) vanad tooted välja, Rimi tooted
-            // lisanduvad taustal – aken avaneb kohe (edenemine peaakna nurgas, pood värskendab ennast ise)
+            // lisanduvad taustal: aken avaneb kohe (edenemine peaakna nurgas, pood värskendab ennast ise)
             if (RimiKataloog.VajabLaadimist(db, out _)) { RimiKataloog.AlustaTaustal(); KataloogiEdenemine.Alusta(); }
 
             LooAlgkasutajad(db);
@@ -78,24 +77,14 @@ internal static class Program
         }
 
         // Kõigepealt sisselogimine; roll määrab, mida kasutaja näeb
-        // Sisselogimine; kui disain vahetati (Ctrl+Shift+M), avatakse aken uues disainis
-        while (true)
+        using (var login = new LoginVorm())
         {
-            using var login = new LoginVorm();
             login.StartPosition = FormStartPosition.CenterScreen;
             login.ShowInTaskbar = true;
-            var tulemus = login.ShowDialog();
-            if (tulemus == DialogResult.OK) break;
-            if (!login.EhitaUuesti) return;
+            if (login.ShowDialog() != DialogResult.OK) return;
         }
 
-        // Peaaken; moodsa disaini sisse/välja lülitamisel ehitatakse see uuesti (kasutaja jääb sisse)
-        Form1 peaaken;
-        do
-        {
-            peaaken = new Form1();
-            Application.Run(peaaken);
-        } while (peaaken.TaasAvada);
+        Application.Run(new Form1());
     }
 
     // Esimesed kasutajad luuakse käivitamisel, kui tabel on tühi.
@@ -120,30 +109,5 @@ internal static class Program
         }
         catch { }
         MessageBox.Show(tekst, "Programmi viga", MessageBoxButtons.OK, MessageBoxIcon.Error);
-    }
-}
-
-// Ctrl+Shift+D vahetab disaini (e-pood/Rimi <-> klassikaline) ükskõik millises aknas
-internal sealed class DisainiKlahv : IMessageFilter
-{
-    private const int WM_KEYDOWN = 0x0100;
-
-    public bool PreFilterMessage(ref Message m)
-    {
-        if (m.Msg == WM_KEYDOWN && (Keys)(int)m.WParam == Keys.D &&
-            Control.ModifierKeys == (Keys.Control | Keys.Shift))
-        {
-            Teema.VahetaDisain();
-            Teade.Toast(Teema.OnRimi ? "Disain: e-pood (Rimi stiil)" : "Disain: klassikaline", TeateTyyp.Info, 1800);
-            return true;   // klahvi rohkem edasi ei saadeta
-        }
-        if (m.Msg == WM_KEYDOWN && (Keys)(int)m.WParam == Keys.M &&
-            Control.ModifierKeys == (Keys.Control | Keys.Shift))
-        {
-            Teema.VahetaMoodne();
-            Teade.Toast(Teema.OnMoodne ? "Disain: moodne" : "Disain: e-pood (Rimi stiil)", TeateTyyp.Info, 1800);
-            return true;
-        }
-        return false;
     }
 }

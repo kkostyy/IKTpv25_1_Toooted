@@ -80,7 +80,7 @@ public static class DemoAndmed
 
     public static (int Tooteid, int Oste) Arvud(ToodedContext db) => (db.Toodetabel.Count(t => t.Demo), db.Ostud.Count(o => o.Demo));
 
-    // samm(osa) – edenemine 0..1 (edenemisriba jaoks)
+    // samm(osa): edenemine 0..1 (edenemisriba jaoks)
     public static string Lisa(ToodedContext db, Action<double>? samm = null)
     {
         if (OnOlemas(db)) return Keel.T("Demoandmed on juba olemas.");
@@ -123,7 +123,7 @@ public static class DemoAndmed
 
         // 3) Ostud: eri päevad ja kellaajad (soojuskaardi jaoks), 2 tagastatud
         var nyyd = DateTime.Now;
-        // Kataloogist ~300 toiduainet (kategooriad 1–11), et samad tooted korduksid (prognoos, "ostetakse koos")
+        // Kataloogist ~300 toiduainet (kategooriad 1-11), et samad tooted korduksid (prognoos, "ostetakse koos")
         var koikTooted = kataloog
             ? db.Toodetabel.AsNoTracking().Where(t => t.KategooriaId <= 11 && t.Kogus > 0).ToList().OrderBy(_ => juhus.Next()).Take(300).ToList()
             : db.Toodetabel.AsNoTracking().ToList();

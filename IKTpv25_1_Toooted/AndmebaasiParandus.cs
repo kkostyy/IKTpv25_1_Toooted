@@ -12,9 +12,9 @@ namespace IKTpv25_1_Toooted;
 // Siis üritab EF kõik tabelid uuesti luua. Add-Migration seda ei paranda.
 //
 // Lahendus:
-//  1) iga migratsiooni kohta kontrollitakse, kas selle tabel/veerg on andmebaasis juba olemas –
+// 1) iga migratsiooni kohta kontrollitakse, kas selle tabel/veerg on andmebaasis juba olemas:
 //     kui on, kirjutatakse migratsioon ajalukku (seda ei käivitata uuesti);
-//  2) kui Migrate() ikka ebaõnnestub (skeem pooleli), tõstetakse vana fail varukoopiaks
+// 2) kui Migrate() ikka ebaõnnestub (skeem pooleli), tõstetakse vana fail varukoopiaks
 //     (tooded.db.vana-AAAAKKPP-TTMMSS) ja luuakse uus andmebaas.
 public static class AndmebaasiParandus
 {
@@ -23,7 +23,7 @@ public static class AndmebaasiParandus
 
     // Migratsiooni nimi (ID ilma kuupäevata) → tabel ja veerg, mille olemasolu näitab,
     // et migratsioon on juba tehtud (veerg null = piisab tabelist).
-    // Migratsioonid, mis muudavad ainult andmeid (RimiKataloog), siin puuduvad – need käivitatakse.
+    // Migratsioonid, mis muudavad ainult andmeid (RimiKataloog), siin puuduvad: need käivitatakse.
     private static readonly Dictionary<string, (string Tabel, string? Veerg)> Tunnused = new()
     {
         ["InitialCreate"]    = ("OstuRead", null),
@@ -70,7 +70,7 @@ public static class AndmebaasiParandus
         db.Database.OpenConnection();
         try
         {
-            if (!TabelOlemas(yhendus, "Kasutajad")) return;   // uus/tühi andmebaas – Migrate() teeb kõik
+            if (!TabelOlemas(yhendus, "Kasutajad")) return;   // uus/tühi andmebaas: Migrate() teeb kõik
 
             Kaivita(yhendus,
                 $"CREATE TABLE IF NOT EXISTS \"{Ajalugu}\" (" +

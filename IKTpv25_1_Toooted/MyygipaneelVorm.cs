@@ -4,11 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted;
 
-// ===================================================================
-//  Müügipaneel (omanik): periood 7/30/90 päeva, 4 KPI-d muutusega,
-//  soojuskaart "tund × nädalapäev", kõige kasumlikumad kategooriad,
-//  7 päeva müügiprognoos ja peagi lõppevad tooted.
-// ===================================================================
+// Müügipaneel (omanik): periood 7/30/90 päeva, 4 KPI-d muutusega,
+// soojuskaart "tund × nädalapäev", kõige kasumlikumad kategooriad,
+// 7 päeva müügiprognoos ja peagi lõppevad tooted.
 public class MyygipaneelVorm : KujundusVorm
 {
     private readonly FlowLayoutPanel kpiRida, perioodid;
@@ -17,7 +15,7 @@ public class MyygipaneelVorm : KujundusVorm
     private readonly PrognoosiGraafik prognoos = new() { Dock = DockStyle.Fill };
     private readonly LopevadNimekiri lopevad = new() { Dock = DockStyle.Fill };
     private int paevi = 30;
-    private readonly MoodneFilter? moodneFilter;   // lõuend N9: perioodid valgel "pillil"
+    private readonly MoodneFilter? moodneFilter;   // perioodid valgel "pillil"
 
     public MyygipaneelVorm() : base("Müügipaneel", 1180, 900)
     {
@@ -39,19 +37,16 @@ public class MyygipaneelVorm : KujundusVorm
             int parem = moodneFilter != null ? yla.Width - moodneFilter.Width - 18 : perioodid.Left;
             csv.Location = new Point(parem - csv.Width - 14, 16);
         };
-        if (Teema.OnMoodne)
-        {
-            yla.Height = 76;
-            perioodid.Visible = false;
-            moodneFilter = new MoodneFilter { Top = 14 };
-            moodneFilter.Sea(new[] { (Keel.F("{0} päeva", 7), -1), (Keel.F("{0} päeva", 30), -1), (Keel.F("{0} päeva", 90), -1) }, 1);
-            moodneFilter.Valitud += i => { paevi = new[] { 7, 30, 90 }[i]; Laadi(); };
-            yla.Controls.Add(moodneFilter);
-            yla.Resize += (s, e) => moodneFilter.Left = yla.Width - moodneFilter.Width - 18;
-        }
+        yla.Height = 76;
+        perioodid.Visible = false;
+        moodneFilter = new MoodneFilter { Top = 14 };
+        moodneFilter.Sea(new[] { (Keel.F("{0} päeva", 7), -1), (Keel.F("{0} päeva", 30), -1), (Keel.F("{0} päeva", 90), -1) }, 1);
+        moodneFilter.Valitud += i => { paevi = new[] { 7, 30, 90 }[i]; Laadi(); };
+        yla.Controls.Add(moodneFilter);
+        yla.Resize += (s, e) => moodneFilter.Left = yla.Width - moodneFilter.Width - 18;
 
         kpiRida = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 116, Padding = new Padding(16, 0, 16, 8), BackColor = Teema.Taust, WrapContents = false };
-        if (Teema.OnMoodne) kpiRida.Resize += (s, e) => VenitaKpi();
+        kpiRida.Resize += (s, e) => VenitaKpi();
 
         var tabel = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 2, Padding = new Padding(16, 0, 16, 16), BackColor = Teema.Taust };
         tabel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 62));
@@ -63,7 +58,6 @@ public class MyygipaneelVorm : KujundusVorm
         kaartKaart.Margin = new Padding(0, 0, 12, 0);
         var ribaKaart = UiStiil.LooKaardiPaneel("Kõige kasumlikumad kategooriad", ribad);
         ribaKaart.Dock = DockStyle.Fill;
-        if (Teema.OnMoodne)
         {
             // tume kategooriate kaart
             var tume = Color.FromArgb(27, 28, 31);
@@ -96,7 +90,7 @@ public class MyygipaneelVorm : KujundusVorm
         Load += (s, e) => Laadi();
     }
 
-    // moodne: 4 plaati jagavad rea laiuse võrdselt
+    // 4 plaati jagavad rea laiuse võrdselt
     private void VenitaKpi()
     {
         int w = (kpiRida.ClientSize.Width - kpiRida.Padding.Horizontal - 36) / 4;
@@ -134,7 +128,7 @@ public class MyygipaneelVorm : KujundusVorm
             kpiRida.Controls.Add(new KpiPlaat("Marginaal", Ostukorv.Eur(k.Marginaal), Myygianalyys.Muutus(k.Marginaal, k0.Marginaal), 240, 3));
             kpiRida.ResumeLayout();
             Teema.Rakenda(kpiRida);
-            if (Teema.OnMoodne) VenitaKpi();
+            VenitaKpi();
 
             kaart.Naita(Myygianalyys.Soojuskaart(ostud));
 
@@ -160,7 +154,7 @@ public class KpiPlaat : Control
     private double t;
 
     private readonly int jrk;
-    // moodne: plaadid eri värvi (tume, valge, roosa, roheline)
+    // plaadid eri värvi (tume, valge, roosa, roheline)
     private static readonly (Color Taust, Color Tekst)[] MoodsadVarvid =
     {
         (Color.FromArgb(27, 28, 31), Color.White), (Color.White, Color.FromArgb(27, 28, 31)),
@@ -186,7 +180,7 @@ public class KpiPlaat : Control
         g.SmoothingMode = SmoothingMode.AntiAlias;
         float nihe = (float)((1 - t) * 14);
         var r = new RectangleF(0.5f, 0.5f + nihe, Width - 2, Height - 2 - nihe);
-        if (Teema.OnMoodne && jrk >= 0)
+        if (jrk >= 0)
         {
             var (taust, tekst) = MoodsadVarvid[jrk % 4];
             int al = (int)(255 * t);
@@ -219,7 +213,7 @@ public class KpiPlaat : Control
     }
 }
 
-// Soojuskaart: 7 rida (E–P) × tunnid 8–22. Värv kvantiilide järgi Paneel2 → Aktsent.
+// Soojuskaart: 7 rida (E-P) × tunnid 8-22. Värv kvantiilide järgi Paneel2 → Aktsent.
 // Lahtrid ilmuvad lainena (diagonaali viivitus); hiire all vihje "Neljapäev 18:00 · 12 ostu · 184,30 €".
 public class Soojuskaart : Control
 {
@@ -255,7 +249,7 @@ public class Soojuskaart : Control
     private int Tunde => andmed.GetLength(1);
     private RectangleF Lahter(int p, int tund)
     {
-        float vasak = 30, yla = 22, w = (Width - vasak - 4) / Tunde, h = (Height - yla - 4 - (Teema.OnMoodne ? 34 : 0)) / 7f;
+        float vasak = 30, yla = 22, w = (Width - vasak - 4) / Tunde, h = (Height - yla - 4 - 34) / 7f;
         return new RectangleF(vasak + tund * w + 2, yla + p * h + 2, w - 4, h - 4);
     }
 
@@ -309,14 +303,14 @@ public class Soojuskaart : Control
                 double s = Math.Clamp((t - (p + tt) * 35) / 300.0, 0, 1);   // laine diagonaalis
                 if (s <= 0) continue;
                 int aste = Aste(andmed[p, tt].Summa);
-                Color c = Teema.OnMoodne ? Ploom(aste / 5f) : aste == 0 ? Teema.Paneel2 : Ymardus.Segu(Teema.AktsentHele, Teema.Aktsent, (aste - 1) / 4f);
+                Color c = Ploom(aste / 5f);
                 var rr = RectangleF.Inflate(r, -(float)(r.Width * (1 - s) / 2), -(float)(r.Height * (1 - s) / 2));
-                using var tee = Ymardus.Tee(rr, Math.Min(Teema.OnMoodne ? 10 : 6, rr.Height / 2));
+                using var tee = Ymardus.Tee(rr, Math.Min(10, rr.Height / 2));
                 using (var b = new SolidBrush(c)) g.FillPath(b, tee);
                 if (hiir == (p, tt)) using (var pen = new Pen(Teema.Tekst, 2)) g.DrawPath(pen, tee);
             }
         }
-        if (Teema.OnMoodne) Legend(g);
+        Legend(g);
     }
 
     // Moodne skaala: helehall → roosa → ploom → tumeploom
@@ -357,7 +351,7 @@ public class KategooriaRibad : Control
 {
     private List<KategooriaMarginaal> read = new();
     private double t = 1;
-    public bool Tume { get; set; }   // moodne: tumedal kaardil, värvilised ribad ja marginaali %
+    public bool Tume { get; set; }   // tumedal kaardil, värvilised ribad ja marginaali %
     private static readonly Color[] Varvid = { Color.FromArgb(226, 6, 19), Color.FromArgb(160, 35, 110), Color.FromArgb(90, 200, 130), Color.FromArgb(245, 176, 74), Color.FromArgb(235, 120, 175) };
 
     public KategooriaRibad()

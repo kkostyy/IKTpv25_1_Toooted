@@ -91,9 +91,7 @@ namespace IKTpv25_1_Toooted
         internal int KasutajaId;
     }
 
-    // ===================================================================
-    //  Ostunimekiri (shopping list): mis on ostetud ✓, mis veel mitte
-    // ===================================================================
+    // Ostunimekiri (shopping list): mis on ostetud ✓, mis veel mitte
     public class OstunimekiriVorm : KujundusVorm
     {
         private readonly DataGridView vork;
@@ -181,7 +179,7 @@ namespace IKTpv25_1_Toooted
             MinimumSize = new Size(900, 540);
             BackColor = Teema.Taust;
 
-            // ---- Pealkiri + edenemine + pere ----
+            // Pealkiri + edenemine + pere
             var yla = new Panel { Dock = DockStyle.Top, Height = 92, BackColor = Teema.Taust };
             lblPealkiri = new Label { Text = "Ostunimekiri", Location = new Point(18, 12), AutoSize = true, Font = UiStiil.PealkirjaFont, ForeColor = Teema.Tekst, BackColor = Teema.Taust };
             yla.Controls.Add(lblPealkiri);
@@ -201,7 +199,7 @@ namespace IKTpv25_1_Toooted
             yla.Controls.Add(edenemine);
             yla.Resize += (s, e) => edenemine.Width = Math.Max(200, yla.Width - 40);
 
-            // ---- Paremal: pere kood ja viimased tegevused (tume paneel) ----
+            // Paremal: pere kood ja viimased tegevused (tume paneel)
             perePaneel = new Panel { Dock = DockStyle.Right, Width = 290, Padding = new Padding(0, 0, 16, 8), BackColor = Teema.Taust, Visible = false };
             var tume = new RoundedPanel { Dock = DockStyle.Fill, Radius = 24, FillColor = Color.FromArgb(27, 28, 31), BorderColor = Color.FromArgb(27, 28, 31), BackColor = Teema.Taust, Padding = new Padding(18, 16, 18, 16) };
             var kopeeri = (RoundedButton)UiStiil.LooNupp("Kopeeri kood", (s, e) =>
@@ -222,7 +220,7 @@ namespace IKTpv25_1_Toooted
             tume.Controls.Add(koodiPlaadid);
             perePaneel.Controls.Add(tume);
 
-            // ---- Lisamise rida ----
+            // Lisamise rida
             var lisa = new Panel { Dock = DockStyle.Top, Height = 58, BackColor = Teema.Taust, Padding = new Padding(16, 6, 16, 6) };
             var raam = UiStiil.LooSisend(out txtToode, 380, false, "Mida osta? (nt Piim või toote nimi)");
             raam.Location = new Point(18, 10);
@@ -250,7 +248,7 @@ namespace IKTpv25_1_Toooted
             }
             catch { }
 
-            // ---- Filter ----
+            // Filter
             var filter = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 34, BackColor = Teema.Taust, Padding = new Padding(16, 4, 0, 0) };
             rbKoik = new RadioButton { Text = "Kõik", AutoSize = true, Checked = true, ForeColor = Teema.Tekst, Margin = new Padding(0, 0, 18, 0) };
             rbOstmata = new RadioButton { Text = "Ostmata", AutoSize = true, ForeColor = Teema.Tekst, Margin = new Padding(0, 0, 18, 0) };
@@ -261,7 +259,7 @@ namespace IKTpv25_1_Toooted
                 filter.Controls.Add(rb);
             }
 
-            // ---- Tabel ----
+            // Tabel
             vork = new DataGridView
             {
                 AllowUserToAddRows = false,
@@ -273,8 +271,6 @@ namespace IKTpv25_1_Toooted
             };
             vork.CellClick += (s, e) =>
             {
-                if (!Teema.OnMoodne && e.RowIndex >= 0 && e.ColumnIndex >= 0 && vork.Columns[e.ColumnIndex].Name == "Ostetud")
-                    Vaheta(e.RowIndex);
             };
             vork.CellDoubleClick += (s, e) => { if (e.RowIndex >= 0 && vork.Columns[e.ColumnIndex].Name != "Ostetud") Vaheta(e.RowIndex); };
             vork.KeyDown += (s, e) =>
@@ -319,26 +315,23 @@ namespace IKTpv25_1_Toooted
                     e.CellStyle.Font = vork.Font;
                 }
             };
-            if (Teema.OnMoodne)
+            // iga rida on hall ümar "nupp": ring vasakul (klõps = ostetud), lisaja avatar, "ostis …"
+            vork.ColumnHeadersVisible = false;
+            vork.CellBorderStyle = DataGridViewCellBorderStyle.None;
+            vork.RowTemplate.Height = 64;
+            vork.RowPrePaint += MoodneRida;
+            vork.RowsAdded += (s, e) => { for (int i = e.RowIndex; i < e.RowIndex + e.RowCount; i++) vork.Rows[i].Height = 64; };
+            vork.MouseClick += (s, e) =>
             {
-                // lõuend N5: iga rida on hall ümar "nupp" – ring vasakul (klõps = ostetud), lisaja avatar, "ostis …"
-                vork.ColumnHeadersVisible = false;
-                vork.CellBorderStyle = DataGridViewCellBorderStyle.None;
-                vork.RowTemplate.Height = 64;
-                vork.RowPrePaint += MoodneRida;
-                vork.RowsAdded += (s, e) => { for (int i = e.RowIndex; i < e.RowIndex + e.RowCount; i++) vork.Rows[i].Height = 64; };
-                vork.MouseClick += (s, e) =>
-                {
-                    var h = vork.HitTest(e.X, e.Y);
-                    if (h.RowIndex >= 0 && e.X < 64) Vaheta(h.RowIndex);
-                };
-            }
+                var h = vork.HitTest(e.X, e.Y);
+                if (h.RowIndex >= 0 && e.X < 64) Vaheta(h.RowIndex);
+            };
             var tabeliKaart = UiStiil.LooKaardiPaneel("Nimekiri  (klõps ruudul või tühik = ostetud / ostmata)", vork);
             var keskel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(16, 0, 16, 8), BackColor = Teema.Taust };
             tabeliKaart.Dock = DockStyle.Fill;
             keskel.Controls.Add(tabeliKaart);
 
-            // ---- Nupud ----
+            // Nupud
             var nupud = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 56, BackColor = Teema.Taust, Padding = new Padding(16, 6, 16, 8) };
             nupud.Controls.Add(UiStiil.LooNupp("Lisa ostmata korvi", (s, e) => LisaKorvi(), true));
             nupud.Controls.Add(UiStiil.LooNupp("Märgi valitud ostetuks", (s, e) => MargiValitud(true)));
@@ -356,20 +349,17 @@ namespace IKTpv25_1_Toooted
             Controls.Add(yla);
             keskel.BringToFront();
 
-            // Moodne (lõuend 2.4): nimekiri valgel ümaral kaardil, pere paneel paremal
-            if (Teema.OnMoodne)
+            // Nimekiri valgel ümaral kaardil, pere paneel paremal
+            filter.Height = 50;   // "pill" valikud on kõrgemad
+            MoodneStiil.KaardiSisse(this, yla, lisa, filter, keskel, nupud);
+            lblPealkiri.Font = new Font("Segoe UI", 19F, FontStyle.Bold);
+            tabeliKaart.BorderColor = tabeliKaart.FillColor;
+            if (nupud.Controls.Count > 0 && nupud.Controls[0] is RoundedButton peamine)
             {
-                filter.Height = 50;   // "pill" valikud on kõrgemad
-                MoodneStiil.KaardiSisse(this, yla, lisa, filter, keskel, nupud);
-                lblPealkiri.Font = new Font("Segoe UI", 19F, FontStyle.Bold);
-                tabeliKaart.BorderColor = tabeliKaart.FillColor;
-                if (nupud.Controls.Count > 0 && nupud.Controls[0] is RoundedButton peamine)
-                {
-                    peamine.AutoSize = false;
-                    peamine.Size = new Size(230, 46);
-                    peamine.TextAlign = ContentAlignment.MiddleLeft;
-                    MoodneUi.NoolStiil(peamine);
-                }
+                peamine.AutoSize = false;
+                peamine.Size = new Size(230, 46);
+                peamine.TextAlign = ContentAlignment.MiddleLeft;
+                MoodneUi.NoolStiil(peamine);
             }
 
             Load += (s, e) => Laadi();

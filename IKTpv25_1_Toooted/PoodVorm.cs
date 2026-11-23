@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 namespace IKTpv25_1_Toooted
 {
     // E-poe veebilehe stiilis pood:
-    //  ülal lilla riba, päis (logo, otsing, kasutaja, ostukorvi nupp), menüüriba (Tooted, Kampaaniad, ...),
-    //  vasakul kategooriate ikoonid, keskel avaleht (riiulid "Parimad pakkumised" jne) või tooteruudustik,
-    //  paremal "Sinu ostukorv".
+    // ülal lilla riba, päis (logo, otsing, kasutaja, ostukorvi nupp), menüüriba (Tooted, Kampaaniad, ...),
+    // vasakul kategooriate ikoonid, keskel avaleht (riiulid "Parimad pakkumised" jne) või tooteruudustik,
+    // paremal "Sinu ostukorv".
     public partial class PoodVorm : Form, ITagasi, IVormiHost, IKiirklahvid
     {
         private enum Vaade { Avaleht, Kategooria, Kampaaniad, Odav, Lemmikud, Otsing, Muu, Raiskamine, Koik }
@@ -55,7 +55,7 @@ namespace IKTpv25_1_Toooted
             KeyPreview = true;
             try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch { }
 
-            // ================= 1. Lilla riba =================
+            // 1. Lilla riba
             var lilla = new Panel { Dock = DockStyle.Top, Height = 44, BackColor = Teema.Teine };
             var tere = lblTere = new Label
             {
@@ -80,7 +80,7 @@ namespace IKTpv25_1_Toooted
                 tsekk.Location = new Point(sulge.Left - tsekk.Width - 28, (lilla.Height - tsekk.Height) / 2);
             };
 
-            // ================= 2. Päis =================
+            // 2. Päis
             var pais = new Panel { Dock = DockStyle.Top, Height = 80, BackColor = Teema.Pind };
             var logo = new Logo { Location = new Point(24, 15), Size = new Size(150, 50) };
             logo.Click += (s, e) => NaitaAvaleht();
@@ -155,7 +155,7 @@ namespace IKTpv25_1_Toooted
             };
             pais.Paint += (s, e) => { using var p = new Pen(Teema.Joon); e.Graphics.DrawLine(p, 0, pais.Height - 1, pais.Width, pais.Height - 1); };
 
-            // ================= 3. Menüüriba =================
+            // 3. Menüüriba
             var nav = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 58, BackColor = Teema.Pind, Padding = new Padding(20, 16, 0, 0), WrapContents = false };
             NavLink(nav, "\uECA5", "Tooted", NaitaAvaleht, Vaade.Avaleht);
             NavLink(nav, "\uE71D", "Kõik tooted", () => NaitaRuudustik(Vaade.Koik), Vaade.Koik);
@@ -173,10 +173,10 @@ namespace IKTpv25_1_Toooted
                 }
             };
 
-            // ================= 4. Vasakul kategooriate ikoonid =================
+            // 4. Vasakul kategooriate ikoonid
             rail = new Panel { Dock = DockStyle.Left, Width = 56, BackColor = Teema.Pind, AutoScroll = true };
 
-            // ================= 5. Paremal "Sinu ostukorv" =================
+            // 5. Paremal "Sinu ostukorv"
             var korv = new Panel { Dock = DockStyle.Right, Width = 390, BackColor = Teema.Pind };
             korviVeerg = korv;
 
@@ -263,7 +263,7 @@ namespace IKTpv25_1_Toooted
             korv.Controls.Add(korviPais);
             korv.Paint += (s, e) => { using var p = new Pen(Teema.Joon); e.Graphics.DrawLine(p, 0, 0, 0, korv.Height); };
 
-            // ================= 6. Keskel: lehed + riba "← Tagasi · leivapuru" =================
+            // 6. Keskel: lehed + riba "← Tagasi · leivapuru"
             var keskmine = new Panel { Dock = DockStyle.Fill, BackColor = Teema.Taust };
             sisuAla = new Panel { Dock = DockStyle.Fill, BackColor = Teema.Taust };
             lehed = new Navigaator(sisuAla);
@@ -278,9 +278,8 @@ namespace IKTpv25_1_Toooted
             navRiba.Controls.AddRange(new Control[] { tagasiNupp, leivapuru, vihje });
             navRiba.Resize += (s, e) => vihje.Location = new Point(navRiba.Width - vihje.Width - 24, 26);
             tagasiNupp.SizeChanged += (s, e) => leivapuru.Left = tagasiNupp.Right + 16;
-            if (Teema.OnMoodne)
             {
-                // lõuend N1: valge "pill" riba – Tagasi, leivapuru ja klahvivihje hallil kiibil
+                // valge "pill" riba: Tagasi, leivapuru ja klahvivihje hallil kiibil
                 navRiba.Height = 80;
                 navRiba.Padding = new Padding(16, 8, 16, 8);
                 var pill = new RoundedPanel { Dock = DockStyle.Fill, Radius = 32, FillColor = Teema.Pind, BorderColor = Teema.Pind, BackColor = Teema.Taust };
@@ -299,7 +298,7 @@ namespace IKTpv25_1_Toooted
             keskmine.Controls.Add(navRiba);
             dieet.SeaTooted(() => koikTooted);
 
-            // ================= 7. Külgmenüü (ümar "pill" paremas servas) =================
+            // 7. Külgmenüü (ümar "pill" paremas servas)
             kulg = new KulgMenuu();
             kulg.Lisa("avaleht", "\uE80F", "Avaleht", NaitaAvaleht);
             kulg.Lisa("otsi", "\uE721", "Otsi toodet", () => { txtOtsi.Focus(); txtOtsi.SelectAll(); });
@@ -327,7 +326,7 @@ namespace IKTpv25_1_Toooted
             Controls.Add(nav);
             Controls.Add(pais);
             Controls.Add(lilla);
-            if (moodne) RakendaMoodne(lilla, pais, nav, keskmine, korv, korviPais);   // Ctrl+Shift+M
+            RakendaMoodne(lilla, pais, nav, keskmine, korv, korviPais);
 
             // Hooajaline riba poe päises (Halloween, jõulud, talv, sõbrapäev); klõps tekstil = otsing
             var hooaeg = new HooajaRiba { Dock = DockStyle.Top, Margin = new Padding(0) };
@@ -345,7 +344,7 @@ namespace IKTpv25_1_Toooted
             MinuDieet.Muutus += DieetMuutus;
             peidetiEnne = MinuDieet.Peida;
             PildiVahemalu.Laetud += PildidLaetud;
-            Teema.Muutus += DisainMuutus;
+            Teema.Muutus += TeemaMuutus;
             // Tooted laaditakse taustalõimes: aken avaneb kohe ja ei "külmu" 9000 toote lugemise ajal
             Load += (s, e) =>
             {
@@ -374,9 +373,7 @@ namespace IKTpv25_1_Toooted
             FormClosed += (s, e) => { minut.Stop(); minut.Dispose(); };
         }
 
-        // ---------------------------------------------------------------
-        //  Abielemendid
-        // ---------------------------------------------------------------
+        // Abielemendid
         private void NavLink(FlowLayoutPanel nav, string ikoon, string tekst, Action tegevus, Vaade v)
         {
             var l = new IkoonTekst(ikoon, tekst, Teema.Tekst2, new Font("Segoe UI Semibold", 10.5F), emoji: ikoon == "🔥")
@@ -433,7 +430,7 @@ namespace IKTpv25_1_Toooted
             Lemmikud.Muutus -= LemmikudMuutus;
             MinuDieet.Muutus -= DieetMuutus;
             PildiVahemalu.Laetud -= PildidLaetud;
-            Teema.Muutus -= DisainMuutus;
+            Teema.Muutus -= TeemaMuutus;
             base.OnFormClosed(e);
         }
 
@@ -461,7 +458,7 @@ namespace IKTpv25_1_Toooted
 
         private void AvaNimekiri() => Aken.Ava(this, new OstunimekiriVorm());
 
-        // Minu ostud (nagu telefonis): kliendil ainult tema kaardiga ostud – tšekk, "Osta uuesti";
+        // Minu ostud (nagu telefonis): kliendil ainult tema kaardiga ostud, tšekk, "Osta uuesti";
         // omanik näeb kõiki ja saab tagastada
         private void AvaMinuOstud()
         {
@@ -486,30 +483,22 @@ namespace IKTpv25_1_Toooted
             NaitaKategooria(OhtuSoodustus.S.KategooriaId);
         }
 
-        // Ctrl+Shift+D: pood suletakse ja Form1 avab klassikalise poe
-        private void DisainMuutus()
+        // Teema või keel muutus: tekstid, paigutus ja värvid uuesti
+        private void TeemaMuutus()
         {
-            if ((!Teema.OnRimi || Teema.OnMoodne != moodne) && IsHandleCreated)
+            Text = Keel.F("{0} – e-pood", Arve.PoeNimi);
+            lblTere.Text = Keel.F("Tere, {0}!     Kliendikaardiga 1 € = 1 sent boonust  ·  tasuta kojuvedu alates {1}", AktiivneKasutaja.Kuvanimi, Ostukorv.Eur(Tarne.TasutaAlates));
+            // Päiste elementide paigutus uuesti (tekstide laius muutus)
+            foreach (var p in Alamad(this).OfType<Panel>().Where(p => p.Dock == DockStyle.Top).ToList())
             {
-                Tag = "disain";
-                BeginInvoke(new Action(Close));
+                p.Height += 1;
+                p.Height -= 1;
             }
-            else
-            {
-                Text = Keel.F("{0} – e-pood", Arve.PoeNimi);
-                lblTere.Text = Keel.F("Tere, {0}!     Kliendikaardiga 1 € = 1 sent boonust  ·  tasuta kojuvedu alates {1}", AktiivneKasutaja.Kuvanimi, Ostukorv.Eur(Tarne.TasutaAlates));
-                // Päiste elementide paigutus uuesti (tekstide laius muutus)
-                foreach (var p in Alamad(this).OfType<Panel>().Where(p => p.Dock == DockStyle.Top).ToList())
-                {
-                    p.Height += 1;
-                    p.Height -= 1;
-                }
-                MargiAegunuks();
-                Varskenda();
-                LooLeivapuru();
-                Teema.Rakenda(this);
-                Invalidate(true);
-            }
+            MargiAegunuks();
+            Varskenda();
+            LooLeivapuru();
+            Teema.Rakenda(this);
+            Invalidate(true);
         }
 
         // Veebist alla laaditud pilt valmis (tuleb taustalõimest)
@@ -529,7 +518,7 @@ namespace IKTpv25_1_Toooted
             else foreach (var k in KoikKaardid()) k.Invalidate();
         }
 
-        // Dieedi valik muutus: sobimatud kaardid tuhmuvad (või peidetakse – siis joonistatakse uuesti)
+        // Dieedi valik muutus: sobimatud kaardid tuhmuvad (või peidetakse, siis joonistatakse uuesti)
         private void DieetMuutus()
         {
             if (MinuDieet.Peida || peidetiEnne)
@@ -576,9 +565,7 @@ namespace IKTpv25_1_Toooted
             korviNupp.Invalidate();
         }
 
-        // ---------------------------------------------------------------
-        //  Andmed
-        // ---------------------------------------------------------------
+        // Andmed
         // Andmebaasist lugemine (töötab ka taustalõimes)
         private static (List<Toode> Tooted, List<Kategooria> Kategooriad) LoeAndmed()
         {
@@ -657,9 +644,7 @@ namespace IKTpv25_1_Toooted
             }
         }
 
-        // ---------------------------------------------------------------
-        //  Avaleht: riiulid
-        // ---------------------------------------------------------------
+        // Avaleht: riiulid
         private void NaitaAvaleht()
         {
             if (lehed.Lehed.Count == 0)
@@ -677,23 +662,7 @@ namespace IKTpv25_1_Toooted
         private void JoonistaAvaleht()
         {
             TyhjendaSisu();
-            if (moodne) sisu.Controls.Add(LooBento());
-            else
-            {
-                // nagu telefoni avalehel: nädala pakkumine ja "Ilma raiskamiseta" ülal
-                var parim = Filtreeri(koikTooted.Where(t => t.Kogus > 0 && t.SoodusProtsent != null))
-                    .OrderByDescending(t => t.SoodusProtsent).ThenBy(t => t.Pilt == null).FirstOrDefault();
-                if (parim != null)
-                    sisu.Controls.Add(new NadalaPakkumine(parim, () => LisaKorvi(parim), () => AvaToode(parim))
-                        { Height = 250, Margin = new Padding(0, 0, 0, 16), Tag = "laius" });
-                var aeguvad = koikTooted.Where(t => t.Kogus > 0 && Aegumine.Allahinnatud.ContainsKey(t.Id)).ToList();
-                if (aeguvad.Count > 0)
-                {
-                    var banner = new RaiskamiseBanner(aeguvad.Count, aeguvad.Sum(t => t.Hind * Aegumine.Protsent / 100m)) { Tag = "laius", Cursor = Cursors.Hand };
-                    banner.Click += (s, e) => NaitaRuudustik(Vaade.Raiskamine);
-                    sisu.Controls.Add(banner);
-                }
-            }
+            sisu.Controls.Add(LooBento());
             if (OhtuSoodustus.S.Sees) sisu.Controls.Add(new OhtuBanner());
             var soodus = Filtreeri(koikTooted.Where(t => t.SoodusProtsent != null).OrderByDescending(t => t.SoodusProtsent));
             if (soodus.Count > 0)
@@ -713,7 +682,7 @@ namespace IKTpv25_1_Toooted
             LopetaSisu();
         }
 
-        // Otsing käivitub alles siis, kui kirjutamine on 250 ms seisnud – muidu ehitataks 9000 toote
+        // Otsing käivitub alles siis, kui kirjutamine on 250 ms seisnud: muidu ehitataks 9000 toote
         // hulgast iga tähe järel uus leht (60 kaarti) ja kirjutamine hakkab.
         private System.Windows.Forms.Timer? otsinguViide;
 
@@ -747,9 +716,7 @@ namespace IKTpv25_1_Toooted
             vaigista = false;
         }
 
-        // ---------------------------------------------------------------
-        //  Ruudustik: kategooria, kampaaniad, odavad, lemmikud, otsing
-        // ---------------------------------------------------------------
+        // Ruudustik: kategooria, kampaaniad, odavad, lemmikud, otsing
         private void NaitaKategooria(int id)
         {
             valitudKategooria = id;
@@ -979,13 +946,11 @@ namespace IKTpv25_1_Toooted
             }
         }
 
-        // ---------------------------------------------------------------
-        //  Navigeerimine: lehtede pinu, leivapuru, värskendus
-        // ---------------------------------------------------------------
+        // Navigeerimine: lehtede pinu, leivapuru, värskendus
 
         // Uus leht poe sisualale (toiteväärtus, preemiad, pere nimekiri ...)
-        // Moodne: vormid (seaded, kliendikaart, ajalugu ...) avanevad poe lehena, mitte eraldi aknas
-        public bool VoibManustada => moodne && Visible;
+        // Vormid (seaded, kliendikaart, ajalugu ...) avanevad poe lehena, mitte eraldi aknas
+        public bool VoibManustada => Visible;
 
         // Vormi enda "Tagasi" peidetakse; sama rea elemendid nihkuvad vasakule
         private static void PeidaOmaTagasi(Control juur)
@@ -1011,7 +976,7 @@ namespace IKTpv25_1_Toooted
             else
             {
                 PeidaOmaTagasi(vorm);
-                // mõni vorm lisab Tagasi alles laadimisel (OnLoad) – peidame ka selle
+                // mõni vorm lisab Tagasi alles laadimisel (OnLoad): peidame ka selle
                 vorm.Load += (s, e) => vorm.BeginInvoke(new Action(() => PeidaOmaTagasi(vorm)));
             }
             var leht = new VormiLeht(vorm, suletud, () => lehed.Tagasi());
@@ -1046,8 +1011,8 @@ namespace IKTpv25_1_Toooted
         private void NavMuutus()
         {
             dieet.Visible = lehed.Praegune is PoeVaadeLeht;
-            // maksmise ajal on kokkuvõte vormi sees – korvi veerg peidetakse (rohkem ruumi)
-            if (moodne && korviVeerg != null) korviVeerg.Visible = !(lehed.Praegune is VormiLeht vl && vl.VormiTyyp == typeof(MaksmineVorm));
+            // maksmise ajal on kokkuvõte vormi sees: korvi veerg peidetakse (rohkem ruumi)
+            if (korviVeerg != null) korviVeerg.Visible = !(lehed.Praegune is VormiLeht vl && vl.VormiTyyp == typeof(MaksmineVorm));
             if (lehed.Praegune is PoeVaadeLeht p) sisu = p.Sisu;
             else
             {
@@ -1092,9 +1057,7 @@ namespace IKTpv25_1_Toooted
             foreach (var p in lehed.Lehed.OfType<PoeVaadeLeht>()) p.Aegunud = true;
         }
 
-        // ---------------------------------------------------------------
-        //  Ostukorv
-        // ---------------------------------------------------------------
+        // Ostukorv
         private static void LisaKorvi(Toode t)
         {
             if (t.Kogus <= 0)
@@ -1164,7 +1127,7 @@ namespace IKTpv25_1_Toooted
                 menuu.Items.Add(item);
             }
             foreach (ToolStripItem i in menuu.Items) i.ForeColor = Teema.Tekst;
-            if (Teema.OnMoodne) MoodneMenyyJoonistaja.Rakenda(menuu);
+            MoodneMenyyJoonistaja.Rakenda(menuu);
             menuu.Closed += (s, e) => BeginInvoke(new Action(menuu.Dispose));
             menuu.Show(nupp, new Point(nupp.Width - 10, nupp.Height + 4), ToolStripDropDownDirection.BelowLeft);
         }
@@ -1187,9 +1150,7 @@ namespace IKTpv25_1_Toooted
         }
     }
 
-    // ===================================================================
-    //  Poe leht: avaleht või tooteruudustik (sisu joonistab PoodVorm)
-    // ===================================================================
+    // Poe leht: avaleht või tooteruudustik (sisu joonistab PoodVorm)
     public class PoeVaadeLeht : Leht
     {
         private readonly string pealkiri;
@@ -1234,9 +1195,7 @@ namespace IKTpv25_1_Toooted
         }
     }
 
-    // ===================================================================
-    //  Riiul: pealkiri + "Näita kõiki" + horisontaalne kaartide rida noolega
-    // ===================================================================
+    // Riiul: pealkiri + "Näita kõiki" + horisontaalne kaartide rida noolega
     public class Riiul : Panel
     {
         private const int KaardiLaius = 222, Vahe = 18;
@@ -1244,7 +1203,7 @@ namespace IKTpv25_1_Toooted
         private readonly RingNupp vasak, parem;
         private int nihe;
 
-        public const int MaxRiiulil = 10;   // 17 riiulit × 10 kaarti (oli 16) – avaleht ehitub ~40 % kiiremini
+        public const int MaxRiiulil = 10;   // 17 riiulit × 10 kaarti (oli 16): avaleht ehitub ~40 % kiiremini
 
         public Riiul(string pealkiri, List<Toode> tooted, Action naitaKoiki, Func<TooteKaart, TooteKaart> uhenda)
         {
@@ -1339,9 +1298,7 @@ namespace IKTpv25_1_Toooted
         }
     }
 
-    // ===================================================================
-    //  Väikesed elemendid: logo, ikooniga tekst, ostukorvi nupp, kategooria ikoon
-    // ===================================================================
+    // Väikesed elemendid: logo, ikooniga tekst, ostukorvi nupp, kategooria ikoon
     // AKT logo: punane silt, valge ostukott ja suured valged tähed "AKT", all väike "pood"
     public class Logo : Control
     {
@@ -1587,9 +1544,7 @@ namespace IKTpv25_1_Toooted
         }
     }
 
-    // ===================================================================
-    //  Tootekaart e-poe stiilis
-    // ===================================================================
+    // Tootekaart e-poe stiilis
     public class TooteKaart : Control
     {
         public Toode Toode { get; }
@@ -1606,7 +1561,7 @@ namespace IKTpv25_1_Toooted
         private bool sobimatu;     // ei sobi "Minu dieet" valikuga
         private double tuhm;       // 0 → 1 (tuhmumise animatsioon)
 
-        // Fondid luuakse üks kord (mitte igal joonistamisel – 60 kaarti × iga hiire liigutus)
+        // Fondid luuakse üks kord (mitte igal joonistamisel: 60 kaarti × iga hiire liigutus)
         private static readonly Font FNimi = new("Segoe UI", 10.5F), FVana = new("Segoe UI Semibold", 9.5F, FontStyle.Strikeout),
             FProtsent = new("Segoe UI Semibold", 7.5F), FMark = new("Segoe UI Semibold", 8F),
             FAlumine = new("Segoe UI", 9F), FAlumineB = new("Segoe UI", 9F, FontStyle.Bold);
@@ -1637,9 +1592,8 @@ namespace IKTpv25_1_Toooted
         }
 
         private RectangleF Kaart => new(1, 1, Width - 4, Height - 4);
-        private Rectangle Nupp => !Teema.OnMoodne ? new((int)Kaart.X + 16, (int)Kaart.Bottom - 50, (int)Kaart.Width - 32, 34)
-            : Ostukorv.KorvisKogus(Toode.Id) > 0 ? new((int)Kaart.Right - 122, (int)Kaart.Bottom - 56, 110, 44)
-            : new((int)Kaart.Right - 56, (int)Kaart.Bottom - 56, 44, 44);   // moodne: ümar "+" või tume stepper
+        private Rectangle Nupp => Ostukorv.KorvisKogus(Toode.Id) > 0 ? new((int)Kaart.Right - 122, (int)Kaart.Bottom - 56, 110, 44)
+            : new((int)Kaart.Right - 56, (int)Kaart.Bottom - 56, 44, 44);   // ümar "+" või tume stepper
         private Rectangle Taht => new((int)Kaart.Right - 50, (int)Kaart.Bottom - 104, 32, 32);
 
         protected override void OnMouseEnter(EventArgs e) { hover = true; Invalidate(); base.OnMouseEnter(e); }
@@ -1705,29 +1659,18 @@ namespace IKTpv25_1_Toooted
             var kaart = Kaart;
             bool laos = Toode.Kogus > 0;
 
-            if (Teema.OnMoodne)
-            {
-                // Moodne: hall ümar kaart (raadius 24), pilt valgel ümaral alusel; hiire all tõuseb
-                if (hover)
-                    using (var vari = new SolidBrush(Color.FromArgb(22, 0, 0, 0)))
-                    using (var vt = Ymardus.Tee(new RectangleF(kaart.X + 2, kaart.Y + 6, kaart.Width - 4, kaart.Height - 4), 24))
-                        g.FillPath(vari, vt);
-                if (hover) kaart.Offset(0, -3);
-                using (var path = Ymardus.Tee(kaart, 24))
-                using (var b = new SolidBrush(OhtuSoodustus.Kehtib(Toode, Hinnad.Kell()) && !Teema.Tume ? Color.FromArgb(255, 247, 224) : Teema.Paneel2))   // õhtu: kreemjas (N12)
-                    g.FillPath(b, path);
-                using (var path = Ymardus.Tee(new RectangleF(kaart.X + 10, kaart.Y + 10, kaart.Width - 20, 162), 18))
-                using (var b = new SolidBrush(Teema.Pind))
-                    g.FillPath(b, path);
-            }
-            else
-            using (var path = Ymardus.Tee(kaart, 4))
-            using (var b = new SolidBrush(Teema.Pind))
-            using (var p = new Pen(hover ? Ymardus.Segu(Teema.Joon, Teema.Tekst, 0.15f) : Teema.Joon))
-            {
+            // Hall ümar kaart (raadius 24), pilt valgel ümaral alusel; hiire all tõuseb
+            if (hover)
+                using (var vari = new SolidBrush(Color.FromArgb(22, 0, 0, 0)))
+                using (var vt = Ymardus.Tee(new RectangleF(kaart.X + 2, kaart.Y + 6, kaart.Width - 4, kaart.Height - 4), 24))
+                    g.FillPath(vari, vt);
+            if (hover) kaart.Offset(0, -3);
+            using (var path = Ymardus.Tee(kaart, 24))
+            using (var b = new SolidBrush(OhtuSoodustus.Kehtib(Toode, Hinnad.Kell()) && !Teema.Tume ? Color.FromArgb(255, 247, 224) : Teema.Paneel2))   // õhtu: kreemjas (N12)
                 g.FillPath(b, path);
-                g.DrawPath(p, path);
-            }
+            using (var path = Ymardus.Tee(new RectangleF(kaart.X + 10, kaart.Y + 10, kaart.Width - 20, 162), 18))
+            using (var b = new SolidBrush(Teema.Pind))
+                g.FillPath(b, path);
 
             // Pilt (valge taust, keskel)
             var pildiKast = new RectangleF(kaart.X + 18, kaart.Y + 16, kaart.Width - 36, 150);
@@ -1739,8 +1682,8 @@ namespace IKTpv25_1_Toooted
                 Ikoonid.JoonistaEmoji(g, Ikoonid.KategooriaIkoon(Toode.Kategooria?.Kategooria_nimetus),
                     Rectangle.Round(pildiKast), Teema.Joon, 40f);
 
-            // Moodne: roheline pandimünt pildi paremas alanurgas (lõuend N8)
-            if (Teema.OnMoodne && Toode.Pant > 0)
+            // Roheline pandimünt pildi paremas alanurgas
+            if (Toode.Pant > 0)
             {
                 using var fm = new Font("Segoe UI", 8F, FontStyle.Bold);
                 string pt = "+" + Ostukorv.Eur(Toode.Pant);
@@ -1800,10 +1743,10 @@ namespace IKTpv25_1_Toooted
             {
                 TextRenderer.DrawText(g, Ikoonid.Hind(h.TavaHind), FVana, new Point(x + laius + 4, hinnaY + 21), Teema.Tekst2);
             }
-            // Moodne: õhtuse soodustuse toode enne algust – "20:00 → 0,85 €" ploomiga (lõuend N12)
+            // Õhtuse soodustuse toode enne algust: "20:00 → 0,85 €" ploomiga
             var ohtuS = OhtuSoodustus.S;
             float kiibiY = pildiKast.Bottom - 26;
-            if (Teema.OnMoodne && ohtuS.Sees && Toode.KategooriaId == ohtuS.KategooriaId && !OhtuSoodustus.Kaib(Hinnad.Kell()))
+            if (ohtuS.Sees && Toode.KategooriaId == ohtuS.KategooriaId && !OhtuSoodustus.Kaib(Hinnad.Kell()))
             {
                 decimal pool = Math.Round(Kampaaniad.TavaHind(Toode) * (100 - ohtuS.Protsent) / 100m, 2, MidpointRounding.AwayFromZero);
                 if (pool < h.Hind)
@@ -1910,71 +1853,29 @@ namespace IKTpv25_1_Toooted
             bool hiirPeal = hover && r.Contains(hiir);
             int korvis = Ostukorv.KorvisKogus(Toode.Id);
 
-            if (Teema.OnMoodne)
-            {
-                // ümar punane "+" või tume stepper "− N +"
-                if (!laos)
-                {
-                    using var b0 = new SolidBrush(Teema.Joon);
-                    g.FillEllipse(b0, r);
-                    Ikoonid.Joonista(g, Ikoonid.Sulge, r, Teema.TekstNork, 9f);
-                    return;
-                }
-                if (korvis == 0)
-                {
-                    using var b1 = new SolidBrush(hiirPeal ? Teema.AktsentTume : Teema.Aktsent);
-                    var rr = hiirPeal ? Rectangle.Inflate(r, 2, 2) : r;
-                    g.FillEllipse(b1, rr);
-                    Ikoonid.Joonista(g, Ikoonid.Pluss, r, Color.White, 12f);
-                    return;
-                }
-                using (var tp = Ymardus.Tee(r, r.Height / 2))
-                using (var b2 = new SolidBrush(Color.FromArgb(27, 28, 31)))
-                    g.FillPath(b2, tp);
-                Ikoonid.Joonista(g, Ikoonid.Miinus, new Rectangle(r.X, r.Y, 40, r.Height), Color.White, 10f);
-                Ikoonid.Joonista(g, Ikoonid.Pluss, new Rectangle(r.Right - 40, r.Y, 40, r.Height), Color.White, 10f);
-                using (var f = new Font("Segoe UI", 10.5F, FontStyle.Bold))
-                    TextRenderer.DrawText(g, korvis.ToString(), f, r, Color.White, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
-                return;
-            }
-
-            using var path = Ymardus.Tee(r, 5);
+            // ümar punane "+" või tume stepper "− N +"
             if (!laos)
             {
-                using var b = new SolidBrush(Teema.Paneel2);
-                g.FillPath(b, path);
-                using var f = new Font("Segoe UI Semibold", 9F);
-                TextRenderer.DrawText(g, Keel.T("Pole laos"), f, r, Teema.TekstNork, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                using var b0 = new SolidBrush(Teema.Joon);
+                g.FillEllipse(b0, r);
+                Ikoonid.Joonista(g, Ikoonid.Sulge, r, Teema.TekstNork, 9f);
                 return;
             }
-
             if (korvis == 0)
             {
-                using var b = new SolidBrush(hiirPeal ? Teema.AktsentTume : Teema.Aktsent);
-                g.FillPath(b, path);
-                using var f = new Font("Segoe UI Semibold", 8.75F);
-                TextRenderer.DrawText(g, Keel.T("Lisa ostukorvi"), f, new Rectangle(r.X + 12, r.Y, r.Width - 40, r.Height), Color.White,
-                    TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix);
-                Ikoonid.Joonista(g, Ikoonid.Ostukorv, new Rectangle(r.Right - 34, r.Y, 26, r.Height), Color.White, 12f);
+                using var b1 = new SolidBrush(hiirPeal ? Teema.AktsentTume : Teema.Aktsent);
+                var rr = hiirPeal ? Rectangle.Inflate(r, 2, 2) : r;
+                g.FillEllipse(b1, rr);
+                Ikoonid.Joonista(g, Ikoonid.Pluss, r, Color.White, 12f);
                 return;
             }
-
-            // Stepper: − N tk +
-            using (var b = new SolidBrush(Teema.Pind))
-            using (var p = new Pen(Teema.Aktsent, 1.5f))
-            {
-                g.FillPath(b, path);
-                g.DrawPath(p, path);
-            }
-            var vasak = new Rectangle(r.X, r.Y, 40, r.Height);
-            var parem = new Rectangle(r.Right - 40, r.Y, 40, r.Height);
-            using (var pp = Ymardus.Tee(new RectangleF(parem.X, parem.Y, parem.Width, parem.Height), 5))
-            using (var b = new SolidBrush(hiirPeal && parem.Contains(hiir) ? Teema.AktsentTume : Teema.Aktsent))
-                g.FillPath(b, pp);
-            Ikoonid.Joonista(g, Ikoonid.Miinus, vasak, Teema.Aktsent, 10f);
-            Ikoonid.Joonista(g, Ikoonid.Pluss, parem, Color.White, 10f);
-            using (var f = new Font("Segoe UI Semibold", 10F))
-                TextRenderer.DrawText(g, Keel.F("{0} tk", korvis), f, r, Teema.Tekst, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+            using (var tp = Ymardus.Tee(r, r.Height / 2))
+            using (var b2 = new SolidBrush(Color.FromArgb(27, 28, 31)))
+                g.FillPath(b2, tp);
+            Ikoonid.Joonista(g, Ikoonid.Miinus, new Rectangle(r.X, r.Y, 40, r.Height), Color.White, 10f);
+            Ikoonid.Joonista(g, Ikoonid.Pluss, new Rectangle(r.Right - 40, r.Y, 40, r.Height), Color.White, 10f);
+            using (var f = new Font("Segoe UI", 10.5F, FontStyle.Bold))
+                TextRenderer.DrawText(g, korvis.ToString(), f, r, Color.White, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
         }
     }
 }

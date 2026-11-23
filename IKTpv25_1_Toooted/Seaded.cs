@@ -2,31 +2,18 @@
 
 namespace IKTpv25_1_Toooted
 {
-    // ===================================================================
-    //  Seaded: kõik kasutaja seaded ühes aknas
-    //  Profiil (nimi, e-post, kliendikaart) · Turvalisus · Välimus (teema, värv, disain, keel)
-    // ===================================================================
+    // Seaded: kõik kasutaja seaded ühes aknas
+    // Profiil (nimi, e-post, kliendikaart) · Turvalisus · Välimus (teema, värv, disain, keel)
     public partial class SeadedVorm : KujundusVorm
     {
         private readonly TextBox txtTaisNimi, txtEmail, txtAadress;
         private readonly CheckBox chkTsekk, chkUmarad;
         private readonly Label lblKaart, lblViga;
         private readonly RoundedButton btnLooKaart, btnNaitaKaart;
-        private readonly ComboBox cmbTeema, cmbVarv, cmbDisain, cmbKeel;
+        private readonly ComboBox cmbTeema, cmbVarv, cmbKeel;
         private bool taidan;   // valikute täitmine koodist ei rakenda midagi
 
-        // Disaini vahetus tehakse alles pärast akna sulgemist (pood avaneb uues disainis)
-        public Disain? UusDisain { get; private set; }
-
-        // Avab seaded ja rakendab pärast sulgemist disaini vahetuse
-        public static void Ava(IWin32Window? omanik)
-        {
-            var vorm = new SeadedVorm();
-            Aken.Ava(omanik, vorm, () =>
-            {
-                if (vorm.UusDisain is Disain d && d != Teema.Stiil) Teema.SeaDisain(d);
-            });
-        }
+        public static void Ava(IWin32Window? omanik) => Aken.Ava(omanik, new SeadedVorm());
 
         public SeadedVorm() : base("Seaded", 580, 752)
         {
@@ -39,7 +26,7 @@ namespace IKTpv25_1_Toooted
             int maks = (Screen.PrimaryScreen?.WorkingArea.Height ?? 900) - 80;
             if (maks < 752) { ClientSize = new Size(600, maks); AutoScroll = true; }
 
-            // ---------------- Profiil ----------------
+            // Profiil
             Plokk("PROFIIL", 58);
             Silt("Kasutajanimi", x, 86);
             var nimi = Silt(AktiivneKasutaja.Nimi + "   ·   " + Keel.T(AktiivneKasutaja.Roll), 190, 86);
@@ -74,7 +61,7 @@ namespace IKTpv25_1_Toooted
             Controls.Add(btnNaitaKaart);
             NaitaKaart();
 
-            // ---------------- Turvalisus ----------------
+            // Turvalisus
             Plokk("TURVALISUS", 368);
             var parool = Nupp("Muuda parooli...", x, 394);
             parool.Click += (s, e) => Aken.Ava(this, new ParooliMuutmineVorm());
@@ -84,21 +71,19 @@ namespace IKTpv25_1_Toooted
                 email.Click += (s, e) => Aken.Ava(this, new EmailSeadedVorm());
             }
 
-            // ---------------- Välimus ----------------
+            // Välimus
             Plokk("VÄLIMUS", 446);
             Silt("Teema", x, 476);
             cmbTeema = Valik(x, 496, 250);
             Silt("Poe värv", 290, 476);
             cmbVarv = Valik(290, 496, 250);
-            Silt(Teema.OnMoodne ? "Disain (Ctrl+Shift+M)" : "Disain (Ctrl+Shift+D)", x, 536);
-            cmbDisain = Valik(x, 556, 250);
-            Silt("Keel", 290, 536);
-            cmbKeel = Valik(290, 556, 250);
+            Silt("Keel", x, 536);
+            cmbKeel = Valik(x, 556, 250);
             chkUmarad = new CheckBox { Text = "Ümarad nurgad ja külgmenüü", Location = new Point(x + 2, 596), AutoSize = true, ForeColor = Teema.Tekst2, Checked = Teema.Umarad };
             chkUmarad.CheckedChanged += (s, e) => { if (!taidan) Teema.SeaUmarad(chkUmarad.Checked); };
             Controls.Add(chkUmarad);
             TaidaValikud();
-            foreach (var c in new Control[] { cmbTeema, cmbVarv, cmbDisain, cmbKeel, chkUmarad }) c.Tag = "ei-jalgi";
+            foreach (var c in new Control[] { cmbTeema, cmbVarv, cmbKeel, chkUmarad }) c.Tag = "ei-jalgi";
 
             cmbTeema.SelectedIndexChanged += (s, e) => { if (!taidan) Teema.Sea(cmbTeema.SelectedIndex == 1, Teema.AktsendiNimi); };
             cmbVarv.SelectedIndexChanged += (s, e) =>
@@ -106,16 +91,12 @@ namespace IKTpv25_1_Toooted
                 if (!taidan && cmbVarv.SelectedIndex >= 0)
                     Teema.Sea(Teema.Tume, Teema.Aktsendid.Keys.ElementAt(cmbVarv.SelectedIndex));
             };
-            cmbDisain.SelectedIndexChanged += (s, e) =>
-            {
-                if (!taidan) UusDisain = cmbDisain.SelectedIndex switch { 1 => Disain.Klassikaline, 2 => Disain.Moodne, _ => Disain.Rimi };
-            };
             cmbKeel.SelectedIndexChanged += (s, e) =>
             {
                 if (!taidan && cmbKeel.SelectedIndex >= 0) Keel.Sea(Enum.GetValues<KeeleKood>()[cmbKeel.SelectedIndex]);
             };
 
-            var info = Silt("Teema, värv ja keel muutuvad kohe. Disain vahetub pärast akna sulgemist.", x, 626);
+            var info = Silt("Teema, värv ja keel muutuvad kohe.", x, 626);
             info.ForeColor = Teema.TekstNork;
 
             lblViga = Veateade(x, 650, w);
@@ -127,7 +108,7 @@ namespace IKTpv25_1_Toooted
             sulge.DialogResult = DialogResult.Cancel;
             CancelButton = sulge;
 
-            if (Teema.OnMoodne) RakendaMoodne();   // lõuend 3.3: jaotised vasakul, segmendid, värvitäpid
+            RakendaMoodne();   // jaotised vasakul, segmendid, värvitäpid
 
             // Keele vahetusel tõlgitakse ka valikute tekstid
             Teema.Muutus += ValikudHiljem;
@@ -162,9 +143,6 @@ namespace IKTpv25_1_Toooted
             {
                 Taida(cmbTeema, new[] { Keel.T("Hele teema"), Keel.T("Tume teema") }, Teema.Tume ? 1 : 0);
                 Taida(cmbVarv, Teema.Aktsendid.Keys.Select(Keel.T).ToArray(), Teema.Aktsendid.Keys.ToList().IndexOf(Teema.AktsendiNimi));
-                var disain = UusDisain ?? Teema.Stiil;
-                Taida(cmbDisain, new[] { Keel.T("E-poe disain (Rimi)"), Keel.T("Klassikaline disain"), Keel.T("Moodne disain") },
-                    disain switch { Disain.Klassikaline => 1, Disain.Moodne => 2, _ => 0 });
                 var keeled = Enum.GetValues<KeeleKood>();
                 Taida(cmbKeel, keeled.Select(Keel.Nimi).ToArray(), Array.IndexOf(keeled, Keel.Praegu));
             }
@@ -241,9 +219,7 @@ namespace IKTpv25_1_Toooted
         }
     }
 
-    // ===================================================================
-    //  Kasutajad (omanik): eraldi tabel kõigist kontodest
-    // ===================================================================
+    // Kasutajad (omanik): eraldi tabel kõigist kontodest
     public class KasutajaVaade
     {
         public int Id { get; set; }
@@ -304,7 +280,7 @@ namespace IKTpv25_1_Toooted
             tabeliKaart.Dock = DockStyle.Fill;
             keskel.Controls.Add(tabeliKaart);
 
-            // ---- All: valitud kasutaja ----
+            // All: valitud kasutaja
             var valjad = new TableLayoutPanel { Dock = DockStyle.Top, Height = 64, ColumnCount = 3, RowCount = 1, BackColor = Teema.Pind };
             valjad.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 36));
             valjad.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40));

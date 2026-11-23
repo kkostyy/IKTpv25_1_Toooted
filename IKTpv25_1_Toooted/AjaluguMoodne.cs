@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted
 {
-    // Ostude ajalugu moodsas disainis (lõuend 3.1): vasakul valge kaart ostudega,
+    // Ostude ajalugu: vasakul valge kaart ostudega,
     // paremal valitud ostu tšekk "paberil" (sakiline alumine serv).
     public partial class OstudVorm
     {

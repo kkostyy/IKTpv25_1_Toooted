@@ -107,9 +107,8 @@ public class OhtuSeadedVorm : KujundusVorm
         var selgitus = new Label { Text = "Ei liitu kampaania ega säilivusaja soodustusega – kehtib suurim. Hind arvutatakse maksmise hetkel.", Location = new Point(20, 210), Size = new Size(400, 36), ForeColor = Teema.TekstNork };
         Controls.Add(selgitus);
         var salvesta = Nupp("Salvesta", 20, 270, true);
-        if (Teema.OnMoodne)
         {
-            // lõuend N12: reeglid hallil kastil ja näidis, kuidas rida tšekil välja näeb
+            // reeglid hallil kastil ja näidis, kuidas rida tšekil välja näeb
             ClientSize = new Size(440, 560);
             selgitus.Visible = false;
             var kast = new RoundedPanel { Bounds = new Rectangle(20, 214, 400, 118), Radius = 10, FillColor = Color.FromArgb(246, 248, 249), BorderColor = Color.FromArgb(246, 248, 249), Padding = new Padding(14, 10, 14, 10) };

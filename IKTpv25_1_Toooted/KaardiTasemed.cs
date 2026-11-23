@@ -3,11 +3,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted;
 
-// ===================================================================
-//  Kaardi tasemed (lõuend N11): suur kaart valitud taseme kujundusega,
-//  eelised, 12 kuu ostude riba (Pronks → Hõbe → Kuld); paremal tume
-//  veerg kõigi tasemete minikaartidega (klõps = eelvaade).
-// ===================================================================
+// Kaardi tasemed: suur kaart valitud taseme kujundusega,
+// eelised, 12 kuu ostude riba (Pronks → Hõbe → Kuld); paremal tume
+// veerg kõigi tasemete minikaartidega (klõps = eelvaade).
 public class KaardiTasemedVorm : Form, ITagasi
 {
     private readonly TaseInfo tase;
@@ -70,7 +68,7 @@ public class KaardiTasemedVorm : Form, ITagasi
         summa.Location = new Point(744 - summa.PreferredWidth, 468);
         vasak.Controls.Add(new TasemeRiba(tase.Summa) { Bounds = new Rectangle(28, 512, 716, 66) });
 
-        // ---- Paremal: kõik tasemed ----
+        // Paremal: kõik tasemed
         var parem = new RoundedPanel { Bounds = new Rectangle(804, 16, 300, 608), Radius = 16, FillColor = tume, BorderColor = tume, BackColor = BackColor };
         parem.Controls.Add(new Label { Text = Keel.T("KÕIK TASEMED"), Location = new Point(22, 24), AutoSize = true, Font = new Font("Segoe UI", 8F, FontStyle.Bold), ForeColor = Color.FromArgb(235, 120, 175), BackColor = tume });
         for (int i = 0; i < Preemiad.Tasemed.Length; i++)

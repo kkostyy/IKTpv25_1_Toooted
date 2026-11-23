@@ -3,7 +3,7 @@
 namespace IKTpv25_1_Toooted;
 
 // Kliendikaardi taust taseme järgi:
-//  Pronks – matt vask; Hõbe – harjatud hõbe + läige iga 4 s; Kuld – kuld + hologramm (liigub hiirega) + sädemed
+// Pronks: matt vask; Hõbe, harjatud hõbe + läige iga 4 s; Kuld, kuld + hologramm (liigub hiirega) + sädemed
 public static class TaseKaart
 {
     public static (Color A, Color B) Varvid(Tase t) => t switch
@@ -104,10 +104,8 @@ public static class TaseKaart
     }
 }
 
-// ===================================================================
-//  Preemiad: vasakul "SINU TASE", keskel nädala väljakutsed + kleepsualbum,
-//  paremal "PÄEVA ÜLLATUS" (kingituse karp).
-// ===================================================================
+// Preemiad: vasakul "SINU TASE", keskel nädala väljakutsed + kleepsualbum,
+// paremal "PÄEVA ÜLLATUS" (kingituse karp).
 public class PreemiadLeht : Leht
 {
     private readonly TaseVeerg taseVeerg = new() { Dock = DockStyle.Fill };
@@ -126,7 +124,7 @@ public class PreemiadLeht : Leht
 
         var vasak = new RoundedPanel { Dock = DockStyle.Fill, Radius = 24, FillColor = Color.FromArgb(27, 28, 31), BorderColor = Color.FromArgb(27, 28, 31), BackColor = Teema.Taust, Padding = new Padding(18), Margin = new Padding(0, 0, 12, 0) };
         vasak.Controls.Add(taseVeerg);
-        taseVeerg.Cursor = Cursors.Hand;   // klõps = kõik tasemed (lõuend N11)
+        taseVeerg.Cursor = Cursors.Hand;   // klõps = kõik tasemed
         taseVeerg.Click += (s, e) => KaardiTasemedVorm.Ava(FindForm());
         tabel.Controls.Add(vasak, 0, 0);
 
@@ -136,10 +134,10 @@ public class PreemiadLeht : Leht
             foreach (Control c in keskSisu.Controls) c.Width = Math.Max(260, keskSisu.ClientSize.Width - 8);
             // kitsas ↔ lai: väljakutsed ja kleebised paigutatakse ümber
             bool kitsas = keskSisu.ClientSize.Width < 620;
-            if (Teema.OnMoodne && kitsas != viimaneKitsas && AktiivneKasutaja.KlientId != null && keskSisu.Controls.Count > 0) { viimaneKitsas = kitsas; BeginInvoke(new Action(Laadi)); }
+            if (kitsas != viimaneKitsas && AktiivneKasutaja.KlientId != null && keskSisu.Controls.Count > 0) { viimaneKitsas = kitsas; BeginInvoke(new Action(Laadi)); }
         };
         tabel.Controls.Add(keskSisu, 1, 0);
-        // külgveerud kahanevad kitsas aknas (220–290 px)
+        // külgveerud kahanevad kitsas aknas (220-290 px)
         tabel.Resize += (s, e) =>
         {
             float kylg = Math.Clamp(tabel.Width * 0.24f, 220, 290);
@@ -179,25 +177,14 @@ public class PreemiadLeht : Leht
 
             keskSisu.SuspendLayout();
             foreach (Control c in keskSisu.Controls.Cast<Control>().ToList()) c.Dispose();
-            if (Teema.OnMoodne)
-            {
-                LaadiMoodne(valjakutsed, kleebised, komplekt);
-                keskSisu.ResumeLayout();
-                foreach (Control c in keskSisu.Controls) c.Width = Math.Max(300, keskSisu.ClientSize.Width - 8);
-                return;
-            }
-            keskSisu.Controls.Add(Pealkiri2("Nädala väljakutsed"));
-            for (int i = 0; i < valjakutsed.Count; i++)
-                keskSisu.Controls.Add(new ValjakutseKaart(valjakutsed[i], i * 150) { Margin = new Padding(0, 0, 0, 10) });
-            keskSisu.Controls.Add(Pealkiri2(Keel.F("Kleepsualbum  {0} / {1}", kleebised.Count(k => k.Saadud), kleebised.Count)));
-            keskSisu.Controls.Add(new KleepsuAlbum(kleebised, komplekt));
+            LaadiMoodne(valjakutsed, kleebised, komplekt);
             keskSisu.ResumeLayout();
             foreach (Control c in keskSisu.Controls) c.Width = Math.Max(300, keskSisu.ClientSize.Width - 8);
         }
         catch (Exception ex) { Teade.Show("Preemiate laadimine ebaõnnestus:\n" + ex.Message); }
     }
 
-    // Moodne (lõuend N6): väljakutsed ja kleepsualbum valgetel ümaratel kaartidel
+    // Väljakutsed ja kleepsualbum valgetel ümaratel kaartidel
     private void LaadiMoodne(List<Valjakutse> valjakutsed, List<Kleeps> kleebised, bool komplekt)
     {
         int paevi = 7 - ((int)DateTime.Now.DayOfWeek + 6) % 7;
@@ -236,18 +223,6 @@ public class PreemiadLeht : Leht
         kaart.Controls.Add(pais);
         return kaart;
     }
-
-    private static Label Pealkiri2(string tekst) => new()
-    {
-        Text = tekst,
-        AutoSize = false,
-        Height = 40,
-        Font = new Font("Segoe UI Semibold", 14F),
-        ForeColor = Teema.Tekst,
-        BackColor = Teema.Taust,
-        TextAlign = ContentAlignment.BottomLeft,
-        Margin = new Padding(0, 4, 0, 8)
-    };
 
     // Kliendikaardilt (ka väljaspool poodi): poes avatakse leht, muidu eraldi aken
     public static void Ava(IWin32Window? omanik)
@@ -373,7 +348,7 @@ public class ValjakutseKaart : Control
         Animatsioon.Kaivita(this, 900, x => { t = Animatsioon.Sujuv(x); Invalidate(); }, null, viivitus);
     }
 
-    // Moodne: püstine kaart – ikoon + pealkiri, olek, paks riba, edenemine ja preemia kiip; tehtud = roheline
+    // Püstine kaart: ikoon + pealkiri, olek, paks riba, edenemine ja preemia kiip; tehtud = roheline
     private void JoonistaMoodne(Graphics g)
     {
         bool valmis = v.Valmis;
@@ -408,37 +383,7 @@ public class ValjakutseKaart : Control
         var g = e.Graphics;
         g.Clear(Parent?.BackColor ?? Teema.Taust);
         g.SmoothingMode = SmoothingMode.AntiAlias;
-        if (Teema.OnMoodne) { JoonistaMoodne(g); return; }
-        bool valmis = v.Valmis;
-        var r = new RectangleF(0.5f, 0.5f, Width - 2, Height - 2);
-        using (var tee = Ymardus.Tee(r, 20))
-        using (var b = new SolidBrush(valmis ? Ymardus.Segu(Teema.Pind, Teema.Edu, 0.18f) : Teema.Pind))
-            g.FillPath(b, tee);
-        var ik = new RectangleF(16, 18, 46, 46);
-        using (var b = new SolidBrush(valmis ? Teema.Edu : Teema.Paneel2)) g.FillEllipse(b, ik);
-        Ikoonid.JoonistaEmoji(g, valmis ? "✓" : v.Ikoon, Rectangle.Round(ik), valmis ? Color.White : Teema.Tekst2, 15f);
-
-        using var fb = new Font("Segoe UI Semibold", 10.5F);
-        using var f = new Font("Segoe UI", 9F);
-        TextRenderer.DrawText(g, Keel.T(v.Tekst), fb, new Point(76, 14), Teema.Tekst);
-        string olek = valmis ? Keel.F("Tehtud! ✓ · +{0} saadud", Ostukorv.Eur(v.Boonus)) : $"{v.Tehtud} / {v.Vaja}";
-        TextRenderer.DrawText(g, olek, f, new Point(76, 56), valmis ? Teema.Edu : Teema.TekstNork);
-
-        var rada = new RectangleF(76, 40, Width - 76 - 110, 8);
-        using (var tee = Ymardus.Tee(rada, 4))
-        using (var b = new SolidBrush(Teema.Paneel2))
-            g.FillPath(b, tee);
-        float w = rada.Width * v.Tehtud / v.Vaja * (float)t;
-        if (w > 2)
-            using (var tee = Ymardus.Tee(new RectangleF(rada.X, rada.Y, w, rada.Height), 4))
-            using (var b = new SolidBrush(valmis ? Teema.Edu : Teema.Aktsent))
-                g.FillPath(b, tee);
-
-        var kiip = new RectangleF(Width - 96, 26, 80, 30);
-        using (var tee = Ymardus.Tee(kiip, 15))
-        using (var b = new SolidBrush(valmis ? Teema.Edu : Teema.Teine))
-            g.FillPath(b, tee);
-        TextRenderer.DrawText(g, "+" + Ostukorv.Eur(v.Boonus), fb, Rectangle.Round(kiip), Color.White, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+        JoonistaMoodne(g);
     }
 }
 
@@ -457,7 +402,7 @@ public class KleepsuAlbum : Control
         this.kleebised = kleebised;
         this.komplekt = komplekt;
         SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.ResizeRedraw, true);
-        Height = Teema.OnMoodne ? (komplekt ? 50 : 0) + 2 * 158 : komplekt ? 330 : 280;
+        Height = (komplekt ? 50 : 0) + 2 * 158;
         Resize += (s, e) => Invalidate();   // kitsas: 2 veergu (kaardi kõrgus arvestatakse lehel)
         int ms = 400 + kleebised.Count * 90;
         Animatsioon.Kaivita(this, ms, x => { t = x * ms; Invalidate(); });
@@ -469,12 +414,12 @@ public class KleepsuAlbum : Control
         base.Dispose(disposing);
     }
 
-    private int Veerge => Teema.OnMoodne && Width < 560 ? 2 : 4;
+    private int Veerge => Width < 560 ? 2 : 4;
 
     private RectangleF Koht(int i)
     {
         int v = Veerge;
-        float w = (Width - 2) / (float)v, h = Teema.OnMoodne ? 158 : 130;
+        float w = (Width - 2) / (float)v, h = 158;
         return new RectangleF(i % v * w, (komplekt ? 50 : 0) + i / v * h, w, h);
     }
 
@@ -514,7 +459,6 @@ public class KleepsuAlbum : Control
             var k = kleebised[i];
             var koht = Koht(i);
             double s = Math.Clamp((t - i * 90) / 400.0, 0, 1);
-            if (Teema.OnMoodne)
             {
                 // ruut: saadud = roosa, lukus = helehall; all nimi ja vihje
                 var ruut = RectangleF.Inflate(koht, -6, -6);
@@ -524,9 +468,9 @@ public class KleepsuAlbum : Control
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.WordBreak | TextFormatFlags.EndEllipsis);
             }
             if (s <= 0) continue;
-            float suurus = (Teema.OnMoodne ? 70 : 76) * (float)Animatsioon.Pop(s) * (hiir == i ? 1.1f : 1f);
+            float suurus = 70 * (float)Animatsioon.Pop(s) * (hiir == i ? 1.1f : 1f);
             float nurk = (float)(-30 * (1 - s)) + (hiir == i ? -6 : 0);
-            var c = new PointF(koht.X + koht.Width / 2, koht.Y + (Teema.OnMoodne ? 52 : 48));
+            var c = new PointF(koht.X + koht.Width / 2, koht.Y + 52);
             var olek = g.Save();
             g.TranslateTransform(c.X, c.Y);
             g.RotateTransform(nurk);
@@ -550,7 +494,7 @@ public class KleepsuAlbum : Control
                 TextRenderer.DrawText(g, "🔒", fi, Rectangle.Round(r), Teema.TekstNork, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
             }
             g.Restore(olek);
-            TextRenderer.DrawText(g, Keel.T(k.Nimi), f, Rectangle.Round(new RectangleF(koht.X, koht.Y + (Teema.OnMoodne ? 96 : 92), koht.Width, 20)), k.Saadud ? Teema.Tekst : Teema.TekstNork,
+            TextRenderer.DrawText(g, Keel.T(k.Nimi), f, Rectangle.Round(new RectangleF(koht.X, koht.Y + 96, koht.Width, 20)), k.Saadud ? Teema.Tekst : Teema.TekstNork,
                 TextFormatFlags.HorizontalCenter | TextFormatFlags.EndEllipsis);
         }
     }

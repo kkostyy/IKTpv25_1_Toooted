@@ -3,10 +3,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace IKTpv25_1_Toooted;
 
-// ===================================================================
-//  Ostukorvi analüüs (omanik): mida ostetakse koos (viimased 90 päeva).
-//  Iga seose juures nupp "Loo kampaania": teine toode −10 % nädala jooksul.
-// ===================================================================
+// Ostukorvi analüüs (omanik): mida ostetakse koos (viimased 90 päeva).
+// Iga seose juures nupp "Loo kampaania": teine toode −10 % nädala jooksul.
 public class OstukorviAnalyysVorm : KujundusVorm
 {
     private readonly FlowLayoutPanel loend;

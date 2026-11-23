@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 namespace IKTpv25_1_Toooted;
 
 // Pere ühine ostunimekiri: sama PereKood-iga kasutajad näevad ja muudavad sama nimekirja.
-// Kõik on samas (kohalikus) andmebaasis – "pere" = selle programmi kasutajakontod.
+// Kõik on samas (kohalikus) andmebaasis: "pere" = selle programmi kasutajakontod.
 public static class Pere
 {
     private const string Margid = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";   // ilma 0/O ja 1/I
